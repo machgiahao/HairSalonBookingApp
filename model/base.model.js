@@ -87,7 +87,8 @@
 
     create: async (tableName, columns, values) => {
       try {
-        const setColumns = columns.join(", ");
+        const keyArr = getKeysAsArray(columns);
+        const setColumns = keyArr.join(", ");
         const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
         const query = `INSERT INTO ${tableName} (${setColumns}) VALUES (${placeholders}) RETURNING *`;
 
