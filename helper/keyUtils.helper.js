@@ -1,3 +1,3 @@
-module.exports.getKeysAsArray = (obj) => {
-    return Object.keys(obj).map(key => `"${key}"`);
-}
+module.exports.getKeysAsArray = (arr) => {
+    return arr.map(key => `"${key}"`);
+};
