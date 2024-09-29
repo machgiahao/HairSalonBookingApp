@@ -16,6 +16,5 @@ pool.connect()
         console.error("Connection failed: ", err.stack);
     });
 
-
 module.exports = pool;
 
