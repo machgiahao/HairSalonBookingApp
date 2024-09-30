@@ -85,6 +85,17 @@
       }
     },
 
+    findByPhone: async (tableName, phoneColumn, phoneValue) => {
+      try {
+        const query = `SELECT * FROM ${tableName} WHERE "${phoneColumn}" = $1`;
+        const rows = await pool.query(query, [phoneValue]);
+        return rows[0];
+      } catch (error) {
+        console.error("Error executing findByPhone:", error);
+        throw new Error(`Find by phone operation failed: ${error.message}`);
+      }
+    },
+
     create: async (tableName, columns, values) => {
       try {
         const setColumns = columns.join(", ");
