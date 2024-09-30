@@ -87,7 +87,7 @@
 
     findByPhone: async (tableName, phoneColumn, phoneValue) => {
       try {
-        const query = `SELECT * FROM ${tableName} WHERE "${phoneColumn}" = $1`;
+        const query = `SELECT * FROM "${tableName}" WHERE "${phoneColumn}" = $1`;
         const rows = await pool.query(query, [phoneValue]);
         return rows[0];
       } catch (error) {
