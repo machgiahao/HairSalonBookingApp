@@ -44,7 +44,13 @@ const authController = {
                 msg: "Ịntenal server error"
             })
         }
+    },
+
+    login: async (req, res) => {
+        
     }
+
+
 }
 
 module.exports = authController;
