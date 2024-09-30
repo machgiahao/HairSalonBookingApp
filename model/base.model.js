@@ -77,7 +77,7 @@
 
     findById: async (tableName, idColumn, idValue) => {
       try {
-        const query = `SELECT * FROM "${tableName}" WHERE ${idColumn} = $1`;
+        const query = `SELECT * FROM "${tableName}" WHERE "${idColumn}" = $1`;
         const rows = await pool.query(query, [idValue]);
         return rows[0];
       } catch (error) {
@@ -89,8 +89,8 @@
     findByPhone: async (tableName, phoneColumn, phoneValue) => {
       try {
         const query = `SELECT * FROM "${tableName}" WHERE "${phoneColumn}" = $1`;
-        const rows = await pool.query(query, [phoneValue]);
-        return rows[0];
+        const result  = await pool.query(query, [phoneValue]);
+        return result.rows[0];
       } catch (error) {
         console.error("Error executing findByPhone:", error);
         throw new Error(`Find by phone operation failed: ${error.message}`);
@@ -115,9 +115,9 @@
     update: async (tableName, idColumn, idValue, columns, values) => {
       try {
         const setClause = columns
-          .map((col, i) => `${col} = $${i + 1}`)
+          .map((col, i) => `"${col}" = $${i + 1}`)
           .join(", ");
-        const query = `UPDATE "${tableName}" SET ${setClause} WHERE ${idColumn} = $${
+        const query = `UPDATE "${tableName}" SET ${setClause} WHERE "${idColumn}" = $${
           columns.length + 1
         } RETURNING *`;
         const rows = await pool.query(query, [...values, idValue]);
