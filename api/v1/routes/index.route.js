@@ -1,10 +1,11 @@
 
-const systemConfig = require("../../../config/system.config");  
-const staffRoute = require("./staff/staff.route")
+// const systemConfig = require("../../../config/system.config");  
+const staffRoute = require("./staff/staff.route");
+const stylistRoute = require("./staff/stylist.route");
 
 module.exports = ( app ) => {
     //STAFF
-    app.use(systemConfig.prefixPath+`/staff`,staffRoute);
+    app.use("/api/v1"+`/staff`,staffRoute);
     //STYLIST
-    // app.use(systemConfig.prefixPath+`/stylist`,sylistRoute)
+    app.use("/api/v1"+`/stylist`,stylistRoute);
 }

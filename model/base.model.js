@@ -1,4 +1,4 @@
-const pool = require("../config/conection.config");
+const pool = require("../config/connection.config");
 pool.connect();
 
 const baseModel = {
@@ -71,14 +71,14 @@ const baseModel = {
     } catch (error) {
       console.error("Error executing findWithConditions:", error);
       throw new Error(`Find with conditions failed: ${error.message}`);
-    }
+    } 
   },
 
   findById: async (tableName, idColumn, idValue) => {
     try {
       const query = `SELECT * FROM ${tableName} WHERE ${idColumn} = $1`;
-      const rows = await pool.query(query, [idValue]);
-      return rows[0];
+      const result = await pool.query(query, [idValue]);
+      return result.rows;
     } catch (error) {
       console.error("Error executing findById:", error);
       throw new Error(`Find by ID operation failed: ${error.message}`);
@@ -107,8 +107,8 @@ const baseModel = {
       const query = `UPDATE ${tableName} SET ${setClause} WHERE ${idColumn} = $${
         columns.length + 1
       } RETURNING *`;
-      const rows = await pool.query(query, [...values, idValue]);
-      return rows[0];
+      const result = await pool.query(query, [...values, idValue]);
+      return result.rows;
     } catch (error) {
       console.error("Error executing update:", error);
       throw new Error(`Update operation failed: ${error.message}`);
