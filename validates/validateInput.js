@@ -5,4 +5,11 @@ const validateInput = (body) => {
     return null;
 };
 
-module.exports = { validateInput };
+const validateInputField = (field) => {
+    if(!field) {
+        return `Missing required field: ${field}`;
+    }
+    return null;
+}
+
+module.exports = { validateInput, validateInputField };

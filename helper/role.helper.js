@@ -16,7 +16,24 @@ const roleService = {
         }
         return null; 
     },
+
+    getTableByRole: (user) => {
+        const roleHandlers = {
+            Customer: "Customer",
+            Manager: "Manager",
+            Stylist: "Stylist",
+            Staff: "Staff",
+        };
+
+        const handler = roleHandlers[user.Role];
+        if (handler) {
+            return handler;
+        }
+        return null; 
+    },
 };
+
+
 
 // createCustomer
 const createCustomer = async (user, body) => {
