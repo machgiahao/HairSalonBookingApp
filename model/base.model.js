@@ -1,11 +1,12 @@
-const pool = require("../config/connection.config");
+const keyUtils = require("../helper/keyUtils.helper");
+const pool = require("../config/connection");
 pool.connect();
 
 const baseModel = {
   find: async (tableName, columns = ["*"], { limit, skip } = {}) => {
     try {
       const setColumns = columns.join(", ");
-      let query = `SELECT ${setColumns} FROM ${tableName}`;
+      let query = `SELECT ${setColumns} FROM "${tableName}"`;
 
       const values = [];
 
@@ -28,7 +29,7 @@ const baseModel = {
 
   countDocuments: async (tableName) => {
     try {
-      const query = `SELECT COUNT(*) FROM ${tableName}`;
+      const query = `SELECT COUNT(*) FROM "${tableName}"`;
       const rows = (await pool.query(query)).rows;
       return rows[0].count;
     } catch (error) {
@@ -40,7 +41,7 @@ const baseModel = {
   findWithConditions: async (tableName,columns = ["*"],{ conditions = [], logicalOperators = ["AND"] } = {}) => {
     try {
       const setColumns = columns.join(", ");
-      let query = `SELECT ${setColumns} FROM ${tableName}`;
+      let query = `SELECT ${setColumns} FROM "${tableName}"`;
       const values = [];
       const whereClauses = [];
 
@@ -71,14 +72,14 @@ const baseModel = {
     } catch (error) {
       console.error("Error executing findWithConditions:", error);
       throw new Error(`Find with conditions failed: ${error.message}`);
-    } 
+    }
   },
 
   findById: async (tableName, idColumn, idValue) => {
     try {
-      const query = `SELECT * FROM ${tableName} WHERE ${idColumn} = $1`;
-      const result = await pool.query(query, [idValue]);
-      return result.rows;
+      const query = `SELECT * FROM "${tableName}" WHERE ${idColumn} = $1`;
+      const rows = await pool.query(query, [idValue]);
+      return rows[0];
     } catch (error) {
       console.error("Error executing findById:", error);
       throw new Error(`Find by ID operation failed: ${error.message}`);
@@ -87,9 +88,10 @@ const baseModel = {
 
   create: async (tableName, columns, values) => {
     try {
-      const setColumns = columns.join(", ");
+      const keyArr = keyUtils.getKeysAsArray(columns);
+      const setColumns = keyArr.join(", ");
       const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
-      const query = `INSERT INTO ${tableName} (${setColumns}) VALUES (${placeholders}) RETURNING *`;
+      const query = `INSERT INTO "${tableName}" (${setColumns}) VALUES (${placeholders}) RETURNING *`;
 
       const result = await pool.query(query, values);
       return result.rows.length > 0 ? result.rows[0] : null;
@@ -104,11 +106,11 @@ const baseModel = {
       const setClause = columns
         .map((col, i) => `${col} = $${i + 1}`)
         .join(", ");
-      const query = `UPDATE ${tableName} SET ${setClause} WHERE ${idColumn} = $${
+      const query = `UPDATE "${tableName}" SET ${setClause} WHERE ${idColumn} = $${
         columns.length + 1
       } RETURNING *`;
-      const result = await pool.query(query, [...values, idValue]);
-      return result.rows;
+      const rows = await pool.query(query, [...values, idValue]);
+      return rows[0];
     } catch (error) {
       console.error("Error executing update:", error);
       throw new Error(`Update operation failed: ${error.message}`);
@@ -119,7 +121,7 @@ const baseModel = {
     try {
       if (conditions.length === 0) return false;
 
-      let query = `DELETE FROM ${tableName} WHERE `;
+      let query = `DELETE FROM "${tableName}" WHERE `;
       const values = [];
       const whereClauses = [];
 
@@ -141,7 +143,7 @@ const baseModel = {
 
   deleteById: async (tableName, idColumn, idValue) => {
     try {
-      const query = `DELETE FROM ${tableName} WHERE ${idColumn} = $1`;
+      const query = `DELETE FROM "${tableName}" WHERE ${idColumn} = $1`;
       await pool.query(query, [idValue]);
       return true;
     } catch (error) {
