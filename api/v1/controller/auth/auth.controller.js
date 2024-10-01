@@ -108,6 +108,15 @@ const authController = {
                 msg: "Ịnternal server error"
             })
         }
+    }, 
+    
+    logout: async (req, res) => {
+        res.clearCookie("refreshToken");
+        await baseModel.update("Users", "UserID", req.body.UserID, ["RefreshToken"], [""]);
+        res.status(200).json({
+            success: "true",
+            msg: "Logged out!"
+        })
     }
 
 
