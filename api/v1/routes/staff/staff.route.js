@@ -1,13 +1,14 @@
 const express = require("express");
+const staffController = require("../../controller/staff/staff.controller");
 const route = express.Router();
 
 //get the detail from staff by send param id
-route.get("/detail/:id",(req,res)=>{res.send("detail")});
+route.get("/detail/:id",staffController.getStaffDetail);
 
 //update the detail from staff by send param id
-route.get("/update/:id",(req,res)=>{res.send("update")});
+route.patch("/update/:id",staffController.updateStaff);
 
 //get all the staff from database
-route.get("/getAll/",(req,res)=>{res.send("getAll")});
+route.get("/getAll/",staffController.getAllStaff);
 
 module.exports = route;
