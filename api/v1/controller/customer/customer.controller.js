@@ -89,9 +89,29 @@ const customerController = {
                 msg: "Internal server error"
             })
         }
+    },
+
+    getAll: async (req, res) => {
+        try {
+            const customerList = await baseModel.find("Customer")
+
+            if (!customerList || customerList.length === 0) {
+                return res.status(404).json({ error: 'No customer found' });
+            }
+
+            res.status(200).json({
+                success: "true",
+                customerList: customerList 
+            })
+
+        } catch (error) {
+            return res.status(500).json({
+                success: "fail",
+                msg: "Internal server error"
+            })
+        }
     }
 
 }
-
 
 module.exports = customerController;
