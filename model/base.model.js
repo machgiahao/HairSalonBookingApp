@@ -90,7 +90,7 @@
       try {
         const query = `SELECT * FROM "${tableName}" WHERE "${phoneColumn}" = $1`;
         const result  = await pool.query(query, [phoneValue]);
-        return result.rows[0];
+        return result.rows;
       } catch (error) {
         console.error("Error executing findByPhone:", error);
         throw new Error(`Find by phone operation failed: ${error.message}`);
