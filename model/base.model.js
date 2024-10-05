@@ -79,7 +79,7 @@
       try {
         const query = `SELECT * FROM "${tableName}" WHERE "${idColumn}" = $1`;
         const result = await pool.query(query, [idValue]);
-        return result.rows;
+        return result.rows[0];
       } catch (error) {
         console.error("Error executing findById:", error);
         throw new Error(`Find by ID operation failed: ${error.message}`);
@@ -90,7 +90,7 @@
       try {
         const query = `SELECT * FROM "${tableName}" WHERE "${phoneColumn}" = $1`;
         const result  = await pool.query(query, [phoneValue]);
-        return result.rows;
+        return result.rows[0];
       } catch (error) {
         console.error("Error executing findByPhone:", error);
         throw new Error(`Find by phone operation failed: ${error.message}`);

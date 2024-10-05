@@ -12,7 +12,7 @@ route.patch("/update/:id",staffController.updateStaff);
 route.get("/getAll/",staffController.getAllStaff);
 
 //soft delete staff by send param id
-route.patch("/softDel/:id",staffController.softDel);
+// route.patch("/softDel/:id",staffController.softDel);
 
 
 module.exports = route;

@@ -25,7 +25,7 @@ const roleService = {
             Staff: "Staff",
         };
 
-        const handler = roleHandlers[user.Role];
+        const handler = roleHandlers[user.role];
         if (handler) {
             return handler;
         }
