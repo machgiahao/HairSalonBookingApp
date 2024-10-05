@@ -20,14 +20,14 @@ module.exports.generateRandomNumber = (length) => {
 
 module.exports.generateAccessToken = (user) => {
   return jwt.sign({
-    UserID: user.UserID,
-    Role: user.role
+    userID: user.userID,
+    role: user.role
   }, process.env.JWT_ACCESS_KEY, {expiresIn: "1d"});
 };
 
 module.exports.generateRefreshToken = (user) => {
   return jwt.sign({
-    UserID: user.UserID,
-    Role: user.role
+    userID: user.userID,
+    role: user.role
   }, process.env.JWT_REFRESH_KEY, {expiresIn: "3d"});
 };

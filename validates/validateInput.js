@@ -1,5 +1,5 @@
 const validateInput = (body) => {
-    if (!body.Email || !body.Password || !body.PhoneNumber) {
+    if (!body.email || !body.password || !body.phoneNumber) {
         return "Missing required fields: Email, Password, or PhoneNumber";
     }
     return null;
