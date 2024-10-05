@@ -12,7 +12,7 @@ const authController = {
             const validateError = validate.validateInput(req.body);
             if (validateError) {
                 return res.status(400).json({
-                    success: "fail",
+                    success: false,
                     msg: validateError
                 });
             }
@@ -40,7 +40,7 @@ const authController = {
         } catch (error) {
             console.log(error)
             return res.status(500).json({
-                success: "fail",
+                success: false,
                 msg: "Ịntenal server error"
             })
         }
@@ -53,14 +53,14 @@ const authController = {
             const  validatePhoneError = validate.validateInputField(phoneNumber);
             if(validatePhoneError) {
                 return res.status(400).json({
-                    success: "fail",
+                    success: false,
                     msg: validatePhoneError
                 })
             }
             const user = await baseModel.findByPhone("Users", "phoneNumber", phoneNumber);
             if(!user) {
                 return res.status(401).json({
-                    success: "fail",
+                    success: false,
                     msg: "Phone number not registed !"
                 })
             }
@@ -68,7 +68,7 @@ const authController = {
             const validPassword = await bcrypt.compare(req.body.password, user.password);
             if(!validPassword) {
                 return res.status(401).json({
-                    success: "fail",
+                    success: false,
                     msg: "Incorrect password !"
                 })
             }
@@ -90,14 +90,14 @@ const authController = {
 
             const { password, refreshToken,...others} = user;
             return res.status(200).json({
-                success: "true",
+                success: true,
                 actor: actorByRole,
                 records: {...others, accessTokenStr}
             })
         } catch (error) {
             console.log(error)
             return res.status(500).json({
-                success: "fail",
+                success: false,
                 msg: "Ịnternal server error"
             })
         }
@@ -107,7 +107,7 @@ const authController = {
         res.clearCookie("refreshToken");
         await baseModel.update("Users", "userID", req.body.userID, ["refreshToken"], [""]);
         res.status(200).json({
-            success: "true",
+            success: true,
             msg: "Logged out!"
         })
     },
@@ -115,9 +115,9 @@ const authController = {
     requestRefreshToken: async (req, res) => {
         const cookie = req.cookies;
         // Check refresh token is exist in cookie
-        if(!cookie && !cookie.refreshToken) {
+        if(!cookie?.refreshToken) {
             return res.status(401).json({
-                success: "fail", 
+                success: false, 
                 msg: "You're not authenticated!"
             })
         }
@@ -125,15 +125,15 @@ const authController = {
         jwt.verify(cookie.refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
             if(err) {
                 return res.status(403).json({
-                    success: "fail", 
+                    success: false, 
                     msg: "Refresh token is not valid!"
                 })
             }
             // Check refresh token matches with refresh token stored in db
             const response = await baseModel.findById("Users", "userID", user.userID);
-            if(!cookie.refreshToken === response.refreshToken) {
+            if(cookie.refreshToken !== response.refreshToken) {
                 return res.status(403).json({
-                    success: "fail", 
+                    success: false, 
                     msg: "Refresh token is not valid!"
                 })
             }
@@ -147,7 +147,7 @@ const authController = {
                 sameSite: "strict",
             });
             return res.status(200).json({ 
-                success: "true",
+                success: true,
                 accessToken: newAccessToken 
             });
         })

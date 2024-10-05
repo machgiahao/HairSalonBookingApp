@@ -11,7 +11,7 @@ const customerController = {
                     msg: "ID is required"
                 })
             }
-            const customer = await baseModel.findById("Customer", "CustomerID", id);
+            const customer = await baseModel.findById("Customer", "customerID", id);
             if (!customer) {
                 return res.status(400).json({
                     success: "fail",
@@ -43,9 +43,9 @@ const customerController = {
             }
             
             const customer = {
-                FullName: req.body.fullName
+                fullName: req.body.fullName
             }        
-            const update = await baseModel.update("Customer", "CustomerID", id, Object.keys(customer), Object.values(customer));
+            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
             if (!update) {
                 return res.status(404).json({ error: 'Staff member not found' });
             }
@@ -72,9 +72,9 @@ const customerController = {
                 })
             }
             const customer = {
-                Deleted: "true"
+                deleted: "true"
             }        
-            const update = await baseModel.update("Customer", "CustomerID", id, Object.keys(customer), Object.values(customer));
+            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
             if (!update) {
                 return res.status(404).json({ error: 'Staff member not found' });
             }
