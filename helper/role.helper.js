@@ -75,7 +75,6 @@ const createStylist = async (user, body) => {
         address: body.address,
         level: body.level,
         certificateURL: body.certificateURL,
-        salaryID: body.salaryID,
         userID: user.userID
     };
     return await baseModel.create("Stylist", Object.keys(newStylist), Object.values(newStylist));
