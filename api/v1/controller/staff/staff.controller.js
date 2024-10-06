@@ -1,23 +1,16 @@
 const baseModel = require("../../../../model/base.model");
+const table = require("../../../../model/table/staff.table");
 
+// Get staff details by ID
 module.exports.getStaffDetail = async (req, res) => {
-    const id = req.params.id;
-
-    // Validate the ID parameter
-    if (!id) {
-        return res.status(400).json({ error: 'ID is required' });
-    }
+    const id = "ST001"; // Hardcoded ID for demonstration
 
     try {
-        // Call the findById method from the base model
-        const staff = await baseModel.findById('actor', 'actor_id', id);
-        // Check if a staff member was found
+        const staff = await baseModel.findById(table.name, table.columnId, id);
         if (!staff) {
             return res.status(404).json({ error: 'Staff member not found' });
         }
-        // Log the retrieved staff member for debugging purposes
         console.log('Retrieved Staff Member:', staff);
-        // Send the staff member details as the response with 200 status
         return res.status(200).json(staff);
     } catch (error) {
         console.error("Error retrieving staff member:", error);
@@ -25,28 +18,20 @@ module.exports.getStaffDetail = async (req, res) => {
     }
 };
 
+// Update staff member details
 module.exports.updateStaff = async (req, res) => {
-    const id = req.params.id;
+    const id = "ST001"; // Hardcoded ID for demonstration
 
     // This is just a demo for testing. In production, get these from req.body
-    const columns = ["first_name"];
-    const values = ["tan cuc"];
-
-    // Validate the ID parameter
-    if (!id) {
-        return res.status(400).json({ error: 'ID is required' });
-    }
+    const columns = [table.columns.fullName]; // Example column
+    const values = ["tan nhu cc"]; // Example value
 
     try {
-        // Call the update method from the base model
-        const updatedStaff = await baseModel.update('actor', 'actor_id', id, columns, values);
-        // Check if the update was successful
+        const updatedStaff = await baseModel.update(table.name, table.columnId, id, columns, values);
         if (!updatedStaff) {
             return res.status(404).json({ error: 'Staff member not found' });
         }
-        // Log the updated staff member for debugging purposes
         console.log('Updated Staff Member:', updatedStaff);
-        // Send the updated staff member details as the response with 200 status
         return res.status(200).json(updatedStaff);
     } catch (error) {
         console.error("Error updating staff member:", error);
@@ -54,20 +39,37 @@ module.exports.updateStaff = async (req, res) => {
     }
 };
 
+module.exports.softDel = async (req, res) => {
+    const id = "ST001"; // Hardcoded ID for demonstration
+
+    // This is just a demo for testing. In production, get these from req.body
+    const columns = [table.columns.deleted]; // Example column
+    const values = [false]; // Example value
+
+    try {
+        const updatedStaff = await baseModel.update(table.name, table.columnId, id, columns, values);
+        if (!updatedStaff) {
+            return res.status(404).json({ error: 'Staff member not found' });
+        }
+        console.log('Updated Staff Member:', updatedStaff);
+        return res.status(200).json(updatedStaff);
+    } catch (error) {
+        console.error("Error updating staff member:", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+// Get all staff members
 module.exports.getAllStaff = async (req, res) => {
     try {
-        const staffList = await baseModel.find("actor");
-        // Check if the staff list is empty
+        const staffList = await baseModel.find(table.name);
         if (!staffList || staffList.length === 0) {
             return res.status(404).json({ error: 'No staff members found' });
         }
-        // Log the retrieved staff list for debugging purposes
         console.log('Retrieved Staff List:', staffList);
-        // Send the staff list details as the response with 200 status
         return res.status(200).json(staffList);
     } catch (error) {
         console.error("Error retrieving staff list:", error);
         return res.status(500).json({ error: error.message });
     }
 };
-
