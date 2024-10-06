@@ -98,12 +98,7 @@ const customerController = {
 
     getAll: async (req, res) => {
         try {
-            const customerList = await baseModel.findWithConditions(
-                "Customer", undefined, 
-                { 
-                  conditions: [{ column: "deleted", value: false }],
-                }
-              );
+            const customerList = await baseModel.find("Customer");
 
             if (!customerList || customerList.length === 0) {
                 return res.status(404).json({ 

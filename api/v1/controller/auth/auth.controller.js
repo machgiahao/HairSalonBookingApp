@@ -71,7 +71,7 @@ const authController = {
                 })
             }
             // Generate Token
-            const accessTokenStr = generate.generateAccessToken(user);
+            const accessToken = generate.generateAccessToken(user);
             const refreshTokenStr = generate.generateRefreshToken(user);
             // Save refresh token in DB
             await baseModel.update("Users", "phoneNumber", user.phoneNumber, ["refreshToken"], [refreshTokenStr]);
@@ -90,7 +90,7 @@ const authController = {
             return res.status(200).json({
                 success: true,
                 actor: actorByRole,
-                records: {...others, accessTokenStr}
+                records: {...others, accessToken}
             })
         } catch (error) {
             console.log(error)

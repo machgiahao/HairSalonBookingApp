@@ -38,7 +38,7 @@ const roleService = {
 // createCustomer
 const createCustomer = async (user, body) => {
     const newCustomer = {
-        avatar: body.avataURL,
+        avatar: body.avatar,
         fullName: body.fullName,
         yob: body.yob,
         email: body.email,
@@ -52,7 +52,7 @@ const createCustomer = async (user, body) => {
 // createManager
 const createManager = async (user, body) => {
     const newManager = {
-        avatar: body.avataURL,
+        avatar: body.avatar,
         fullName: body.fullName,
         yob: body.yob,
         email: body.email,
@@ -67,7 +67,7 @@ const createManager = async (user, body) => {
 const createStylist = async (user, body) => {
 
     const newStylist = {
-        avatar: body.avataURL,
+        avatar: body.avatar,
         fullName: body.fullName,
         yob: body.yob,
         email: body.email,
@@ -83,7 +83,7 @@ const createStylist = async (user, body) => {
 // createStaff
 const createStaff = async (user, body) => {
     const newStaff = {
-        avatar: body.avataURL,
+        avatar: body.avatar,
         fullName: body.fullName,
         yob: body.yob,
         email: body.email,
