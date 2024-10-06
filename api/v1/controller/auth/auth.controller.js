@@ -22,11 +22,11 @@ const authController = {
 
             // Create user 
             const newUser = {
-                Avatar: req.body.Avatar,
-                Role: req.body.Role || "Customer",
-                Email: req.body.Email,
-                Password: hashed,
-                PhoneNumber: req.body.PhoneNumber,
+                avatar: req.body.Avatar,
+                role: req.body.Role || "Customer",
+                email: req.body.Email,
+                password: hashed,
+                phoneNumber: req.body.PhoneNumber,
             }
             const user = await baseModel.create("Users", Object.keys(newUser), Object.values(newUser));
             const userByRole = await roleHelper.handleRole(user, req.body);        
