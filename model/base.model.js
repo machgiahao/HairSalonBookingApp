@@ -121,7 +121,7 @@
           columns.length + 1
         } RETURNING *`;
         const result = await pool.query(query, [...values, idValue]);
-        return result.rows;
+        return result.rows[0];
       } catch (error) {
         console.error("Error executing update:", error);
         throw new Error(`Update operation failed: ${error.message}`);

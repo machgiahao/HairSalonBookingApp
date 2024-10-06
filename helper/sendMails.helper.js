@@ -74,4 +74,3 @@ module.exports.sendMail = async (email, subject, html) => {
         throw error; // Re-throw the error for upstream handling
     }
 };
-
