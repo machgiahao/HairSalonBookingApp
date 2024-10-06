@@ -9,7 +9,7 @@ const authController = {
     register: async (req, res) => {
         try {
             // Kiểm tra dữ liệu đầu vào
-            const validateError = validate.validateInput(req.body);
+            const validateError = validate.validateInputField(req.body.password);
             if (validateError) {
                 return res.status(400).json({
                     success: false,
@@ -22,9 +22,7 @@ const authController = {
 
             // Create user 
             const newUser = {
-                avatar: req.body.avatar,
                 role: req.body.role || "Customer",
-                email: req.body.email,
                 password: hashed,
                 phoneNumber: req.body.phoneNumber,
             }

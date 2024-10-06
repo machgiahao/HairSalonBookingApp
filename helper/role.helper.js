@@ -38,8 +38,12 @@ const roleService = {
 // createCustomer
 const createCustomer = async (user, body) => {
     const newCustomer = {
-        loyaltyPoints: body.loyaltyPoints,
+        avatar: body.avataURL,
+        fullName: body.fullName,
         yob: body.yob,
+        email: body.email,
+        gender: body.gender,
+        loyaltyPoints: body.loyaltyPoints,
         userID: user.userID,
     };
     return await baseModel.create("Customer", Object.keys(newCustomer), Object.values(newCustomer));
@@ -48,11 +52,13 @@ const createCustomer = async (user, body) => {
 // createManager
 const createManager = async (user, body) => {
     const newManager = {
-        avatarURL: body.avataURL,
+        avatar: body.avataURL,
+        fullName: body.fullName,
         yob: body.yob,
+        email: body.email,
         gender: body.gender,
         address: body.address,
-        userID: user.UserID,
+        userID: user.userID,
     };
     return await baseModel.create("Manager", Object.keys(newManager), Object.values(newManager));
 };
@@ -61,12 +67,15 @@ const createManager = async (user, body) => {
 const createStylist = async (user, body) => {
 
     const newStylist = {
-        avatarURL: body.avataURL,
+        avatar: body.avataURL,
+        fullName: body.fullName,
         yob: body.yob,
+        email: body.email,
         gender: body.gender,
         address: body.address,
         level: body.level,
         certificateURL: body.certificateURL,
+        salaryID: body.salaryID,
         userID: user.userID
     };
     return await baseModel.create("Stylist", Object.keys(newStylist), Object.values(newStylist));
@@ -75,11 +84,13 @@ const createStylist = async (user, body) => {
 // createStaff
 const createStaff = async (user, body) => {
     const newStaff = {
-        avatarURL: body.avataURL,
+        avatar: body.avataURL,
+        fullName: body.fullName,
         yob: body.yob,
+        email: body.email,
         gender: body.gender,
         address: body.address,
-        baseSalary: body.baseSalary,
+        salaryID: body.salaryID,
         userID: user.userID
     };
     return await baseModel.create("Staff", Object.keys(newStaff), Object.values(newStaff));

@@ -34,7 +34,7 @@ const customerController = {
     update: async (req, res) => {
         try {
             const id = req.params.id;
-
+            
             if(!id) {
                 return res.status(400).json({
                     success: false,
@@ -42,10 +42,12 @@ const customerController = {
                 })
             }
             
-            const customer = {
-                fullName: req.body.fullName
+            const userUpdate = {
+                fullName: req.body.fullName,
+                yob: req.body.yob
             }        
-            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
+
+            const update = await baseModel.update("User", "userID", id, Object.keys(user), Object.values(user));
             if (!update) {
                 return res.status(404).json({ 
                     success: false,
