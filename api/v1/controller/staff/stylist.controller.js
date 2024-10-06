@@ -1,70 +1,86 @@
 const baseModel = require("../../../../model/base.model");
+const table = require("../../../../model/table/stylist.table");
 
+// Get stylist details by ID
 module.exports.getStylistDetail = async (req, res) => {
     const id = req.params.id;
 
-    // Validate the ID parameter
-    if (!id) {
-        return res.status(400).json({ error: 'ID is required' });
-    }
-
     try {
-        // Call the findById method from the base model
-        const stylist = await baseModel.findById('actor', 'actor_id', id);
-        // Check if a stylist was found
+        const stylist = await baseModel.findById(table.name, table.columns.stylistID, id);
         if (!stylist) {
             return res.status(404).json({ error: 'Stylist not found' });
         }
-        // Log the retrieved stylist for debugging purposes
         console.log('Retrieved Stylist:', stylist);
-        // Send the stylist details as the response with 200 status
-        return res.status(200).json(stylist);
+        return res.status(200).json({ data: { user: stylist } });
     } catch (error) {
         console.error("Error retrieving stylist:", error);
         return res.status(500).json({ error: error.message });
     }
 };
 
+// Update stylist details
 module.exports.updateStylist = async (req, res) => {
     const id = req.params.id;
 
-    // This is just a demo for testing. In production, get these from req.body
-    const columns = ["first_name"];
-    const values = ["tan cuc"]; // Change this to the appropriate value as needed
+    // Initialize arrays to hold the columns and values to update
+    const columns = [];
+    const values = [];
 
-    // Validate the ID parameter
-    if (!id) {
-        return res.status(400).json({ error: 'ID is required' });
+    // Loop through req.body keys and push corresponding columns and values
+    for (const key in req.body) {
+        if (table.columns[key] !== undefined) {  // Ensure the key is a valid column
+            columns.push(table.columns[key]);
+            values.push(req.body[key]);
+        }
+    }
+
+    if (columns.length === 0) {
+        return res.status(400).json({ error: 'No valid fields provided for update' });
     }
 
     try {
-        // Call the update method from the base model
-        const updatedStylist = await baseModel.update('actor', 'actor_id', id, columns, values);
-        // Check if the update was successful
+        const updatedStylist = await baseModel.update(table.name, table.columns.stylistID, id, columns, values);
         if (!updatedStylist) {
             return res.status(404).json({ error: 'Stylist not found' });
         }
-        // Log the updated stylist for debugging purposes
         console.log('Updated Stylist:', updatedStylist);
-        // Send the updated stylist details as the response with 200 status
-        return res.status(200).json(updatedStylist);
+        return res.status(200).json({ data: { user: updatedStylist } });
     } catch (error) {
         console.error("Error updating stylist:", error);
         return res.status(500).json({ error: error.message });
     }
 };
 
+// Soft delete stylist (toggle deleted status)
+module.exports.softDel = async (req, res) => {
+    const id = req.params.id;
+    const deleted = !req.body.deleted; // Reverse the current deleted value
+
+    const columns = [table.columns.deleted]; 
+    const values = [deleted]; 
+
+    try {
+        const updatedStylist = await baseModel.update(table.name, table.columns.stylistID, id, columns, values);
+        if (!updatedStylist) {
+            return res.status(404).json({ error: 'Stylist not found' });
+        }
+        console.log('Updated Stylist (Soft Delete):', updatedStylist);
+        return res.status(200).json({ data: { user: updatedStylist } });
+    } catch (error) {
+        console.error("Error updating stylist (soft delete):", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+// Get all stylists
 module.exports.getAllStylists = async (req, res) => {
     try {
-        const stylistList = await baseModel.find("actor");
-        // Check if the stylist list is empty
+        const stylistList = await baseModel.find(table.name);
         if (!stylistList || stylistList.length === 0) {
             return res.status(404).json({ error: 'No stylists found' });
         }
-        // Log the retrieved stylist list for debugging purposes
         console.log('Retrieved Stylist List:', stylistList);
-        // Send the stylist list details as the response with 200 status
-        return res.status(200).json(stylistList);
+        return res.status(200).json({ data: { users: stylistList } });
     } catch (error) {
         console.error("Error retrieving stylist list:", error);
         return res.status(500).json({ error: error.message });

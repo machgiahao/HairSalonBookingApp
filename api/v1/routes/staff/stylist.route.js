@@ -11,4 +11,7 @@ route.patch("/update/:id", stylistController.updateStylist);
 // Get all the stylists from the database
 route.get("/getAll/", stylistController.getAllStylists);
 
+//soft delete stylist by send param id
+route.delete("/softDel/:id",stylistController.softDel);
+
 module.exports = route;
