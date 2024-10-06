@@ -4,28 +4,28 @@ const customerController = {
     detail: async (req, res) => {
         try {
             const id = req.params.id;
-            console.log(id)
+
             if (!id) {
                 return res.status(400).json({
-                    success: "fail",
+                    success: false,
                     msg: "ID is required"
                 })
             }
-            const customer = await baseModel.findById("Customer", "CustomerID", id);
+            const customer = await baseModel.findById("Customer", "customerID", id);
             if (!customer) {
                 return res.status(400).json({
-                    success: "fail",
+                    success: false,
                     msg: "Customer not found"
                 })
             }
             return res.status(200).json({
-                success: "true",
+                success: true,
                 customer: customer
             })
 
         } catch (error) {
             return res.status(500).json({
-                success: "fail",
+                success: false,
                 msg: "Internal server error"
             })
         }
@@ -37,25 +37,28 @@ const customerController = {
 
             if(!id) {
                 return res.status(400).json({
-                    success: "fail",
+                    success: false,
                     msg: "ID is required"
                 })
             }
             
             const customer = {
-                FullName: req.body.fullName
+                fullName: req.body.fullName
             }        
-            const update = await baseModel.update("Customer", "CustomerID", id, Object.keys(customer), Object.values(customer));
+            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
             if (!update) {
-                return res.status(404).json({ error: 'Staff member not found' });
+                return res.status(404).json({ 
+                    success: false,
+                    msg: 'Update fail' 
+                });
             }
             res.status(200).json({
-                success: "true",
+                success: true,
                 msg: "Update successfully"
             })
         } catch (error) {
             return res.status(500).json({
-                success: "fail",
+                success: false,
                 msg: "Internal server error"
             })
         }
@@ -67,25 +70,27 @@ const customerController = {
 
             if(!id) {
                 return res.status(400).json({
-                    success: "fail",
+                    success: false,
                     msg: "ID is required"
                 })
             }
             const customer = {
-                Deleted: "true"
+                deleted: true
             }        
-            const update = await baseModel.update("Customer", "CustomerID", id, Object.keys(customer), Object.values(customer));
+            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
             if (!update) {
-                return res.status(404).json({ error: 'Staff member not found' });
+                return res.status(404).json({ 
+                    success: false, 
+                    msg: "Delete fail" });
             }
             res.status(200).json({
-                success: "true",
+                success: true,
                 msg: "Delete successfully"
             })
             
         } catch (error) {
             return res.status(500).json({
-                success: "fail",
+                success: false,
                 msg: "Internal server error"
             })
         }
@@ -96,17 +101,20 @@ const customerController = {
             const customerList = await baseModel.find("Customer")
 
             if (!customerList || customerList.length === 0) {
-                return res.status(404).json({ error: 'No customer found' });
+                return res.status(404).json({ 
+                    success: false, 
+                    msg: 'No customer found' 
+                });
             }
 
             res.status(200).json({
-                success: "true",
+                success: true,
                 customerList: customerList 
             })
 
         } catch (error) {
             return res.status(500).json({
-                success: "fail",
+                success: false,
                 msg: "Internal server error"
             })
         }
