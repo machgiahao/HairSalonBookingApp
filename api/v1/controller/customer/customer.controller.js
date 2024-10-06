@@ -42,17 +42,15 @@ const customerController = {
                 })
             }
             
-            const userUpdate = {
+            const customer = {
                 fullName: req.body.fullName,
-                yob: req.body.yob
+                avatar: req.body.avatar,
+                email: req.body.email,
+                loyaltyPoints: req.body.loyaltyPoints,
             }        
-
-            const update = await baseModel.update("User", "userID", id, Object.keys(user), Object.values(user));
+            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
             if (!update) {
-                return res.status(404).json({ 
-                    success: false,
-                    msg: 'Update fail' 
-                });
+                return res.status(404).json({ error: 'Customer not found' });
             }
             res.status(200).json({
                 success: true,
@@ -100,7 +98,12 @@ const customerController = {
 
     getAll: async (req, res) => {
         try {
-            const customerList = await baseModel.find("Customer")
+            const customerList = await baseModel.findWithConditions(
+                "Customer", undefined, 
+                { 
+                  conditions: [{ column: "deleted", value: false }],
+                }
+              );
 
             if (!customerList || customerList.length === 0) {
                 return res.status(404).json({ 
