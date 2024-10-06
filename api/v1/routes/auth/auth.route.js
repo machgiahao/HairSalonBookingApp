@@ -6,7 +6,7 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.post("/logout", authController.logout);
 router.post("/refresh", authController.requestRefreshToken);
-// router.post("/forgot", authController.requestRefreshToken);
+// router.post("/changePassword", authController.changePassword);
 
 
 module.exports = router;
