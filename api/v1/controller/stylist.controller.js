@@ -60,12 +60,14 @@ module.exports.softDel = async (req, res) => {
     const values = [deleted]; 
 
     try {
-        const updatedStylist = await baseModel.update(table.name, table.columns.stylistID, id, columns, values);
-        if (!updatedStylist) {
+        let stylist = await baseModel.findById(table.name, table.columns.stylistID, id);
+        if (!stylist) {
             return res.status(404).json({ error: 'Stylist not found' });
         }
-        console.log('Updated Stylist (Soft Delete):', updatedStylist);
-        return res.status(200).json({ data: { user: updatedStylist } });
+        const deleted = !stylist.deleted;
+        stylist = await baseModel.update(table.name, table.columns.stylistID, id, [table.columns.deleted], [deleted]);
+        console.log('Updated Stylist (Soft Delete):', stylist);
+        return res.status(200).json({ data: { user: stylist } });
     } catch (error) {
         console.error("Error updating stylist (soft delete):", error);
         return res.status(500).json({ error: error.message });
