@@ -1,5 +1,5 @@
 const express = require("express");
-const stylistController = require("../../controller/staff/stylist.controller"); 
+const stylistController = require("../controller/stylist.controller"); 
 const route = express.Router();
 
 // Get the detail of a stylist by sending param id

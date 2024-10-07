@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
-const baseModel = require("../../../../model/base.model");
-const validate = require("../../../../validates/validateInput");
-const generate = require("../../../../helper/generate.helper")
-const roleHelper = require("../../../../helper/role.helper");
+const baseModel = require("../../../model/base.model");
+const validate = require("../../../validates/validateInput");
+const generate = require("../../../helper/generate.helper")
+const roleHelper = require("../../../helper/role.helper");
 const jwt = require("jsonwebtoken")
 
 const authController = {

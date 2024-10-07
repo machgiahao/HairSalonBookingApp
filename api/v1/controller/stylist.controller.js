@@ -1,5 +1,5 @@
-const baseModel = require("../../../../model/base.model");
-const table = require("../../../../model/table/stylist.table");
+const baseModel = require("../../../model/base.model");
+const table = require("../../../model/table/stylist.table");
 
 // Get stylist details by ID
 module.exports.getStylistDetail = async (req, res) => {

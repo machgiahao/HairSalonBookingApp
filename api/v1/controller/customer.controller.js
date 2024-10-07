@@ -1,4 +1,4 @@
-const baseModel = require("../../../../model/base.model")
+const baseModel = require("../../../model/base.model")
 
 const customerController = {
     detail: async (req, res) => {

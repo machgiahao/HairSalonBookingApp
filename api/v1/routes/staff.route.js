@@ -1,5 +1,5 @@
 const express = require("express");
-const staffController = require("../../controller/staff/staff.controller");
+const staffController = require("../controller/staff.controller");
 const route = express.Router();
 
 //get the detail from staff by send param id

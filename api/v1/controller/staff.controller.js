@@ -1,5 +1,5 @@
-const baseModel = require("../../../../model/base.model");
-const table = require("../../../../model/table/staff.table");
+const baseModel = require("../../../model/base.model");
+const table = require("../../../model/table/staff.table");
 
 // Get staff details by ID
 module.exports.getStaffDetail = async (req, res) => {

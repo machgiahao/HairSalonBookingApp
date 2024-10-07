@@ -1,4 +1,4 @@
-const customerController = require("../../controller/customer/customer.controller");
+const customerController = require("../controller/customer.controller");
 const router = require("express").Router();
 
 router.get("/detail/:id", customerController.detail)
