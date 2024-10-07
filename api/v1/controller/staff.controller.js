@@ -54,18 +54,15 @@ module.exports.updateStaff = async (req, res) => {
 // Soft delete staff member (toggle deleted status)
 module.exports.softDel = async (req, res) => {
     const id = req.params.id;
-    const deleted = !req.body.deleted; // Reverse the current deleted value
-
-    const columns = [table.columns.deleted]; 
-    const values = [deleted]; 
-
     try {
-        const updatedStaff = await baseModel.update(table.name, table.columns.staffID, id, columns, values);
-        if (!updatedStaff) {
+        let staff = await baseModel.findById(table.name, table.columns.staffID, req.params.id);
+        if (!staff) {
             return res.status(404).json({ error: 'Staff member not found' });
         }
-        console.log('Updated Staff Member (Soft Delete):', updatedStaff);
-        return res.status(200).json({ data: { user: updatedStaff } });
+        const deleted = !staff.deleted;
+        staff = await baseModel.update(table.name, table.columns.staffID, req.params.id, [table.columns.deleted], [deleted]);
+        console.log('Updated Staff Member (Soft Delete):', staff);
+        return res.status(200).json({ data: { user: staff } });
     } catch (error) {
         console.error("Error updating staff member (soft delete):", error);
         return res.status(500).json({ error: error.message });
