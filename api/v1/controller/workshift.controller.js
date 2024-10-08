@@ -1,5 +1,5 @@
 const baseModel = require("../../../model/base.model");
-const table = require("../../../model/table/workship.table");
+const workshift = require("../../../model/table/workshift.table");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -9,7 +9,7 @@ module.exports.detail = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const workship = await baseModel.findById(table.name, table.columns.workShiftID, id);
+        const workship = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
         if (!workship) {
             return handleResponse(res, 404, { error: 'Workship not found' });
         }
@@ -23,19 +23,18 @@ module.exports.detail = async (req, res) => {
 
 // Create a new workship
 module.exports.create = async (req, res) => {
-    const { workShiftID, shiftName, startTime, endTime, deleted } = req.body;
     const columns = [
-        table.columns.workShiftID,
-        table.columns.shiftName,
-        table.columns.startTime,
-        table.columns.endTime,
-        table.columns.deleted
+        workshift.columns.workShiftID,
+        workshift.columns.shiftName,
+        workshift.columns.startTime,
+        workshift.columns.endTime,
+        workshift.columns.deleted
     ];
     
     const values = columns.map(col => req.body[col] || null); // Ensure values map to columns
 
     try {
-        const workship = await baseModel.create(table.name, columns, values);
+        const workship = await baseModel.create(workshift.name, columns, values);
         if (!workship) {
             return handleResponse(res, 400, { error: 'Failed to create workship' });
         }
@@ -56,8 +55,8 @@ module.exports.update = async (req, res) => {
     const values = [];
 
     for (const key in req.body) {
-        if (table.columns[key] !== undefined) {  // Ensure the key is a valid column
-            columns.push(table.columns[key]);
+        if (workshift.columns[key] !== undefined) {  // Ensure the key is a valid column
+            columns.push(workshift.columns[key]);
             values.push(req.body[key]);
         }
     }
@@ -67,7 +66,7 @@ module.exports.update = async (req, res) => {
     }
 
     try {
-        const updatedWorkship = await baseModel.update(table.name, table.columns.workShiftID, id, columns, values);
+        const updatedWorkship = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, columns, values);
         if (!updatedWorkship) {
             return handleResponse(res, 404, { error: 'Workship not found' });
         }
@@ -85,12 +84,12 @@ module.exports.softDel = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        let workship = await baseModel.findById(table.name, table.columns.workShiftID, id);
+        let workship = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
         if (!workship) {
             return handleResponse(res, 404, { error: 'Workship not found' });
         }
         const deleted = !workship.deleted; // Toggle deleted status
-        workship = await baseModel.update(table.name, table.columns.workShiftID, id, [table.columns.deleted], [deleted]);
+        workship = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, [workshift.columns.deleted], [deleted]);
         console.log('Updated Workship (Soft Delete):', workship);
         return handleResponse(res, 200, { data: { workship } });
     } catch (error) {
@@ -102,7 +101,7 @@ module.exports.softDel = async (req, res) => {
 // Get all workships
 module.exports.getAll = async (req, res) => {
     try {
-        const workshipList = await baseModel.find(table.name);
+        const workshipList = await baseModel.find(workshift.name);
         if (!workshipList || workshipList.length === 0) {
             return handleResponse(res, 404, { error: 'No workships found' });
         }
