@@ -5,12 +5,6 @@ const customerController = {
         try {
             const id = req.params.id;
 
-            if (!id) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "ID is required"
-                })
-            }
             const customer = await baseModel.findById("Customer", "customerID", id);
             if (!customer) {
                 return res.status(400).json({
@@ -68,12 +62,6 @@ const customerController = {
         try {
             const id = req.params.id;
 
-            if(!id) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "ID is required"
-                })
-            }
             const customer = {
                 deleted: true
             }        
