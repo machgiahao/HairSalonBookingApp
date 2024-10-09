@@ -12,7 +12,7 @@ const staffTable = {
         salaryID: "salaryID",
         userID: "userID",
         deleted: "deleted",
-    },
+    }
 };
 
 module.exports = staffTable;
