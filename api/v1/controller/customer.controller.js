@@ -1,4 +1,5 @@
 const baseModel = require("../../../model/base.model")
+const customerTable = require("../../../model/table/customer.controller")
 
 const customerController = {
     detail: async (req, res) => {
@@ -29,20 +30,21 @@ const customerController = {
         try {
             const id = req.params.id;
             
-            if(!id) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "ID is required"
-                })
+            const columns = [];
+            const values = [];
+
+            for (const key in req.body) {
+                if (customerTable.columns[key] !== undefined && req.body[key] !== "" ) {  // Ensure the key is a valid column
+                    columns.push(customerTable.columns[key]);
+                    if (key === 'loyaltyPoints') {
+                        values.push(parseFloat(req.body[key]));  
+                    } else {
+                        values.push(req.body[key]);  
+                    }
+                }
             }
-            
-            const customer = {
-                fullName: req.body.fullName,
-                avatar: req.body.avatar,
-                email: req.body.email,
-                loyaltyPoints: req.body.loyaltyPoints,
-            }        
-            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
+
+            const update = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, columns, values);
             if (!update) {
                 return res.status(404).json({ error: 'Customer not found' });
             }
