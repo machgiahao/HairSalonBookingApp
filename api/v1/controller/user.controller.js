@@ -46,7 +46,12 @@ const userController = {
             actorByRole: actorByRole,
             record: { ...others }
         })
+    },
+
+    changePassword: async (req, res) => {
+        
     }
+
 
 }
 
