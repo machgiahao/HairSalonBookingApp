@@ -165,9 +165,6 @@
       }
     },
 
-
-    
-
   };
 
   module.exports = baseModel;
