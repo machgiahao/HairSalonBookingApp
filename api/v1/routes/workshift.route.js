@@ -1,27 +1,27 @@
 const express = require("express");
-const workShipController = require("../controller/workshift.controller"); 
+const workshiftController = require("../controller/workshift.controller"); 
 const route = express.Router();
 
 // Route to create a new workship
-route.post("/create", workShipController.create);
+route.post("/create", workshiftController.create);
 
-route.post("/addStylist", workShipController.addStylistToWorkShift);
+route.post("/addStylist", workshiftController.addStylistToWorkShift);
 
 
 // Route to get all workships
-route.get("/getAll", workShipController.getAll);
+route.get("/getAll", workshiftController.getAll);
 
 // Route to get the details of a specific workship by ID
-route.get("/detail/:id", workShipController.detail);
+route.get("/detail/:id", workshiftController.detail);
 
 // Route to soft delete a workship by ID
-route.delete("/softDel/:id", workShipController.softDel);
+route.delete("/softDel/:id", workshiftController.softDel);
 
 // Route to update a workship by ID
-route.patch("/update/:id", workShipController.update);
+route.patch("/update/:id", workshiftController.update);
 
 //
-route.delete("/removeStylist", workShipController.removeStylistFromWorkShift);
+route.delete("/removeStylist", workshiftController.removeStylistFromWorkShift);
 
 
 // Export the routes for use in other parts of the application

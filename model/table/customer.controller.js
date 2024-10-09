@@ -1,18 +1,17 @@
-const staffTable = {
-    name: "Staff",
+const customerTable = {
+    name: "Customer",
     columns: {
-        staffID: "staffID", // ID column
+        customerID: "customerID", // ID column
         fullName: "fullName",
         avatar: "avatar",
         email: "email",
         yob: "yob",
         gender: "gender",
+        loyaltyPoints: "loyaltyPoints",
         address: "address",
-        hireDate: "hireDate",
-        salaryID: "salaryID",
         userID: "userID",
-        deleted: "deleted",
+        deleted: "deleted"
     }
-};
+}
 
-module.exports = staffTable;
+module.exports = customerTable;
