@@ -5,11 +5,15 @@ const route = express.Router();
 // Route to create a new workship
 route.post("/create", workshiftController.create);
 
+//
 route.post("/addStylist", workshiftController.addStylistToWorkShift);
 
 
 // Route to get all workships
 route.get("/getAll", workshiftController.getAll);
+
+// Route to get all workships of stylist
+route.get("/getWorkshfit/:id", workshiftController.getAllWorkshift);
 
 // Route to get the details of a specific workship by ID
 route.get("/detail/:id", workshiftController.detail);
@@ -20,7 +24,7 @@ route.delete("/softDel/:id", workshiftController.softDel);
 // Route to update a workship by ID
 route.patch("/update/:id", workshiftController.update);
 
-//
+//Remove stylist out of workshift
 route.delete("/removeStylist", workshiftController.removeStylistFromWorkShift);
 
 

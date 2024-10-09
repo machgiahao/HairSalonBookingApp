@@ -203,3 +203,22 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
         return handleResponse(res, 500, { error: "An internal server error occurred" });
     }
 };
+
+
+module.exports.getAllWorkshift = async (req, res) => {
+    try {
+        
+        const workshiftList = await baseModel.findWithConditions(stylistWorkshift.name,undefined,
+            [
+                {column:stylistWorkshift.columns.stylistID, value:req.params.id}
+            ]);
+        if (!workshiftList || workshiftList.length === 0) {
+            return handleResponse(res, 404, { error: 'No workshifts found' });
+        }
+        console.log('Retrieved Workshift List:', workshiftList);
+        return handleResponse(res, 200, { data: { workshifts: workshiftList } });
+    } catch (error) {
+        console.error("Error retrieving workshift list:", error);
+        return handleResponse(res, 500, { error: error.message });
+    }
+};
