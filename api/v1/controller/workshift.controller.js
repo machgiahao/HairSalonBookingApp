@@ -1,53 +1,52 @@
 const baseModel = require("../../../model/base.model");
 const workshift = require("../../../model/table/workshift.table");
-const stylistWorkshift = require("../../../model/table/stylistWorkship.table");
+const stylistWorkshift = require("../../../model/table/stylistWorkshift.table");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
-// Get workship details by ID
+//--------------------workshift--------------------------------
+// Get workshift details by ID
 module.exports.detail = async (req, res) => {
     const id = req.params.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const workship = await baseModel.findById(workship.name, workship.columns.workShiftID, id);
-        if (!workship) {
-            return handleResponse(res, 404, { error: 'Workship not found' });
+        const workshiftDetails = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
+        if (!workshiftDetails) {
+            return handleResponse(res, 404, { error: 'Workshift not found' });
         }
-        console.log('Retrieved Workship:', workship);
-        return handleResponse(res, 200, { data: { workship } });
+        console.log('Retrieved Workshift:', workshiftDetails);
+        return handleResponse(res, 200, { data: { workshiftDetails } });
     } catch (error) {
-        console.error("Error retrieving workship:", error);
+        console.error("Error retrieving workshift:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
-// Create a new workship
+// Create a new workshift
 module.exports.create = async (req, res) => {
-    const columns = [
-        workshift.columns.workShiftID,
-        workshift.columns.shiftName,
-        workshift.columns.startTime,
-        workshift.columns.endTime,
-        workshift.columns.deleted
-    ];
-    
-    const values = columns.map(col => req.body[col] ); // Ensure values map to columns
-
-    try {
-        const workshift = await baseModel.create(workshift.name, columns, values);
-        if (!workshift) {
-            return handleResponse(res, 400, { error: 'Failed to create workship' });
+    const columns = [];
+    const values = [];
+    for (const key in req.body) {
+        if (workshift.columns[key] !== undefined && key !== workshift.columns.workShiftID) {  
+            columns.push(workshift.columns[key]);
+            values.push(req.body[key]);
         }
-        console.log('Created Workship:', workshift);
-        return handleResponse(res, 201, { data: { workship: workshift } });
+    }
+    try {
+        const newWorkshift = await baseModel.create(workshift.name, columns, values);
+        if (!newWorkshift) {
+            return handleResponse(res, 400, { error: 'Failed to create workshift' });
+        }
+        console.log('Created Workshift:', newWorkshift);
+        return handleResponse(res, 201, { data: { newWorkshift } });
     } catch (error) {
-        console.error("Error creating workship:", error);
+        console.error("Error creating workshift:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
-// Update workship details
+// Update workshift details
 module.exports.update = async (req, res) => {
     const id = req.params.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
@@ -56,7 +55,7 @@ module.exports.update = async (req, res) => {
     const values = [];
 
     for (const key in req.body) {
-        if (workshift.columns[key] !== undefined) {  // Ensure the key is a valid column
+        if (workshift.columns[key] !== undefined && key !== workshift.columns.workShiftID) {  
             columns.push(workshift.columns[key]);
             values.push(req.body[key]);
         }
@@ -67,75 +66,140 @@ module.exports.update = async (req, res) => {
     }
 
     try {
-        const updatedWorkship = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, columns, values);
-        if (!updatedWorkship) {
-            return handleResponse(res, 404, { error: 'Workship not found' });
+        const updatedWorkshift = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, columns, values);
+        if (!updatedWorkshift) {
+            return handleResponse(res, 404, { error: 'Workshift not found' });
         }
-        console.log('Updated Workship:', updatedWorkship);
-        return handleResponse(res, 200, { data: { workship: updatedWorkship } });
+        console.log('Updated Workshift:', updatedWorkshift);
+        return handleResponse(res, 200, { data: { updatedWorkshift } });
     } catch (error) {
-        console.error("Error updating workship:", error);
+        console.error("Error updating workshift:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
-// Soft delete workship (toggle deleted status)
+// Soft delete workshift (toggle deleted status)
 module.exports.softDel = async (req, res) => {
     const id = req.params.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        let workship = await baseModel.findById(workship.name, workship.columns.workShiftID, id);
-        if (!workship) {
-            return handleResponse(res, 404, { error: 'Workship not found' });
+        let workshiftDetails = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
+        if (!workshiftDetails) {
+            return handleResponse(res, 404, { error: 'Workshift not found' });
         }
-        const deleted = !workship.deleted; // Toggle deleted status
-        workship = await baseModel.update(workship.name, workship.columns.workShiftID, id, [workship.columns.deleted], [deleted]);
-        console.log('Updated Workship (Soft Delete):', workship);
-        return handleResponse(res, 200, { data: { workship } });
+        const deleted = !workshiftDetails.deleted; 
+        workshiftDetails = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, [workshift.columns.deleted], [deleted]);
+        console.log('Updated Workshift (Soft Delete):', workshiftDetails);
+        return handleResponse(res, 200, { data: { workshiftDetails } });
     } catch (error) {
-        console.error("Error updating workship (soft delete):", error);
+        console.error("Error updating workshift (soft delete):", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
-// Get all workships
+// Get all workshifts
 module.exports.getAll = async (req, res) => {
     try {
-        const workshipList = await baseModel.find(workshift.name);
-        if (!workshipList || workshipList.length === 0) {
-            return handleResponse(res, 404, { error: 'No workships found' });
+        const workshiftList = await baseModel.find(workshift.name);
+        if (!workshiftList || workshiftList.length === 0) {
+            return handleResponse(res, 404, { error: 'No workshifts found' });
         }
-        console.log('Retrieved Workship List:', workshipList);
-        return handleResponse(res, 200, { data: { workships: workshipList } });
+        console.log('Retrieved Workshift List:', workshiftList);
+        return handleResponse(res, 200, { data: { workshifts: workshiftList } });
     } catch (error) {
-        console.error("Error retrieving workship list:", error);
+        console.error("Error retrieving workshift list:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
-module.exports.insertStylist =  async (req,res) => {
+//--------------------stylistWorkshift--------------------------------
 
-    const columns = [
-        stylistWorkshift.columns.stylistWorkShiftID,
-        stylistWorkshift.columns.stylistID,
-        stylistWorkshift.columns.workShiftID,
-        stylistWorkshift.columns.shiftDate,
-        stylistWorkshift.columns.status,
-        stylistWorkshift.columns.deleted,
-    ];
-    
-    const values = columns.map(col => req.body[col] ); // Ensure values map to columns
-
+// Add a Stylist to a WorkShift
+module.exports.addStylistToWorkShift = async (req, res) => {
     try {
-        const workship = await baseModel.create(stylistWorkshift.name, columns, values);
-        if (!workship) {
-            return handleResponse(res, 400, { error: 'Failed to insert stylist to workship' });
+        const columns = [];
+        const values = [];
+
+        for (const key in req.body) {
+            if (stylistWorkshift.columns[key] !== undefined && key !== stylistWorkshift.columns.stylistWorkShiftID) {
+                columns.push(stylistWorkshift.columns[key]);
+                values.push(req.body[key]);
+            }
         }
-        console.log('inserted Workship:', workship);
-        return handleResponse(res, 201, { data: { workship } });
+
+        if (columns.length === 0) {
+            return handleResponse(res, 400, { error: 'No valid fields provided for adding stylist to work shift' });
+        }
+
+        const stylistID = req.body[stylistWorkshift.columns.stylistID];
+        const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
+
+        console.log('Request Body:', req.body);
+        console.log('stylistID:', stylistID);
+        console.log('workShiftID:', workShiftID);
+
+        const existingEntry = await baseModel.findWithConditions(
+            stylistWorkshift.name,
+            undefined,
+            [
+                { column: stylistWorkshift.columns.stylistID, value: stylistID },
+                { column: stylistWorkshift.columns.workShiftID, value: workShiftID },
+            ],
+            ["AND"]
+        );
+
+        console.log('Final Query Result:', existingEntry);
+
+        if (existingEntry && existingEntry.length > 0) {
+            return handleResponse(res, 400, {
+                error: `Stylist ${existingEntry[0].stylistID} is already assigned to this work shift: ${existingEntry[0].workShiftID}`,
+            });
+        }
+
+        const newStylistWorkShift = await baseModel.create(stylistWorkshift.name, columns, values);
+        if (!newStylistWorkShift) {
+            return handleResponse(res, 400, { error: 'Failed to add stylist to work shift' });
+        }
+
+        console.log('Added Stylist to WorkShift:', newStylistWorkShift);
+        return handleResponse(res, 201, { data: { newStylistWorkShift } });
     } catch (error) {
-        console.error("Error inserted workship:", error);
+        console.error("Error adding stylist to work shift:", error);
         return handleResponse(res, 500, { error: error.message });
     }
-}
+};
+
+// Remove Stylist from a WorkShift
+module.exports.removeStylistFromWorkShift = async (req, res) => {
+    try {
+        const stylistID = req.body[stylistWorkshift.columns.stylistID];
+        const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
+
+        if (!stylistID || !workShiftID) {
+            return handleResponse(res, 400, { error: "Stylist ID or WorkShift ID missing" });
+        }
+
+        const existingEntry = await baseModel.findWithConditions(
+            stylistWorkshift.name,
+            undefined,
+            [
+                { column: stylistWorkshift.columns.stylistID, value: stylistID },
+                { column: stylistWorkshift.columns.workShiftID, value: workShiftID }
+            ]
+        );
+
+        if (!existingEntry || existingEntry.length === 0) {
+            return handleResponse(res, 404, { error: "No stylist found in this workshift" });
+        }
+
+        const stylistWorkShiftID = existingEntry[0][stylistWorkshift.columns.stylistWorkShiftID];
+        const result=await baseModel.deleteById(stylistWorkshift.name, stylistWorkshift.columns.stylistWorkShiftID, stylistWorkShiftID);
+        console.log(result);
+        return handleResponse(res, 200, { message: "Stylist removed from the work shift successfully" });
+        
+    } catch (error) {
+        console.error("Error removing stylist from work shift:", error);
+        return handleResponse(res, 500, { error: "An internal server error occurred" });
+    }
+};

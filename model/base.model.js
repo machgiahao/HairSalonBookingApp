@@ -38,37 +38,39 @@
       }
     },
 
-    findWithConditions: async (tableName,columns = ["*"],{ conditions = [], logicalOperators = ["AND"] } = {}) => {
+    findWithConditions: async (
+      tableName, 
+      columns = ["*"], 
+      conditions = [], 
+      logicalOperators = ["AND"]
+    ) => {
       try {
         const setColumns = columns.join(", ");
         let query = `SELECT ${setColumns} FROM "${tableName}"`;
         const values = [];
         const whereClauses = [];
-
+  
         if (conditions.length > 0) {
-          conditions.forEach((condition, i) => {
+          conditions.forEach((condition, index) => {
             const { column, value, operator = "=" } = condition;
-            if (value != null) {
-              let queryClause = `${column} ${operator} $${values.length + 1}`;
+  
+            if (value !== undefined && value !== null) {
+              whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
               values.push(value);
-
-              if (i < conditions.length - 1) {
-                queryClause += ` ${
-                  logicalOperators.length > i
-                    ? logicalOperators[i]
-                    : logicalOperators[0]
-                } `;
+  
+              if (index < conditions.length - 1) {
+                whereClauses.push(` ${logicalOperators[index] || "AND"} `);
               }
-              whereClauses.push(queryClause);
             }
           });
-
+  
           if (whereClauses.length > 0) {
-            query += ` WHERE ${whereClauses.join(" ")}`;
+            query += ` WHERE ${whereClauses.join("")}`;
           }
         }
-
-        return (await pool.query(query, values)).rows;
+  
+        const result = await pool.query(query, values);
+        return result.rows;
       } catch (error) {
         console.error("Error executing findWithConditions:", error);
         throw new Error(`Find with conditions failed: ${error.message}`);
@@ -154,7 +156,7 @@
 
     deleteById: async (tableName, idColumn, idValue) => {
       try {
-        const query = `DELETE FROM "${tableName}" WHERE ${idColumn} = $1`;
+        const query = `DELETE FROM "${tableName}" WHERE "${idColumn}" = $1`;
         await pool.query(query, [idValue]);
         return true;
       } catch (error) {
