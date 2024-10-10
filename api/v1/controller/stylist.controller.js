@@ -23,7 +23,7 @@ module.exports.getStylistDetail = async (req, res) => {
 
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     const columns = [];
@@ -55,7 +55,7 @@ module.exports.updateStylist = async (req, res) => {
 
 // Soft delete stylist (toggle deleted status)
 module.exports.softDel = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {

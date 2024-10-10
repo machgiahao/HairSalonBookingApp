@@ -7,7 +7,7 @@ const isValidId = require("../../../validates/reqIdParam.validate");
 //--------------------workshift--------------------------------
 // Get workshift details by ID
 module.exports.detail = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
@@ -48,7 +48,7 @@ module.exports.create = async (req, res) => {
 
 // Update workshift details
 module.exports.update = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     const columns = [];
@@ -80,7 +80,7 @@ module.exports.update = async (req, res) => {
 
 // Soft delete workshift (toggle deleted status)
 module.exports.softDel = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {

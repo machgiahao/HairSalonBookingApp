@@ -13,16 +13,16 @@ route.post("/addStylist", workshiftController.addStylistToWorkShift);
 route.get("/getAll", workshiftController.getAll);
 
 // Route to get all workships of stylist
-route.get("/getWorkshfit/:id", workshiftController.getAllWorkshift);
+route.get("/getWorkshfit", workshiftController.getAllWorkshift);
 
 // Route to get the details of a specific workship by ID
-route.get("/detail/:id", workshiftController.detail);
+route.get("/detail", workshiftController.detail);
 
 // Route to soft delete a workship by ID
-route.delete("/softDel/:id", workshiftController.softDel);
+route.delete("/softDel", workshiftController.softDel);
 
 // Route to update a workship by ID
-route.patch("/update/:id", workshiftController.update);
+route.patch("/update", workshiftController.update);
 
 //Remove stylist out of workshift
 route.delete("/removeStylist", workshiftController.removeStylistFromWorkShift);
