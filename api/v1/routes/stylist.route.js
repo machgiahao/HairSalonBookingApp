@@ -15,6 +15,6 @@ route.get("/getAll", stylistController.getAllStylists);
 //soft delete stylist by send param id
 route.delete("/softDel",stylistController.softDel);
 
-route.post("/upload", upload.single("image"), stylistController.uploadImg);
+// route.post("/upload", upload.single("image"), stylistController.uploadImg);
 
 module.exports = route;
