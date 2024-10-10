@@ -212,7 +212,7 @@ const authController = {
 
             const otpRequest = await baseModel.findWithConditions('OtpRequest', ['*'], conditions, ['AND']);
 
-            if (!otpRequest) {
+            if (!otpRequest || otpRequest.length === 0) {
                 return res.status(400).json({
                     success: false,
                     msg: "OTP code is invalid or expired"
