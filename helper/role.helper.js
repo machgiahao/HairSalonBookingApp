@@ -33,8 +33,6 @@ const roleService = {
     },
 };
 
-
-
 // createCustomer
 const createCustomer = async (user, body) => {
     const newCustomer = {
