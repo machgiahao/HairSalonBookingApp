@@ -160,7 +160,7 @@ const authController = {
             if (!user) {
                 return res.status(404).json({
                     success: false,
-                    msg: "Phone number is not exist"
+                    msg: "Email is not exist"
                 })
             }
 
@@ -178,7 +178,8 @@ const authController = {
 
             return res.status(200).json({
                 success: true,
-                msg: "OTP code has been sent to your email"
+                msg: "OTP code has been sent to your email",
+                email: email
             })
 
         } catch (error) {
@@ -198,7 +199,7 @@ const authController = {
             if (!user) {
                 return res.status(404).json({
                     success: false,
-                    msg: "Phone number is not exist"
+                    msg: "Email is not exist"
                 })
             }
 
