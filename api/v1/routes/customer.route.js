@@ -1,9 +1,9 @@
 const customerController = require("../controller/customer.controller");
 const router = require("express").Router();
 
-router.get("/detail/:id", customerController.detail)
-router.patch("/update/:id", customerController.update)
-router.delete("/delete/:id", customerController.delete)
+router.get("/detail", customerController.detail)
+router.patch("/update", customerController.update)
+router.delete("/delete", customerController.delete)
 router.get("/getAll", customerController.getAll)
 
 

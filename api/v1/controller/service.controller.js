@@ -4,7 +4,7 @@ const serviceTable = require("../../../model/table/service.table")
 const serviceController = {
     detail: async (req, res) => {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
 
             const service = await baseModel.findById("Service", "serviceID", id);
             if (!service) {
@@ -76,7 +76,7 @@ const serviceController = {
 
     update: async (req, res) => {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
 
             const columns = [];
             const values = [];
@@ -128,7 +128,7 @@ const serviceController = {
 
     delete: async (req, res) => {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
 
             const service = {
                 deleted: true

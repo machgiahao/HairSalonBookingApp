@@ -4,7 +4,7 @@ const customerTable = require("../../../model/table/customer.controller")
 const customerController = {
     detail: async (req, res) => {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
 
             const customer = await baseModel.findById("Customer", "customerID", id);
             if (!customer) {
@@ -28,7 +28,7 @@ const customerController = {
 
     update: async (req, res) => {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
             
             const columns = [];
             const values = [];
@@ -63,7 +63,7 @@ const customerController = {
 
     delete: async (req, res) => {
         try {
-            const id = req.params.id;
+            const id = req.query.id;
 
             const customer = {
                 deleted: true

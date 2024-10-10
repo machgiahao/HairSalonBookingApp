@@ -21,7 +21,7 @@ const verifyToken = async (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
     const role = req.user.role;
-    console.log(role);
+    
     if (role === "Customer") {
         return res.status(401).json({
             success: false,
