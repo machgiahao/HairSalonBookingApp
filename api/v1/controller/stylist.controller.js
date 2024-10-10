@@ -1,5 +1,6 @@
 const baseModel = require("../../../model/base.model");
 const table = require("../../../model/table/stylist.table");
+const cloudinary = require("../../../helper/cloudinary.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -20,6 +21,17 @@ module.exports.getStylistDetail = async (req, res) => {
         return handleResponse(res, 500, { error: error.message });
     }
 };
+
+module.exports.uploadImg = async(req,res)=>{
+    cloudinary.uploader.upload(req.file.path ,(err,resulst)=>{
+        if(err){
+            console.log(error);
+            return handleResponse(res, 500, { error: error.message });
+        }
+        return handleResponse(res, 200, { resulst: { user: resulst } });
+
+    })
+}
 
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {

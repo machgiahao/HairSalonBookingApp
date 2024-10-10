@@ -1,5 +1,6 @@
 const express = require("express");
 const stylistController = require("../controller/stylist.controller"); 
+const upload= require("../middleware/multer.middleware");
 const route = express.Router();
 
 // Get the detail of a stylist by sending param id
@@ -13,5 +14,7 @@ route.get("/getAll", stylistController.getAllStylists);
 
 //soft delete stylist by send param id
 route.delete("/softDel",stylistController.softDel);
+
+route.post("/upload", upload.single("image"), stylistController.uploadImg);
 
 module.exports = route;
