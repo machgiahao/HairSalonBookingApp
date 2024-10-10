@@ -64,8 +64,6 @@ const authController = {
                 })
             }
 
-            console.log(user)
-            console.log(req.body.password)
             const validPassword = await bcrypt.compare(req.body.password, user.password);
             if (!validPassword) {
                 return res.status(401).json({
@@ -158,7 +156,7 @@ const authController = {
         try {
             const email = req.body.email;
 
-            const user = await baseModel.findByColumn("Users", "email", email);
+            const user = await baseModel.findByField("Users", "email", email);
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -196,7 +194,7 @@ const authController = {
         try {
             const { email, otp, newPassword } = req.body;
 
-            const user = await baseModel.findByColumn("Users", "email", email);
+            const user = await baseModel.findByField("Users", "email", email);
             if (!user) {
                 return res.status(404).json({
                     success: false,

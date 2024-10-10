@@ -101,7 +101,7 @@ const baseModel = {
     }
   },
 
-  findByColumn: async (tableName, columnName, value) => {
+  findByField: async (tableName, columnName, value) => {
     try {
       const query = `SELECT * FROM "${tableName}" WHERE "${columnName}" = $1`;
       const result = await pool.query(query, [value]);
