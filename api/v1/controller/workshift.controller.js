@@ -210,7 +210,7 @@ module.exports.getAllWorkshift = async (req, res) => {
         
         const workshiftList = await baseModel.findWithConditions(stylistWorkshift.name,undefined,
             [
-                {column:stylistWorkshift.columns.stylistID, value:req.params.id}
+                {column:stylistWorkshift.columns.stylistID, value:req.query.id}
             ]);
         if (!workshiftList || workshiftList.length === 0) {
             return handleResponse(res, 404, { error: 'No workshifts found' });

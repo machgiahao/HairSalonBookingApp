@@ -5,7 +5,7 @@ const isValidId = require("../../../validates/reqIdParam.validate");
 
 // Get staff details by ID
 module.exports.getStaffDetail = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
@@ -23,7 +23,7 @@ module.exports.getStaffDetail = async (req, res) => {
 
 // Update staff member details
 module.exports.updateStaff = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     const columns = [];
@@ -55,7 +55,7 @@ module.exports.updateStaff = async (req, res) => {
 
 // Soft delete staff member (toggle deleted status)
 module.exports.softDel = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {

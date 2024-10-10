@@ -5,7 +5,7 @@ const isValidId = require("../../../validates/reqIdParam.validate");
 
 // Get stylist details by ID
 module.exports.getStylistDetail = async (req, res) => {
-    const id = req.params.id;
+    const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
