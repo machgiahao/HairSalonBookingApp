@@ -1,6 +1,9 @@
 const baseModel = require("../../../model/base.model");
 const table = require("../../../model/table/stylist.table");
-//const handleResponse = require("../../../helper/handleReponse.helper");
+
+
+
+const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
 // Get stylist details by ID
