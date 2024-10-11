@@ -176,6 +176,28 @@ const baseModel = {
     }
   },
 
+  findAllWithPhone: async (roleTable) => {
+    const query = `
+    SELECT 
+      r.*,  -- Lấy tất cả các cột của bảng Customer
+      u."phoneNumber"  -- Lấy cột phoneNumber của bảng Users
+    FROM 
+      "${roleTable}" r
+    JOIN 
+      "Users" u 
+    ON 
+      r."userID" = u."userID";
+  `;
+  try {
+    // Thực hiện truy vấn
+    const result = await pool.query(query);
+    
+    // Trả về kết quả
+    return result.rows;
+  } catch (err) {
+    console.error('Lỗi truy vấn:', err);
+  }
+  }
 };
 
 module.exports = baseModel;

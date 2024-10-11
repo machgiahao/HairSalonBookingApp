@@ -32,7 +32,8 @@ module.exports = (app) => {
     //STYLIST ROUTE
     app.use("/api/v1/workshift",workshiftRouter);
     
-    
+    //BOOKING ROUTE
+    app.use("/api/v1/booking",workshiftRouter);
 }
 
 

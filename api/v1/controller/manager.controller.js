@@ -36,11 +36,7 @@ const managerController = {
             for (const key in req.body) {
                 if (managerTable.columns[key] !== undefined && req.body[key] !== "" ) { 
                     columns.push(managerTable.columns[key]);
-                    // if (key === 'yob') {
-                    //     values.push(parseDate(req.body[key]));  
-                    // } else {
                         values.push(req.body[key]);  
-                    // }
                 }
             }
 
