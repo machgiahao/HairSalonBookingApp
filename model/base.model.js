@@ -68,6 +68,7 @@ const baseModel = {
           query += ` WHERE ${whereClauses.join("")}`;
         }
       }
+      console.log(query);
 
       const result = await pool.query(query, values);
       return result.rows;
@@ -86,13 +87,15 @@ const baseModel = {
   ) => {
     try {
       const setColumns = columns.join(", ");
-      let query = `SELECT ${setColumns} FROM "${tableName}"`;
+      let query = `SELECT ${setColumns} FROM "${tableName}"`; // Ensure the table name is quoted
       const values = [];
       const whereClauses = [];
   
       // Handle joins
       joins.forEach((join) => {
         const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+  
+        // Ensure table names and columns are properly quoted
         query += ` ${type} JOIN "${table}" ON ${on}`;
       });
   
@@ -115,7 +118,7 @@ const baseModel = {
           query += ` WHERE ${whereClauses.join("")}`;
         }
       }
-  
+      console.log(query);
       // Execute query
       const result = await pool.query(query, values);
       return result.rows;
@@ -124,6 +127,7 @@ const baseModel = {
       throw new Error(`Find with conditions failed: ${error.message}`);
     }
   },
+  
   
 
   findById: async (tableName, idColumn, idValue) => {
