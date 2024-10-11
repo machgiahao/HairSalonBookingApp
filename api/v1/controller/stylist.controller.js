@@ -5,22 +5,51 @@ const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
 // Get stylist details by ID
+// Get stylist details by ID using findWithConditionsJoin
 module.exports.getStylistDetail = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const stylist = await baseModel.findById(stylistTable.name, stylistTable.columns.stylistID, id);
-        if (!stylist) {
+        const columns = [];
+
+        // Select all columns from stylistTable
+        for (const key in stylistTable.columns) {
+            columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
+        }
+
+        // Select all columns from usersTable
+        for (const key in usersTable.columns) {
+            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
+        }
+
+        const stylistDetails = await baseModel.findWithConditionsJoin(
+            stylistTable.name,  // main table name
+            columns, // columns to select
+            [`"${stylistTable.name}"."${stylistTable.columns.stylistID}" = ?`], // condition (stylist ID)
+            [id], // condition values
+            [ // joins
+                {
+                    table: usersTable.name,
+                    on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                    type: "INNER"
+                }
+            ]
+        );
+
+        // If no stylist found
+        if (!stylistDetails || stylistDetails.length === 0) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
-        console.log('Retrieved Stylist:', stylist);
-        return handleResponse(res, 200, { data: { user: stylist } });
+
+        console.log('Retrieved Stylist Details:', stylistDetails);
+        return handleResponse(res, 200, { data: { user: stylistDetails[0] } }); // Assuming only one stylist is returned
     } catch (error) {
-        console.error("Error retrieving stylist:", error);
+        console.error("Error retrieving stylist details:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
+
 
 
 
