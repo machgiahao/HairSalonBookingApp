@@ -1,7 +1,6 @@
 const baseModel = require("../../../model/base.model");
-const stylist = require("../../../model/table/stylist.table");
-const users= require("../../../model/table/user.table");
-
+const stylistTable = require("../../../model/table/stylist.table");
+const usersTable= require("../../../model/table/user.table");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -11,7 +10,7 @@ module.exports.getStylistDetail = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const stylist = await baseModel.findById(stylist.name, stylist.columns.stylistID, id);
+        const stylist = await baseModel.findById(stylistTable.name, stylistTable.columns.stylistID, id);
         if (!stylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
@@ -23,16 +22,7 @@ module.exports.getStylistDetail = async (req, res) => {
     }
 };
 
-// module.exports.uploadImg = async(req,res)=>{
-//     cloudinary.uploader.upload(req.file.path ,(err,resulst)=>{
-//         if(err){
-//             console.log(error);
-//             return handleResponse(res, 500, { error: error.message });
-//         }
-//         return handleResponse(res, 200, { resulst: { user: resulst } });
 
-//     })
-// }
 
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
@@ -43,8 +33,8 @@ module.exports.updateStylist = async (req, res) => {
     const values = [];
 
     for (const key in req.body) {
-        if (stylist.columns[key] !== undefined) {  // Ensure the key is a valid column
-            columns.push(stylist.columns[key]);
+        if (stylistTable.columns[key] !== undefined) {  // Ensure the key is a valid column
+            columns.push(stylistTable.columns[key]);
             values.push(req.body[key]);
         }
     }
@@ -54,7 +44,7 @@ module.exports.updateStylist = async (req, res) => {
     }
 
     try {
-        const updatedStylist = await baseModel.update(stylist.name, stylist.columns.stylistID, id, columns, values);
+        const updatedStylist = await baseModel.update(stylistTable.name, stylistTable.columns.stylistID, id, columns, values);
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
@@ -72,12 +62,12 @@ module.exports.softDel = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        let stylist = await baseModel.findById(stylist.name, stylist.columns.stylistID, id);
+        let stylist = await baseModel.findById(stylistTable.name, stylistTable.columns.stylistID, id);
         if (!stylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
         const deleted = !stylist.deleted; // Toggle deleted status
-        stylist = await baseModel.update(stylist.name, stylist.columns.stylistID, id, [stylist.columns.deleted], [deleted]);
+        stylist = await baseModel.update(stylistTable.name, stylistTable.columns.stylistID, id, [stylistTable.columns.deleted], [deleted]);
         console.log('Updated Stylist (Soft Delete):', stylist);
         return handleResponse(res, 200, { data: { user: stylist } });
     } catch (error) {
@@ -91,21 +81,21 @@ module.exports.getAllStylists = async (req, res) => {
     try {
 
         const columns=[];
-        for(var key in stylist.columns){
-            columns.push(`"${stylist.name}"."${stylist.columns[key]}"`);
+        for(var key in stylistTable.columns){
+            columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
         }
-        for(var key in users.columns){
-            columns.push(`"${users.name}"."${users.columns[key]}"`);
+        for(var key in usersTable.columns){
+            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
         }
         const stylistList = await baseModel.findWithConditionsJoin(
-            stylist.name,  // main table name
+            stylistTable.name,  // main table name
             columns, // columns
             [],
             [], // logical operators (defaults to AND)
             [ // joins
               {
-                table: users.name,
-                on: `"${stylist.name}"."${stylist.columns.userID}" = "${users.name}"."${users.columns.userID}"`,
+                table: usersTable.name,
+                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
                 type: "INNER"
               }
             ]
