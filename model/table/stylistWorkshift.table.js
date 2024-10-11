@@ -4,7 +4,6 @@ const table = {
         stylistWorkShiftID: "stylistWorkShiftID", // ID column
         stylistID: "stylistID",
         workShiftID: "workShiftID",
-        shiftDate: "shiftDate",
         status:"status",
         deleted: "deleted"
     },

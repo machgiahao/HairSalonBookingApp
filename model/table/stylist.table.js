@@ -12,7 +12,6 @@ const table = {
         hireDate: "hireDate",
         userID: "userID",
         deleted: "deleted",
-        email:"email"
     },
 };
 
