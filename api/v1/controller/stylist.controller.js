@@ -11,44 +11,43 @@ module.exports.getStylistDetail = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
+        // Define the columns to retrieve from both tables
         const columns = [];
-
-        // Select all columns from stylistTable
         for (const key in stylistTable.columns) {
             columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
         }
-
-        // Select all columns from usersTable
         for (const key in usersTable.columns) {
             columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
         }
 
-        const stylistDetails = await baseModel.findWithConditionsJoin(
-            stylistTable.name,  // main table name
+        const stylistDetail = await baseModel.findWithConditionsJoin(
+            stylistTable.name, // main table (stylist)
             columns, // columns to select
-            [`"${stylistTable.name}"."${stylistTable.columns.stylistID}" = ?`], // condition (stylist ID)
-            [id], // condition values
+            [{ column: stylistTable.columns.stylistID, value: id }], // condition on stylistID
+            [], // logical operators (defaults to AND)
             [ // joins
-                {
-                    table: usersTable.name,
-                    on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                    type: "INNER"
-                }
+              {
+                table: usersTable.name, // join with users table
+                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                type: "INNER" // type of join
+              }
             ]
         );
 
-        // If no stylist found
-        if (!stylistDetails || stylistDetails.length === 0) {
+        // If no stylist found, return 404
+        if (!stylistDetail || stylistDetail.length === 0) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
 
-        console.log('Retrieved Stylist Details:', stylistDetails);
-        return handleResponse(res, 200, { data: { user: stylistDetails[0] } }); // Assuming only one stylist is returned
+        // Log and return the stylist detail with joined user data
+        console.log('Retrieved Stylist Detail with User Info:', stylistDetail);
+        return handleResponse(res, 200, { data: { user: stylistDetail[0] } });
     } catch (error) {
-        console.error("Error retrieving stylist details:", error);
+        console.error("Error retrieving stylist detail with join:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
+
 
 
 
