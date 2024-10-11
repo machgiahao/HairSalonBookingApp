@@ -54,6 +54,7 @@ const serviceController = {
         try {
             const service = {
                 serviceName: req.body.serviceName,
+                img: req.body.img,
                 type: req.body.type,
                 description: req.body.description,
                 price: parseFloat(req.body.price),
@@ -67,6 +68,7 @@ const serviceController = {
                 data: newService
             })
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
