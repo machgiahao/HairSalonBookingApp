@@ -77,6 +77,55 @@ const baseModel = {
     }
   },
 
+  findWithConditionsJoin: async (
+    tableName, 
+    columns = ["*"], 
+    conditions = [], 
+    logicalOperators = ["AND"], 
+    joins = []
+  ) => {
+    try {
+      const setColumns = columns.join(", ");
+      let query = `SELECT ${setColumns} FROM "${tableName}"`;
+      const values = [];
+      const whereClauses = [];
+  
+      // Handle joins
+      joins.forEach((join) => {
+        const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+        query += ` ${type} JOIN "${table}" ON ${on}`;
+      });
+  
+      // Handle conditions (WHERE clauses)
+      if (conditions.length > 0) {
+        conditions.forEach((condition, index) => {
+          const { column, value, operator = "=" } = condition;
+  
+          if (value !== undefined && value !== null) {
+            whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
+            values.push(value);
+  
+            if (index < conditions.length - 1) {
+              whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+            }
+          }
+        });
+  
+        if (whereClauses.length > 0) {
+          query += ` WHERE ${whereClauses.join("")}`;
+        }
+      }
+  
+      // Execute query
+      const result = await pool.query(query, values);
+      return result.rows;
+    } catch (error) {
+      console.error("Error executing findWithConditions:", error);
+      throw new Error(`Find with conditions failed: ${error.message}`);
+    }
+  },
+  
+
   findById: async (tableName, idColumn, idValue) => {
     try {
       const query = `SELECT * FROM "${tableName}" WHERE "${idColumn}" = $1`;
@@ -201,3 +250,4 @@ const baseModel = {
 };
 
 module.exports = baseModel;
+

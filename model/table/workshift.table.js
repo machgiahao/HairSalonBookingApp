@@ -5,7 +5,8 @@ const table = {
         shiftName: "shiftName",
         startTime: "startTime",
         endTime: "endTime",
-        deleted: "deleted"
+        deleted: "deleted",
+        shiftDay:"shiftDay"
     },
 };
 

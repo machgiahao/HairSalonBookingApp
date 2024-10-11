@@ -21,6 +21,17 @@ module.exports.getStylistDetail = async (req, res) => {
     }
 };
 
+// module.exports.uploadImg = async(req,res)=>{
+//     cloudinary.uploader.upload(req.file.path ,(err,resulst)=>{
+//         if(err){
+//             console.log(error);
+//             return handleResponse(res, 500, { error: error.message });
+//         }
+//         return handleResponse(res, 200, { resulst: { user: resulst } });
+
+//     })
+// }
+
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
     const id = req.query.id;
