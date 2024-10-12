@@ -69,7 +69,7 @@ module.exports.updateStylist = async (req, res) => {
     //}
 
     try {
-        const updatedStylist = await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req.body);
+        const updatedStylist = await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req);
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }

@@ -1,8 +1,6 @@
 const baseModel = require("../model/base.model");
-const handleResponse = require("../helper/handleReponse.helper");
- 
 
-module.exports = async (tables = [], idColumns = [], body) => {
+module.exports = async (tables = [], idColumns = [], req) => {
     const results = {}; // Initialize results object
 
     // Validate that tables and idColumns are the same length
@@ -14,32 +12,35 @@ module.exports = async (tables = [], idColumns = [], body) => {
         const table = tables[index];
         const idColumn = idColumns[index];
         let idValue;
-        const updatedData = {}; // Object to hold updated values
+        const columns=[];
+        const values = [];
 
         // Loop through the keys in `body`
-        for (const key in body) {
+        for (const key in req.body) {
             // Check if the key matches the ID column
             if (key === idColumn) {
-                idValue = body[key]; // Store the ID value
+                idValue = req.body[key]; // Store the ID value
             } else if (table.columns[key] !== undefined) {
                 // Store the key-value pairs for columns that exist in the current table
-                updatedData[table.columns[key]] = body[key]; // Key in the format of table's columns
-                results[table.columns[key]] = body[key]
+                columns.push(table.columns[key]);
+                values.push(req.body[key]);
+                results[table.columns[key]] = req.body[key]
             }
         }
 
-        // Ensure the ID value is set before attempting to update
+        // Ensure the ID value is set before attnpmempting to update
         if (!idValue) {
             throw new Error(`ID value for table ${table.name} is required and was not provided.`);
         }
 
         try {
             // Update the base model with the gathered data
-            const result = await baseModel.update(table.name, idColumn, idValue, Object.keys(updatedData), Object.values(updatedData));
+            const result = await baseModel.update(table.name, idColumn, idValue, columns, values);
+
             console.log(result);
         } catch (error) {
             console.error(`Error updating ${table.name}:`, error);
-            return handleResponse(res, 500, { error: error.message });
+            throw error; // Rethrow the error to be handled by the calling function
         }
     }
 

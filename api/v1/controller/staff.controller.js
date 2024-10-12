@@ -129,7 +129,7 @@ module.exports.getAllStaff = async (req, res) => {
 module.exports.updateStaff = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
-
+    
     // const columns = [];
     // const values = [];
 
@@ -145,7 +145,8 @@ module.exports.updateStaff = async (req, res) => {
     // }
 
     try {
-        const updatedStaff= await extractField([staffTable,usersTable],[staffTable.columns.staffID,usersTable.columns.userID],req.body)
+        
+        const updatedStaff= await extractField([staffTable,usersTable],[staffTable.columns.staffID,usersTable.columns.userID],req)
         if (!updatedStaff) {
             return handleResponse(res, 404, { error: 'Staff member not found' });
         }
