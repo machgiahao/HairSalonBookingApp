@@ -28,7 +28,7 @@ const uploadCloudMiddleware = (req, res, next) => {
 
             try {
                 let result = await streamUpload(req);
-                req.body.img = result.url; 
+                req.body[req.file.fieldname] = result.url; 
                 next();
             } catch (error) {
                 return res.status(500).send({ error: 'Failed to upload to Cloudinary' });
