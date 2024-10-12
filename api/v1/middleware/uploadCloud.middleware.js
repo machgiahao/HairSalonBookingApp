@@ -34,11 +34,9 @@ const uploadCloudMiddleware = (req, res, next) => {
                 return res.status(500).send({ error: 'Failed to upload to Cloudinary: ' + error });
             }
         } else {
-            // Handle case where there is no file uploaded
             console.log('No file uploaded, proceeding with the request body:', req.body);
         }
 
-        // Proceed to the next middleware or route handler
         next();
     });
 };
