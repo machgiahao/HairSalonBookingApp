@@ -2,6 +2,7 @@ const baseModel = require("../../../model/base.model");
 const stylistTable = require("../../../model/table/stylist.table");
 const usersTable= require("../../../model/table/user.table");
 const columnsRefactor = require("../../../helper/columnsRefactor.heper");
+const extractField =require("../../../helper/extractField.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -53,22 +54,22 @@ module.exports.updateStylist = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
-    const columns = [];
-    const values = [];
+    // const columns = [];
+    // const values = [];
 
-    for (const key in req.body) {
-        if (stylistTable.columns[key] !== undefined) {  // Ensure the key is a valid column
-            columns.push(stylistTable.columns[key]);
-            values.push(req.body[key]);
-        }
-    }
+    // for (const key in req.body) {
+    //     if (stylistTable.columns[key] !== undefined) {  // Ensure the key is a valid column
+    //         columns.push(stylistTable.columns[key]);
+    //         values.push(req.body[key]);
+    //     }
+    // }
 
-    if (columns.length === 0) {
-        return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-    }
+    // if (columns.length === 0) {
+    //     return handleResponse(res, 400, { error: 'No valid fields provided for update' });
+    //}
 
     try {
-        const updatedStylist = await baseModel.update(stylistTable.name, stylistTable.columns.stylistID, id, columns, values);
+        const updatedStylist = await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req);
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
