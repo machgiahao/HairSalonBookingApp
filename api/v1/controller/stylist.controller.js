@@ -1,6 +1,7 @@
 const baseModel = require("../../../model/base.model");
 const stylistTable = require("../../../model/table/stylist.table");
 const usersTable= require("../../../model/table/user.table");
+const columnsRefactor = require("../../../helper/columnsRefactor.heper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -12,13 +13,8 @@ module.exports.getStylistDetail = async (req, res) => {
 
     try {
         // Define the columns to retrieve from both tables
-        const columns = [];
-        for (const key in stylistTable.columns) {
-            columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
-        }
-        for (const key in usersTable.columns) {
-            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
-        }
+        const columns = columnsRefactor(stylistTable,[usersTable]);
+        
 
         const stylistDetail = await baseModel.findWithConditionsJoin(
             stylistTable.name, // main table (stylist)
@@ -108,13 +104,8 @@ module.exports.softDel = async (req, res) => {
 module.exports.getAllStylists = async (req, res) => {
     try {
 
-        const columns=[];
-        for(var key in stylistTable.columns){
-            columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
-        }
-        for(var key in usersTable.columns){
-            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
-        }
+        const columns = columnsRefactor(stylistTable,[usersTable]);
+        
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,  // main table name
             columns, // columns

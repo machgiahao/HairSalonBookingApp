@@ -135,10 +135,6 @@ module.exports.addStylistToWorkShift = async (req, res) => {
         const stylistID = req.body[stylistWorkshift.columns.stylistID];
         const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
 
-        console.log('Request Body:', req.body);
-        console.log('stylistID:', stylistID);
-        console.log('workShiftID:', workShiftID);
-
         const existingEntry = await baseModel.findWithConditions(
             stylistWorkshift.name,
             undefined,
@@ -148,8 +144,6 @@ module.exports.addStylistToWorkShift = async (req, res) => {
             ],
             ["AND"]
         );
-
-        console.log('Final Query Result:', existingEntry);
 
         if (existingEntry && existingEntry.length > 0) {
             return handleResponse(res, 400, {

@@ -1,6 +1,8 @@
 const baseModel = require("../../../model/base.model");
 const staffTable = require("../../../model/table/staff.table");
 const usersTable = require("../../../model/table/user.table");
+const columnsRefactor= require("../../../helper/columnsRefactor.heper");
+const extractField = require("../../../helper/extractField.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -12,14 +14,7 @@ module.exports.getStaffDetail = async (req, res) => {
 
     try {
         // Define the columns to retrieve from both tables
-        const columns = [];
-        for (const key in staffTable.columns) {
-            columns.push(`"${staffTable.name}"."${staffTable.columns[key]}"`);
-        }
-        for (const key in usersTable.columns) {
-            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
-        }
-
+        const columns = columnsRefactor(staffTable,[usersTable]);
         const staffDetail = await baseModel.findWithConditionsJoin(
             staffTable.name, // main table (staff)
             columns, // columns to select
@@ -104,13 +99,7 @@ module.exports.softDel = async (req, res) => {
 // Get all staff members
 module.exports.getAllStaff = async (req, res) => {
     try {
-        const columns=[];
-        for(var key in staffTable.columns){
-            columns.push(`"${staffTable.name}"."${staffTable.columns[key]}"`);
-        }
-        for(var key in usersTable.columns){
-            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
-        }
+        const columns=columnsRefactor(staffTable,[usersTable]);
         const staffList = await baseModel.findWithConditionsJoin(
             staffTable.name,  // main table name
             columns, // columns
