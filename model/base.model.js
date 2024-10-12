@@ -39,9 +39,9 @@ const baseModel = {
   },
 
   findWithConditions: async (
-    tableName, 
-    columns = ["*"], 
-    conditions = [], 
+    tableName,
+    columns = ["*"],
+    conditions = [],
     logicalOperators = ["AND"]
   ) => {
     try {
@@ -79,10 +79,10 @@ const baseModel = {
   },
 
   findWithConditionsJoin: async (
-    tableName, 
-    columns = ["*"], 
-    conditions = [], 
-    logicalOperators = ["AND"], 
+    tableName,
+    columns = ["*"],
+    conditions = [],
+    logicalOperators = ["AND"],
     joins = []
   ) => {
     try {
@@ -90,7 +90,7 @@ const baseModel = {
       let query = `SELECT ${setColumns} FROM "${tableName}"`; // Ensure the table name is quoted
       const values = [];
       const whereClauses = [];
-  
+
       // Handle joins
       joins.forEach((join) => {
         const { table, on, type = "INNER" } = join; // Default to INNER JOIN
@@ -98,27 +98,26 @@ const baseModel = {
         // Ensure table names and columns are properly quoted
         query += ` ${type} JOIN "${table}" ON ${on}`;
       });
-  
+
       // Handle conditions (WHERE clauses)
       if (conditions.length > 0) {
         conditions.forEach((condition, index) => {
           const { column, value, operator = "=" } = condition;
-  
+
           if (value !== undefined && value !== null) {
             whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
             values.push(value);
-  
+
             if (index < conditions.length - 1) {
               whereClauses.push(` ${logicalOperators[index] || "AND"} `);
             }
           }
         });
-  
+
         if (whereClauses.length > 0) {
           query += ` WHERE ${whereClauses.join("")}`;
         }
       }
-      console.log(query);
       // Execute query
       const result = await pool.query(query, values);
       return result.rows;
@@ -127,8 +126,6 @@ const baseModel = {
       throw new Error(`Find with conditions failed: ${error.message}`);
     }
   },
-  
-  
 
   findById: async (tableName, idColumn, idValue) => {
     try {
@@ -144,7 +141,7 @@ const baseModel = {
   findByPhone: async (tableName, phoneColumn, phoneValue) => {
     try {
       const query = `SELECT * FROM "${tableName}" WHERE "${phoneColumn}" = $1`;
-      const result  = await pool.query(query, [phoneValue]);
+      const result = await pool.query(query, [phoneValue]);
       return result.rows[0];
     } catch (error) {
       console.error("Error executing findByPhone:", error);
@@ -183,9 +180,8 @@ const baseModel = {
       const setClause = columns
         .map((col, i) => `"${col}" = $${i + 1}`)
         .join(", ");
-      const query = `UPDATE "${tableName}" SET ${setClause} WHERE "${idColumn}" = $${
-        columns.length + 1
-      } RETURNING *`;
+      const query = `UPDATE "${tableName}" SET ${setClause} WHERE "${idColumn}" = $${columns.length + 1
+        } RETURNING *`;
       const result = await pool.query(query, [...values, idValue]);
       return result.rows[0];
     } catch (error) {
@@ -194,7 +190,7 @@ const baseModel = {
     }
   },
 
-  deleteWithConditions: async (tableName,{ conditions = [], logicalOperator = " AND " } = {}) => {
+  deleteWithConditions: async (tableName, { conditions = [], logicalOperator = " AND " } = {}) => {
     try {
       if (conditions.length === 0) return false;
 
@@ -230,26 +226,25 @@ const baseModel = {
   },
 
   findAllWithPhone: async (roleTable) => {
-    const query = `
-    SELECT 
-      r.*,  -- Lấy tất cả các cột của bảng Customer
-      u."phoneNumber"  -- Lấy cột phoneNumber của bảng Users
-    FROM 
-      "${roleTable}" r
-    JOIN 
-      "Users" u 
-    ON 
-      r."userID" = u."userID";
-  `;
-  try {
-    // Thực hiện truy vấn
-    const result = await pool.query(query);
-    
-    // Trả về kết quả
-    return result.rows;
-  } catch (err) {
-    console.error('Lỗi truy vấn:', err);
-  }
+    try {
+      const query = `
+          SELECT 
+            r.*,  -- Lấy tất cả các cột của bảng Customer
+            u."phoneNumber"  -- Lấy cột phoneNumber của bảng Users
+          FROM 
+            "${roleTable}" r
+          JOIN 
+            "Users" u 
+          ON 
+            r."userID" = u."userID";
+        `;
+      const result = await pool.query(query);
+
+      return result.rows;
+    } catch (err) {
+      console.error("Error executing delete:", error);
+      throw new Error(`Delete operation failed: ${error.message}`);
+    }
   }
 };
 

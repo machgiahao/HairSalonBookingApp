@@ -52,21 +52,30 @@ const serviceController = {
 
     create: async (req, res) => {
         try {
-            const service = {
-                serviceName: req.body.serviceName,
-                type: req.body.type,
-                description: req.body.description,
-                price: parseFloat(req.body.price),
-                duration: parseInt(req.body.duration),
-                deleted: req.body.deleted || false
+
+            const columns = [];
+            const values = [];
+            
+            for(const key in req.body) {
+                if(serviceTable.columns[key] !== undefined && req.body[key] != "") {
+                    columns.push(serviceTable.columns[key]);
+                    if (key === 'price') {
+                        values.push(parseFloat(req.body[key]));  
+                    } else if (key === 'duration') {
+                        values.push(parseInt(req.body[key])); 
+                    } else {
+                        values.push(req.body[key]);  
+                    }
+                }
             }
 
-            const newService = await baseModel.create("Service", Object.keys(service), Object.values(service));
+            const newService = await baseModel.create("Service", columns, values);
             return res.status(200).json({
                 success: true,
                 data: newService
             })
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
@@ -113,7 +122,6 @@ const serviceController = {
                 success: true,
                 msg: "Update successfully",
                 data: updateService
-
             })
         } catch (error) {
             console.error("Error in update:", error);  // Ghi lại lỗi chi tiết

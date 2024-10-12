@@ -3,6 +3,7 @@ const serviceTable = {
     columns: {
         serviceID: "serviceID", // ID column
         serviceName: "serviceName",
+        img: "img",
         type: "type",
         description: "description",
         price: "price",
