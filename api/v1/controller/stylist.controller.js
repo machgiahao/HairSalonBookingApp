@@ -72,7 +72,6 @@ module.exports.updateStylist = async (req, res) => {
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
-        console.log('Updated Stylist:', updatedStylist);
         return handleResponse(res, 200, { data: { user: updatedStylist } });
     } catch (error) {
         console.error("Error updating stylist:", error);

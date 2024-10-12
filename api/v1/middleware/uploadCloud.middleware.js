@@ -2,16 +2,25 @@ const multer = require("multer");
 const cloudinary = require("../../../config/cloud.config");
 const streamifier = require("streamifier");
 
-const upload = multer().single('img'); // 'img' là tên field trong form, mặc định multer lưu vào trong memory storage
+const upload = multer().fields([
+    { name: 'img', maxCount: 1 },
+    { name: 'avatar', maxCount: 1 }
+]);
 
 const uploadCloudMiddleware = (req, res, next) => {
     upload(req, res, async (err) => {
         if (err) {
+            console.log(err)
             return res.status(400).send({ error: err.message });
         }
 
-        if (req.file) {
-            let streamUpload = (req) => {
+        // Check if file have 'img' or 'avatar' field
+        const fileField = req.files?.img ? 'img' : req.files?.avatar ? 'avatar' : null;
+
+        if (fileField) {
+            const file = req.files[fileField][0]; // Lấy file đầu tiên từ trường img hoặc avatar
+
+            let streamUpload = (file) => {
                 return new Promise((resolve, reject) => {
                     let stream = cloudinary.uploader.upload_stream( 
                         (error, result) => {
@@ -22,15 +31,16 @@ const uploadCloudMiddleware = (req, res, next) => {
                             }
                         }
                     );
-                    streamifier.createReadStream(req.file.buffer).pipe(stream);
+                    streamifier.createReadStream(file.buffer).pipe(stream);
                 });
             };
 
             try {
-                let result = await streamUpload(req);
-                req.body[req.file.fieldname] = result.url; 
+                let result = await streamUpload(file);
+                req.body[fileField] = result.url; 
                 next();
             } catch (error) {
+                console.log(error)
                 return res.status(500).send({ error: 'Failed to upload to Cloudinary' });
             }
         } else {
