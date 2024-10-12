@@ -146,7 +146,7 @@ module.exports.updateStaff = async (req, res) => {
 
     try {
         
-        const updatedStaff= await extractField([staffTable,usersTable],[staffTable.columns.staffID,usersTable.columns.userID],req)
+        const updatedStaff= await extractField([staffTable,usersTable],[staffTable.columns.staffID,usersTable.columns.userID],req,res)
         if (!updatedStaff) {
             return handleResponse(res, 404, { error: 'Staff member not found' });
         }
