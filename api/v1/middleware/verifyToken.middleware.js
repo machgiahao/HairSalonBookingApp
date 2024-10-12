@@ -19,16 +19,20 @@ const verifyToken = async (req, res, next) => {
     }
 }
 
-const isAdmin = async (req, res, next) => {
-    const role = req.user.role;
-    
-    if (role === "Customer") {
-        return res.status(401).json({
-            success: false,
-            mes: "Unauthorized"
-        })
-    }
-    next();
+const checkRole = (requiredRole) => {
+    return (req, res, next) => {
+        const { role } = req.user;
+
+        if (role !== requiredRole) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        next();
+    };
 };
 
-module.exports = {verifyToken, isAdmin};
+
+module.exports = {verifyToken, checkRole};

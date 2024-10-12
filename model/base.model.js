@@ -68,8 +68,6 @@ const baseModel = {
           query += ` WHERE ${whereClauses.join("")}`;
         }
       }
-      console.log(query);
-
       const result = await pool.query(query, values);
       return result.rows;
     } catch (error) {
