@@ -1,36 +1,56 @@
 const baseModel = require("../../../model/base.model");
-const table = require("../../../model/table/stylist.table");
+const stylistTable = require("../../../model/table/stylist.table");
+const usersTable= require("../../../model/table/user.table");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
 // Get stylist details by ID
+// Get stylist details by ID using findWithConditionsJoin
 module.exports.getStylistDetail = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const stylist = await baseModel.findById(table.name, table.columns.stylistID, id);
-        if (!stylist) {
+        // Define the columns to retrieve from both tables
+        const columns = [];
+        for (const key in stylistTable.columns) {
+            columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
+        }
+        for (const key in usersTable.columns) {
+            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
+        }
+
+        const stylistDetail = await baseModel.findWithConditionsJoin(
+            stylistTable.name, // main table (stylist)
+            columns, // columns to select
+            [{ column: stylistTable.columns.stylistID, value: id }], // condition on stylistID
+            [], // logical operators (defaults to AND)
+            [ // joins
+              {
+                table: usersTable.name, // join with users table
+                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                type: "INNER" // type of join
+              }
+            ]
+        );
+
+        // If no stylist found, return 404
+        if (!stylistDetail || stylistDetail.length === 0) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
-        console.log('Retrieved Stylist:', stylist);
-        return handleResponse(res, 200, { data: { user: stylist } });
+
+        // Log and return the stylist detail with joined user data
+        console.log('Retrieved Stylist Detail with User Info:', stylistDetail);
+        return handleResponse(res, 200, { data: { user: stylistDetail[0] } });
     } catch (error) {
-        console.error("Error retrieving stylist:", error);
+        console.error("Error retrieving stylist detail with join:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
-// module.exports.uploadImg = async(req,res)=>{
-//     cloudinary.uploader.upload(req.file.path ,(err,resulst)=>{
-//         if(err){
-//             console.log(error);
-//             return handleResponse(res, 500, { error: error.message });
-//         }
-//         return handleResponse(res, 200, { resulst: { user: resulst } });
 
-//     })
-// }
+
+
 
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
@@ -41,8 +61,8 @@ module.exports.updateStylist = async (req, res) => {
     const values = [];
 
     for (const key in req.body) {
-        if (table.columns[key] !== undefined) {  // Ensure the key is a valid column
-            columns.push(table.columns[key]);
+        if (stylistTable.columns[key] !== undefined) {  // Ensure the key is a valid column
+            columns.push(stylistTable.columns[key]);
             values.push(req.body[key]);
         }
     }
@@ -52,7 +72,7 @@ module.exports.updateStylist = async (req, res) => {
     }
 
     try {
-        const updatedStylist = await baseModel.update(table.name, table.columns.stylistID, id, columns, values);
+        const updatedStylist = await baseModel.update(stylistTable.name, stylistTable.columns.stylistID, id, columns, values);
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
@@ -70,12 +90,12 @@ module.exports.softDel = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        let stylist = await baseModel.findById(table.name, table.columns.stylistID, id);
+        let stylist = await baseModel.findById(stylistTable.name, stylistTable.columns.stylistID, id);
         if (!stylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
         const deleted = !stylist.deleted; // Toggle deleted status
-        stylist = await baseModel.update(table.name, table.columns.stylistID, id, [table.columns.deleted], [deleted]);
+        stylist = await baseModel.update(stylistTable.name, stylistTable.columns.stylistID, id, [stylistTable.columns.deleted], [deleted]);
         console.log('Updated Stylist (Soft Delete):', stylist);
         return handleResponse(res, 200, { data: { user: stylist } });
     } catch (error) {
@@ -87,10 +107,32 @@ module.exports.softDel = async (req, res) => {
 // Get all stylists
 module.exports.getAllStylists = async (req, res) => {
     try {
-        const stylistList = await baseModel.find(table.name);
+
+        const columns=[];
+        for(var key in stylistTable.columns){
+            columns.push(`"${stylistTable.name}"."${stylistTable.columns[key]}"`);
+        }
+        for(var key in usersTable.columns){
+            columns.push(`"${usersTable.name}"."${usersTable.columns[key]}"`);
+        }
+        const stylistList = await baseModel.findWithConditionsJoin(
+            stylistTable.name,  // main table name
+            columns, // columns
+            [],
+            [], // logical operators (defaults to AND)
+            [ // joins
+              {
+                table: usersTable.name,
+                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                type: "INNER"
+              }
+            ]
+          );
+
         if (!stylistList || stylistList.length === 0) {
             return handleResponse(res, 404, { error: 'No stylists found' });
         }
+
         console.log('Retrieved Stylist List:', stylistList);
         return handleResponse(res, 200, { data: { users: stylistList } });
     } catch (error) {
