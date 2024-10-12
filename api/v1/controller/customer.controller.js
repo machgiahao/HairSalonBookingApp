@@ -1,5 +1,5 @@
 const baseModel = require("../../../model/base.model")
-const customerTable = require("../../../model/table/customer.controller")
+const customerTable = require("../../../model/table/customer.table")
 
 const customerController = {
     detail: async (req, res) => {
@@ -90,7 +90,7 @@ const customerController = {
 
     getAll: async (req, res) => {
         try {
-            const customerList = await baseModel.find("Customer");
+            const customerList = await baseModel.findAllWithPhone("Customer");
 
             if (!customerList || customerList.length === 0) {
                 return res.status(404).json({ 

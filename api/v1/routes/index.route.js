@@ -3,6 +3,7 @@ const customerRoute = require("./customer.route");
 const userRoute = require("./user.route");
 const staffRouter = require("./staff.route");
 const stylistRouter = require("./stylist.route");
+const managerRouter = require("./manager.route");
 const serviceRouter = require("./service.route");
 const workshiftRouter = require("./workshift.route");
 
@@ -16,6 +17,9 @@ module.exports = (app) => {
     //CUSTOMER ROUTE
     app.use("/api/v1/customer", customerRoute);
 
+    //MANAGER ROUTE
+    app.use("/api/v1/manager", managerRouter);
+
     //STAFF ROUTE
     app.use("/api/v1/staff",staffRouter);
 
@@ -28,7 +32,8 @@ module.exports = (app) => {
     //STYLIST ROUTE
     app.use("/api/v1/workshift",workshiftRouter);
     
-    
+    //BOOKING ROUTE
+    app.use("/api/v1/booking",workshiftRouter);
 }
 
 

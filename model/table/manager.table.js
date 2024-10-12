@@ -1,17 +1,15 @@
-const customerTable = {
-    name: "Customer",
+const managerTable = {
+    name: "Manager",
     columns: {
-        customerID: "customerID", // ID column
+        managerID: "managerID", // ID column
         fullName: "fullName",
         avatar: "avatar",
-        email: "email",
         yob: "yob",
         gender: "gender",
-        loyaltyPoints: "loyaltyPoints",
         address: "address",
         userID: "userID",
         deleted: "deleted"
     }
 }
 
-module.exports = customerTable;
+module.exports = managerTable;
