@@ -245,7 +245,8 @@ const baseModel = {
       console.error("Error executing delete:", error);
       throw new Error(`Delete operation failed: ${error.message}`);
     }
-  }
+  }, 
+  
 };
 
 module.exports = baseModel;
