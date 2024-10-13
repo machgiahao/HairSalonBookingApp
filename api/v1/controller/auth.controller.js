@@ -4,6 +4,7 @@ const validate = require("../../../validates/validateInput");
 const generate = require("../../../helper/generate.helper")
 const roleHelper = require("../../../helper/role.helper");
 const mail = require("../../../helper/sendMails.helper")
+const userTable = require("../../../model/table/user.table")
 const jwt = require("jsonwebtoken")
 
 const authController = {
@@ -20,14 +21,22 @@ const authController = {
             // hash password
             const salt = await bcrypt.genSalt(10);
             const hashed = await bcrypt.hash(req.body.password, salt);
-
+            //Reassign hashed password for req.body.password
+            req.body.password = hashed
+            req.body.role = req.body.role ?? "Customer";
             // Create user 
-            const newUser = {
-                role: req.body.role || "Customer",
-                password: hashed,
-                phoneNumber: req.body.phoneNumber,
+            const columns = [];
+            const values = [];
+
+            for (const key in req.body) {
+                // Kiểm tra và xử lý các cột cho bảng Customer
+                if (userTable.columns[key] !== undefined && req.body[key] !== "") {
+                    columns.push(userTable.columns[key]);
+                    values.push(req.body[key]);
+                }
             }
-            const user = await baseModel.create("Users", Object.keys(newUser), Object.values(newUser));
+
+            const user = await baseModel.create(userTable.name, columns, values);
             const userByRole = await roleHelper.handleRole(user, req.body);
             return res.status(200).json({
                 success: true,
@@ -183,7 +192,7 @@ const authController = {
             })
 
         } catch (error) {
-            console.error('Error in forgot-password:', error); 
+            console.error('Error in forgot-password:', error);
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
@@ -231,7 +240,7 @@ const authController = {
                 msg: "Update password successfully"
             })
         } catch (error) {
-            console.error('Error in forgot-password:', error); 
+            console.error('Error in forgot-password:', error);
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"

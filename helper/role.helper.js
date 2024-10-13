@@ -1,4 +1,8 @@
 const baseModel = require("../model/base.model");
+const customerTable = require("../model/table/customer.table");
+const managerTable = require("../model/table/manager.table");
+const stylistTable = require("../model/table/stylist.table");
+const staffTable = require("../model/table/staff.table");
 
 const roleService = {
     // Handle user roles
@@ -14,7 +18,7 @@ const roleService = {
         if (handler) {
             return await handler(user, body);
         }
-        return null; 
+        return null;
     },
 
     getTableByRole: (user) => {
@@ -29,64 +33,64 @@ const roleService = {
         if (handler) {
             return handler;
         }
-        return null; 
+        return null;
     },
 };
 
-// createCustomer
+// Create customer
 const createCustomer = async (user, body) => {
-    const newCustomer = {
-        avatar: body.avatar,
-        fullName: body.fullName,
-        yob: body.yob,
-        gender: body.gender,
-        loyaltyPoints: body.loyaltyPoints,
-        userID: user.userID,
-    };
-    return await baseModel.create("Customer", Object.keys(newCustomer), Object.values(newCustomer));
+    const columns = [];
+    const values = [];
+
+    for (const key in body) {
+        if (customerTable.columns[key] !== undefined && body[key] !== "") {
+            columns.push(customerTable.columns[key]);
+            values.push(body[key]);
+        }
+    }
+    return await baseModel.create(customerTable.name, columns, values);
 };
 
-// createManager
+// Create manager
 const createManager = async (user, body) => {
-    const newManager = {
-        avatar: body.avatar,
-        fullName: body.fullName,
-        yob: body.yob,
-        gender: body.gender,
-        address: body.address,
-        userID: user.userID,
-    };
-    return await baseModel.create("Manager", Object.keys(newManager), Object.values(newManager));
+    const columns = [];
+    const values = [];
+
+    for (const key in body) {
+        if (managerTable.columns[key] !== undefined && body[key] !== "") {
+            columns.push(managerTable.columns[key]);
+            values.push(body[key]);
+        }
+    }
+    return await baseModel.create(managerTable.name, columns, values);
 };
 
-// createStylist
+// Create stylist
 const createStylist = async (user, body) => {
+    const columns = [];
+    const values = [];
 
-    const newStylist = {
-        avatar: body.avatar,
-        fullName: body.fullName,
-        yob: body.yob,
-        gender: body.gender,
-        address: body.address,
-        level: body.level,
-        certificateURL: body.certificateURL,
-        userID: user.userID
-    };
-    return await baseModel.create("Stylist", Object.keys(newStylist), Object.values(newStylist));
+    for (const key in body) {
+        if (stylistTable.columns[key] !== undefined && body[key] !== "") {
+            columns.push(stylistTable.columns[key]);
+            values.push(body[key]);
+        }
+    }
+    return await baseModel.create(stylistTable.name, columns, values);
 };
 
-// createStaff
+// Create staff
 const createStaff = async (user, body) => {
-    const newStaff = {
-        avatar: body.avatar,
-        fullName: body.fullName,
-        yob: body.yob,
-        gender: body.gender,
-        address: body.address,
-        salaryID: body.salaryID,
-        userID: user.userID
-    };
-    return await baseModel.create("Staff", Object.keys(newStaff), Object.values(newStaff));
+    const columns = [];
+    const values = [];
+
+    for (const key in body) {
+        if (staffTable.columns[key] !== undefined && body[key] !== "") {
+            columns.push(staffTable.columns[key]);
+            values.push(body[key]);
+        }
+    }
+    return await baseModel.create(staffTable.name, columns, values);
 };
 
 module.exports = roleService;

@@ -11,7 +11,7 @@ route.get("/detail", stylistController.getStylistDetail);
 // Update the detail of a stylist by sending param id
 route.patch("/update", uploadCloudMiddleware, stylistController.updateStylist);
 
-route.use(checkRole("Manager"));
+// route.use(checkRole("Manager"));
 // Get all the stylists from the database
 route.get("/getAll", stylistController.getAllStylists);
 
