@@ -1,6 +1,7 @@
 const baseModel = require("../model/base.model");
+const handleResponse = require("../helper/handleReponse.helper");
 
-module.exports = async (tables = [], idColumns = [], req) => {
+module.exports = async (tables = [], idColumns = [], req,res) => {
     const results = {}; // Initialize results object
 
     // Validate that tables and idColumns are the same length
@@ -29,8 +30,8 @@ module.exports = async (tables = [], idColumns = [], req) => {
         }
 
         // Ensure the ID value is set before attnpmempting to update
-        if (!idValue) {
-            throw new Error(`ID value for table ${table.name} is required and was not provided.`);
+        if (!idValue) { 
+            return handleResponse(res, 404, { error: `${table.name} have no id` } );
         }
 
         try {
@@ -40,9 +41,11 @@ module.exports = async (tables = [], idColumns = [], req) => {
             console.log(result);
         } catch (error) {
             console.error(`Error updating ${table.name}:`, error);
-            throw error; // Rethrow the error to be handled by the calling function
+            return handleResponse(res, 500, { error: `Failed to update ${table.name}` });
         }
     }
+    console.log("------------------------")
+    console.log(results)
 
     return results; // Return the results object
 };
