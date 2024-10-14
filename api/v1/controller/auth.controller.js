@@ -1,11 +1,12 @@
 const bcrypt = require("bcrypt");
 const baseModel = require("../../../model/base.model");
 const validate = require("../../../validates/validateInput");
-const generate = require("../../../helper/generate.helper")
+const generate = require("../../../helper/generate.helper");
 const roleHelper = require("../../../helper/role.helper");
-const mail = require("../../../helper/sendMails.helper")
-const userTable = require("../../../model/table/user.table")
-const jwt = require("jsonwebtoken")
+const mail = require("../../../helper/sendMails.helper");
+const userTable = require("../../../model/table/user.table");
+const jwt = require("jsonwebtoken");
+const { getColsVals } = require("../../../helper/getColsVals.helper");
 
 const authController = {
     register: async (req, res) => {
@@ -25,17 +26,9 @@ const authController = {
             req.body.password = hashed
             req.body.role = req.body.role ?? "Customer";
             // Create user 
-            const columns = [];
-            const values = [];
+            const { columns, values } = getColsVals(userTable, req.body);
 
-            for (const key in req.body) {
-                // Kiểm tra và xử lý các cột cho bảng Customer
-                if (userTable.columns[key] !== undefined && req.body[key] !== "") {
-                    columns.push(userTable.columns[key]);
-                    values.push(req.body[key]);
-                }
-            }
-
+            // Create and save to db
             const user = await baseModel.create(userTable.name, columns, values);
             const userByRole = await roleHelper.handleRole(user, req.body);
             return res.status(200).json({
