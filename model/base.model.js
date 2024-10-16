@@ -199,7 +199,17 @@ const baseModel = {
       throw new Error(`Update operation failed: ${error.message}`);
     }
   },
-  
+
+  deleteById: async (tableName, idColumn, idValue) => {
+    try {
+      const query = `DELETE FROM "${tableName}" WHERE "${idColumn}" = $1`;
+      await pool.query(query, [idValue]);
+      return true;
+    } catch (error) {
+      console.error("Error executing delete:", error);
+      throw new Error(`Delete operation failed: ${error.message}`);
+    }
+  },
 
   deleteWithConditions: async (tableName, { conditions = [], logicalOperator = " AND " } = {}) => {
     try {
@@ -219,17 +229,6 @@ const baseModel = {
       const result = await pool.query(query, values);
 
       return result.rowCount;
-    } catch (error) {
-      console.error("Error executing delete:", error);
-      throw new Error(`Delete operation failed: ${error.message}`);
-    }
-  },
-
-  deleteById: async (tableName, idColumn, idValue) => {
-    try {
-      const query = `DELETE FROM "${tableName}" WHERE "${idColumn}" = $1`;
-      await pool.query(query, [idValue]);
-      return true;
     } catch (error) {
       console.error("Error executing delete:", error);
       throw new Error(`Delete operation failed: ${error.message}`);
