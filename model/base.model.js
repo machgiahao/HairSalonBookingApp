@@ -164,7 +164,7 @@ const baseModel = {
       const setColumns = keyArr.join(", ");
       const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
       const query = `INSERT INTO "${tableName}" (${setColumns}) VALUES (${placeholders}) RETURNING *`;
-
+      console.log(query);
       const result = await pool.query(query, values);
       return result.rows.length > 0 ? result.rows[0] : null;
     } catch (error) {
