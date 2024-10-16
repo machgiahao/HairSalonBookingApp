@@ -27,7 +27,7 @@ const queryModel = {
         }
     },
     
-    create: async (tableName, columns) => {
+    create:  (tableName, columns) => {
         try {
             const keyArr = keyUtils.getKeysAsArray(columns);
             const setColumns = keyArr.join(", ");
@@ -40,7 +40,7 @@ const queryModel = {
         }
     },
 
-    update: async (tableName, idColumn, columns) => {
+    update:  (tableName, idColumn, columns) => {
         try {
             // Check if columns are populated
             if (columns.length === 0) {
@@ -59,7 +59,7 @@ const queryModel = {
         }
     },
 
-    deleteById: async (tableName, idColumn) => {
+    deleteById:  (tableName, idColumn) => {
         try {
             const query = `DELETE FROM "${tableName}" WHERE "${idColumn}" = $1`;
             return query;
@@ -80,7 +80,7 @@ const queryModel = {
         }
     },
     
-    find: async (tableName, columns = ["*"], { limit, skip } = {}) => {
+    find:  (tableName, columns = ["*"], { limit, skip } = {}) => {
         try {
             const setColumns = columns.join(", ");
             let query = `SELECT ${setColumns} FROM "${tableName}"`;
@@ -98,7 +98,7 @@ const queryModel = {
         }
     },
     
-    countDocuments: async (tableName) => {
+    countDocuments:  (tableName) => {
         try {
             const query = `SELECT COUNT(*) FROM "${tableName}"`;
             return query;
