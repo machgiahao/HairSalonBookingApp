@@ -29,6 +29,19 @@ const bookingController = {
                 msg: "Internal server error"
             })
         }
+    }, 
+
+    detail: async (req, res) => {
+        const id = req.query.id;
+
+        const booking = await baseModel.findByField(bookingTable.name, "bookingID", id);
+        if (!booking) {
+            return res.status(400).json({
+                success: false,
+                msg: "Booking not found"
+            })
+        }
+
     }
 }
 
