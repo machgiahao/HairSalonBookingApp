@@ -8,7 +8,6 @@ const extractField = require("../../../helper/extractField.helper");
 const columnsRefactor= require("../../../helper/columnsRefactor.heper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
-const { columns } = require("../../../model/table/stylistWorkshift.table");
 
 module.exports.create = async (req,res)=>{
     const id = req.query.id;
