@@ -26,7 +26,6 @@ const customerController = {
             })
         }
     },
-
     update: async (req, res) => {
         try {
             const id = req.query.id;
@@ -60,8 +59,8 @@ const customerController = {
                 return res.status(404).json({ error: 'Customer not found' });
             }
 
-            // Cập nhật bảng Users (cần đảm bảo userID có trong req.body)
-            const userId = req.body.userID; // Giả sử userID được cung cấp trong req.body
+            // Cập nhật bảng Users 
+            const userId = req.body.userID;
             const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, UserColumns, UserValues);
             if (!updateUser) {
                 return res.status(404).json({ error: 'User not found' });

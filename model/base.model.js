@@ -186,9 +186,9 @@ const baseModel = {
   
       const query = `UPDATE "${tableName}" SET ${setClause} WHERE "${idColumn}" = $${columns.length + 1} RETURNING *`;
   
-      // Log the query and values for debugging
-      console.log("Generated query:", query);
-      console.log("Values:", [...values, idValue]);
+      // // Log the query and values for debugging
+      // console.log("Generated query:", query);
+      // console.log("Values:", [...values, idValue]);
   
       // Execute the query
       const result = await pool.query(query, [...values, idValue]);

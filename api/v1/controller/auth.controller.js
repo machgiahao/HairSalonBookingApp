@@ -73,6 +73,7 @@ const authController = {
                     msg: "Incorrect password !"
                 })
             }
+            
             // Generate Token
             const accessToken = generate.generateAccessToken(user);
             const refreshTokenStr = generate.generateRefreshToken(user);
