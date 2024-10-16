@@ -76,54 +76,111 @@ const baseModel = {
     }
   },
 
+  // findWithConditionsJoin: async (
+  //   tableName,
+  //   columns = ["*"],
+  //   conditions = [],
+  //   logicalOperators = ["AND"],
+  //   joins = []
+  // ) => {
+  //   try {
+  //     const setColumns = columns.join(", ");
+  //     let query = `SELECT ${setColumns} FROM "${tableName}"`; // Ensure the table name is quoted
+  //     const values = [];
+  //     const whereClauses = [];
+
+  //     // Handle joins
+  //     joins.forEach((join) => {
+  //       const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+  
+  //       // Ensure table names and columns are properly quoted
+  //       query += ` ${type} JOIN "${table}" ON ${on}`;
+  //     });
+
+  //     // Handle conditions (WHERE clauses)
+  //     if (conditions.length > 0) {
+  //       conditions.forEach((condition, index) => {
+  //         const { column, value, operator = "=" } = condition;
+
+  //         if (value !== undefined && value !== null) {
+  //           whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
+  //           values.push(value);
+
+  //           if (index < conditions.length - 1) {
+  //             whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+  //           }
+  //         }
+  //       });
+
+  //       if (whereClauses.length > 0) {
+  //         query += ` WHERE ${whereClauses.join("")}`;
+  //       }
+  //     }
+  //     console.log(query);
+  //     // Execute query
+  //     const result = await pool.query(query, values);
+  //     return result.rows;
+  //   } catch (error) {
+  //     console.error("Error executing findWithConditions:", error);
+  //     throw new Error(`Find with conditions failed: ${error.message}`);
+  //   }
+  // },
+
   findWithConditionsJoin: async (
     tableName,
     columns = ["*"],
     conditions = [],
     logicalOperators = ["AND"],
     joins = []
-  ) => {
+) => {
     try {
-      const setColumns = columns.join(", ");
-      let query = `SELECT ${setColumns} FROM "${tableName}"`; // Ensure the table name is quoted
-      const values = [];
-      const whereClauses = [];
+        const setColumns = columns.join(", ");
+        let query = `SELECT ${setColumns} FROM "${tableName}"`; 
+        const values = [];
+        const whereClauses = [];
 
-      // Handle joins
-      joins.forEach((join) => {
-        const { table, on, type = "INNER" } = join; // Default to INNER JOIN
-  
-        // Ensure table names and columns are properly quoted
-        query += ` ${type} JOIN "${table}" ON ${on}`;
-      });
-
-      // Handle conditions (WHERE clauses)
-      if (conditions.length > 0) {
-        conditions.forEach((condition, index) => {
-          const { column, value, operator = "=" } = condition;
-
-          if (value !== undefined && value !== null) {
-            whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
-            values.push(value);
-
-            if (index < conditions.length - 1) {
-              whereClauses.push(` ${logicalOperators[index] || "AND"} `);
-            }
-          }
+        // Handle joins
+        joins.forEach((join) => {
+            const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+            query += ` ${type} JOIN "${table}" ON ${on}`;
         });
 
-        if (whereClauses.length > 0) {
-          query += ` WHERE ${whereClauses.join("")}`;
+        if (conditions.length > 0) {
+            conditions.forEach((condition, index) => {
+                const { column, value, operator = "=" } = condition;
+
+                if (value !== undefined && value !== null) {
+                    if (operator === "BETWEEN" && Array.isArray(value) && value.length === 2) {
+                        // Handle BETWEEN condition
+                        whereClauses.push(`"${column}" BETWEEN $${values.length + 1} AND $${values.length + 2}`);
+                        values.push(value[0], value[1]); // Push both values for the BETWEEN clause
+                    } else {
+                        whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
+                        values.push(value);
+                    }
+
+                    // Add logical operator if it's not the last condition
+                    if (index < conditions.length - 1) {
+                        whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+                    }
+                }
+            });
+
+            if (whereClauses.length > 0) {
+                query += ` WHERE ${whereClauses.join("")}`;
+            }
         }
-      }
-      // Execute query
-      const result = await pool.query(query, values);
-      return result.rows;
+
+        console.log(query); 
+        // Execute query
+        const result = await pool.query(query, values);
+        return result.rows;
     } catch (error) {
-      console.error("Error executing findWithConditions:", error);
-      throw new Error(`Find with conditions failed: ${error.message}`);
+        console.error("Error executing findWithConditions:", error);
+        throw new Error(`Find with conditions failed: ${error.message}`);
     }
-  },
+},
+
 
   findById: async (tableName, idColumn, idValue) => {
     try {
@@ -164,7 +221,6 @@ const baseModel = {
       const setColumns = keyArr.join(", ");
       const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
       const query = `INSERT INTO "${tableName}" (${setColumns}) VALUES (${placeholders}) RETURNING *`;
-      console.log(query);
       const result = await pool.query(query, values);
       return result.rows.length > 0 ? result.rows[0] : null;
     } catch (error) {

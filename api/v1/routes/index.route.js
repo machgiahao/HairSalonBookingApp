@@ -7,6 +7,7 @@ const managerRouter = require("./manager.route");
 const serviceRouter = require("./service.route");
 const workshiftRouter = require("./workshift.route");
 const bookingRouter = require("./booking.route");
+const salaryRouter = require("./salary.route");
 
 
 module.exports = (app) => {
@@ -35,6 +36,10 @@ module.exports = (app) => {
 
     //BOOKING ROUTE
     app.use("/api/v1/booking", bookingRouter);
+
+    //SALARY ROUTE
+    app.use("/api/v1/salary",salaryRouter);
+
 }
 
 
