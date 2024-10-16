@@ -13,8 +13,8 @@ const queryModel = {
             // Thực thi từng truy vấn trong danh sách
             for (let i = 0; i < queries.length; i++) {
                 const { text, values } = queries[i];
-                const result = await queryModel.executeQuery(text, values ); // Thực hiện truy vấn
-                results.push(result.rows); // Lưu kết quả của từng truy vấn
+                const result = await executeQuery(text, values ); // Thực hiện truy vấn
+                results.push(result); // Lưu kết quả của từng truy vấn
             }
 
             await pool.query('COMMIT'); // Commit nếu không có lỗi
@@ -26,7 +26,7 @@ const queryModel = {
             pool.release(); // Giải phóng kết nối
         }
     },
-    
+
     create: async (tableName, columns) => {
         try {
             const keyArr = keyUtils.getKeysAsArray(columns);
@@ -71,7 +71,7 @@ const queryModel = {
 
     executeQuery: async (query, values) => {
         try {
-            const result = await Client.query(query, values);
+            const result = await pool.query(query, values);
             return result.rows[0];
         } catch (error) {
             console.error("Error executing delete:", error);
