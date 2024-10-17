@@ -1,5 +1,7 @@
 const managerTable = require("../../../model/table/manager.table");
-const baseModel = require("../../../model/base.model")
+const userTable = require("../../../model/table/user.table");
+const baseModel = require("../../../model/base.model");
+const extractField = require("../../../helper/extractField.helper")
 
 const managerController = {
     detail: async (req, res) => {
@@ -25,29 +27,21 @@ const managerController = {
             })
         }
     },
-    
+
     update: async (req, res) => {
         try {
             const id = req.query.id;
-            
-            const columns = [];
-            const values = [];
+            if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
-            for (const key in req.body) {
-                if (managerTable.columns[key] !== undefined && req.body[key] !== "" ) { 
-                    columns.push(managerTable.columns[key]);
-                        values.push(req.body[key]);  
-                }
-            }
+            const updateManager = await extractField([managerTable, userTable], [managerTable.columns.managerID, userTable.columns.userID], req, res);
 
-            const update = await baseModel.update(managerTable.name, managerTable.columns.managerID, id, columns, values);
-            if (!update) {
+            if (!updateManager) {
                 return res.status(404).json({ error: 'Manager not found' });
             }
             res.status(200).json({
                 success: true,
                 msg: "Update successfully",
-                data: update
+                data: updateManager
             })
         } catch (error) {
             console.log(error)
@@ -56,7 +50,7 @@ const managerController = {
                 msg: "Internal server error"
             })
         }
-    }, 
+    },
 
 }
 
