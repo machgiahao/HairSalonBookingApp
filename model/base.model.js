@@ -312,6 +312,21 @@ const baseModel = {
       throw new Error(`Delete operation failed: ${error.message}`);
     }
   }, 
+
+  executeTransaction: async (transactionCallback) => {
+    try {
+      await pool.query('BEGIN'); // Start transaction
+      const result = await transactionCallback(); // Execute the callback
+      console.log("tranasac " + result);
+      await pool.query('COMMIT'); // Commit transaction if successful
+      return result;
+    } catch (error) {
+      await pool.query('ROLLBACK'); // Rollback if there's an error
+      throw error;
+    } finally{
+      (await pool.connect()).release();
+    }
+  },
   
 };
 

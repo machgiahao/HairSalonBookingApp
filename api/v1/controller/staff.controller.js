@@ -129,24 +129,14 @@ module.exports.getAllStaff = async (req, res) => {
 module.exports.updateStaff = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
-    
-    // const columns = [];
-    // const values = [];
-
-    // for (const key in req.body) {
-    //     if (staffTable.columns[key] !== undefined) {
-    //         columns.push(staffTable.columns[key]);
-    //         values.push(req.body[key]);
-    //     }
-    // }
-
-    // if (columns.length === 0) {
-    //     return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-    // }
 
     try {
+        const updatedStaff = await baseModel.executeTransaction(async () => { 
+            return await extractField([staffTable, usersTable], [staffTable.columns.staffID, usersTable.columns.userID], req);
+        });
         
-        const updatedStaff= await extractField([staffTable,usersTable],[staffTable.columns.staffID,usersTable.columns.userID],req,res)
+        console.log(updatedStaff);
+            
         if (!updatedStaff) {
             return handleResponse(res, 404, { error: 'Staff member not found' });
         }

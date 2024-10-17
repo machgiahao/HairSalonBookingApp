@@ -11,8 +11,8 @@ route.get("/detail",staffController.getStaffDetail);
 
 //update the detail from staff by send param id
 route.patch("/update", uploadCloudMiddleware , staffController.updateStaff);
-route.use(verifyToken)
-route.use(checkRole("Manager"));
+// route.use(verifyToken)
+// route.use(checkRole("Manager"));
 //get all the staff from database
 route.get("/getAll",staffController.getAllStaff);
 

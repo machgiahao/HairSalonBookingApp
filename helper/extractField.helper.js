@@ -1,7 +1,6 @@
 const baseModel = require("../model/base.model");
-const handleResponse = require("../helper/handleReponse.helper");
 
-module.exports = async (tables = [], idColumns = [], req,res) => {
+module.exports = async (tables = [], idColumns = [], req) => {
     const results = {}; // Initialize results object
 
     // Validate that tables and idColumns are the same length
@@ -9,11 +8,16 @@ module.exports = async (tables = [], idColumns = [], req,res) => {
         throw new Error("The number of tables must match the number of ID columns.");
     }
 
+    // Ensure req.body is valid
+    if (!req.body ||  Object.keys(req.body).length === 0) {
+        throw new Error("Request body must contain valid data.");
+    }
+
     for (let index = 0; index < tables.length; index++) {
         const table = tables[index];
         const idColumn = idColumns[index];
         let idValue;
-        const columns=[];
+        const columns = [];
         const values = [];
 
         // Loop through the keys in `body`
@@ -25,27 +29,24 @@ module.exports = async (tables = [], idColumns = [], req,res) => {
                 // Store the key-value pairs for columns that exist in the current table
                 columns.push(table.columns[key]);
                 values.push(req.body[key]);
-                results[table.columns[key]] = req.body[key]
+                results[table.columns[key]] = req.body[key];
+                
             }
         }
 
-        // Ensure the ID value is set before attnpmempting to update
+        // Ensure the ID value is set before attempting to update
         if (!idValue) { 
-            return handleResponse(res, 404, { error: `${table.name} have no id` } );
+            throw new Error(`Missing ID value for table ${table.name}.`);
         }
 
         try {
             // Update the base model with the gathered data
             const result = await baseModel.update(table.name, idColumn, idValue, columns, values);
-
-            console.log(result);
         } catch (error) {
             console.error(`Error updating ${table.name}:`, error);
-            return handleResponse(res, 500, { error: `Failed to update ${table.name}` });
+            throw new Error(`Error updating ${table.name}: ${error.message}`); // More context on the error
         }
     }
-    console.log("------------------------")
-    console.log(results)
 
-    return results; // Return the results object
+    return results; // Return the results object containing updates
 };
