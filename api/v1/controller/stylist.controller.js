@@ -45,17 +45,13 @@ module.exports.getStylistDetail = async (req, res) => {
     }
 };
 
-
-
-
-
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const updatedStylist = await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req,res);
+        const updatedStylist = await baseModel.executeTransaction(async()=> { return await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req,res);})
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
