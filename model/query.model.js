@@ -69,4 +69,5 @@ const queryModel = {
     }
   },
 }
+
 module.exports = queryModel;

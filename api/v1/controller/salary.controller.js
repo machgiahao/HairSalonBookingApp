@@ -8,7 +8,6 @@ const extractField = require("../../../helper/extractField.helper");
 const columnsRefactor= require("../../../helper/columnsRefactor.heper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
-const { columns } = require("../../../model/table/stylistWorkshift.table");
 
 module.exports.create = async (req,res)=>{
     const id = req.query.id;
@@ -81,9 +80,8 @@ module.exports.dailySalary = async (req, res) => {
         const dateToUse = requestedDate ? new Date(requestedDate) : new Date();
         
         // Format the date to YYYY-MM-DD 00:00:00 for timestamp without timezone
-        const formattedDate = dateToUse.toISOString().split('T')[0] + " 00:00:00"; // e.g., "2024-10-16 00:00:00"
+        const formattedDate = dateToUse.toISOString().split('T')[0] + " 00:00:00"; 
 
-        // Find salary records that match the date and are not marked as deleted
         let result = await baseModel.findWithConditionsJoin(
             dailySalaryTable.name,
             undefined, // Select all columns
