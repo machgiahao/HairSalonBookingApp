@@ -6,9 +6,9 @@ const stylistRouter = require("./stylist.route");
 const managerRouter = require("./manager.route");
 const serviceRouter = require("./service.route");
 const workshiftRouter = require("./workshift.route");
-const paymentRouter = require("./payment.route");
 const bookingRouter = require("./booking.route");
 const salaryRouter = require("./salary.route");
+const paymentRouter = require("./payment.route");
 
 module.exports = (app) => {
     app.use("/api/v1/auth", authRoute);
