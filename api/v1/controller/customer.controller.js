@@ -69,7 +69,7 @@ const customerController = {
             res.status(200).json({
                 success: true,
                 msg: "Update successfully",
-                data: [customerTable, updateUser]
+                data: [updateCustomer, updateUser]
             })
         } catch (error) {
             console.log(error)
