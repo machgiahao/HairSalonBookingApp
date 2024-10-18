@@ -4,7 +4,7 @@ const route = express.Router();
 const uploadCloudMiddleware= require("../middleware/uploadCloud.middleware");
 const { verifyToken, checkRole } = require("../middleware/verifyToken.middleware")
 
-route.use(verifyToken);
+// route.use(verifyToken);
 // Get the detail of a stylist by sending param id
 route.get("/detail", stylistController.getStylistDetail);
 

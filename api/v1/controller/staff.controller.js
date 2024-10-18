@@ -8,7 +8,6 @@ const isValidId = require("../../../validates/reqIdParam.validate");
 const table = require("../../../model/table/workshift.table");
 
 // Get staff details by ID
-// Get staff details by ID with a join to the users table
 module.exports.getStaffDetail = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
@@ -44,39 +43,6 @@ module.exports.getStaffDetail = async (req, res) => {
     }
 };
 
-
-// Update staff member details
-// module.exports.updateStaff = async (req, res) => {
-//     const id = req.query.id;
-//     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
-
-//     const columns = [];
-//     const values = [];
-
-//     for (const key in req.body) {
-//         if (staffTable.columns[key] !== undefined) {
-//             columns.push(staffTable.columns[key]);
-//             values.push(req.body[key]);
-//         }
-//     }
-
-//     if (columns.length === 0) {
-//         return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-//     }
-
-//     try {
-//         const updatedStaff = await baseModel.update(staffTable.name, staffTable.columns.staffID, id, columns, values);
-//         if (!updatedStaff) {
-//             return handleResponse(res, 404, { error: 'Staff member not found' });
-//         }
-//         console.log('Updated Staff Member:', updatedStaff);
-//         return handleResponse(res, 200, { data: { user: updatedStaff } });
-//     } catch (error) {
-//         console.error("Error updating staff member:", error);
-//         return handleResponse(res, 500, { error: error.message });
-//     }
-// };
-
 // Soft delete staff member (toggle deleted status)
 module.exports.softDel = async (req, res) => {
     const id = req.query.id;
@@ -100,53 +66,54 @@ module.exports.softDel = async (req, res) => {
 // Get all staff members
 module.exports.getAllStaff = async (req, res) => {
     try {
-        const columns=columnsRefactor(staffTable,[usersTable]);
+        const limit = Math.abs(parseInt(req.query.perpage)) || 10; // Default to 10 if invalid
+
+        const offset = Math.abs(parseInt(req.query.page)) || 0; // Default to page 0 if not provided
+
+        const columns = columnsRefactor(staffTable, [usersTable]);
+
         const staffList = await baseModel.findWithConditionsJoin(
             staffTable.name,  // main table name
-            columns, // columns
-            [],
-            [], // logical operators (defaults to AND)
+            columns,          // columns
+            [],               // conditions (can be added later)
+            [],               // logical operators (defaults to AND)
             [ // joins
-              {
-                table: usersTable.name,
-                on: `"${staffTable.name}"."${staffTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                type: "INNER"
-              }
-            ]
-          );
+                {
+                    table: usersTable.name,
+                    on: `"${staffTable.name}"."${staffTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                    type: "INNER"
+                }
+            ],
+            [],               // order (can be added later)
+            limit,            // limit
+            offset            // offset for pagination
+        );
+
         if (!staffList || staffList.length === 0) {
-            return handleResponse(res, 404, { error: 'No staff members found' });
+            return handleResponse(res, 404, { error: 'No staff members found', limit, offset });
         }
-        console.log('Retrieved Staff List:', staffList);
-        return handleResponse(res, 200, { data: { users: staffList } });
+
+        // Return the retrieved staff list
+        return handleResponse(res, 200, { data: { users: staffList, limit, offset } });
     } catch (error) {
         console.error("Error retrieving staff list:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
 
+
 // Update staff member details
 module.exports.updateStaff = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
-    
-    // const columns = [];
-    // const values = [];
-
-    // for (const key in req.body) {
-    //     if (staffTable.columns[key] !== undefined) {
-    //         columns.push(staffTable.columns[key]);
-    //         values.push(req.body[key]);
-    //     }
-    // }
-
-    // if (columns.length === 0) {
-    //     return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-    // }
 
     try {
+        const updatedStaff = await baseModel.executeTransaction(async () => { 
+            return await extractField([staffTable, usersTable], [staffTable.columns.staffID, usersTable.columns.userID], req);
+        });
         
-        const updatedStaff= await extractField([staffTable,usersTable],[staffTable.columns.staffID,usersTable.columns.userID],req,res)
+        console.log(updatedStaff);
+            
         if (!updatedStaff) {
             return handleResponse(res, 404, { error: 'Staff member not found' });
         }

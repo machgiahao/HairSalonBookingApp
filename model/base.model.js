@@ -81,49 +81,80 @@ const baseModel = {
     columns = ["*"],
     conditions = [],
     logicalOperators = ["AND"],
-    joins = []
-  ) => {
+    joins = [],
+    order =[],
+    limit ,
+    offset,
+) => {
     try {
-      const setColumns = columns.join(", ");
-      let query = `SELECT ${setColumns} FROM "${tableName}"`; // Ensure the table name is quoted
-      const values = [];
-      const whereClauses = [];
-
-      // Handle joins
-      joins.forEach((join) => {
-        const { table, on, type = "INNER" } = join; // Default to INNER JOIN
-  
-        // Ensure table names and columns are properly quoted
-        query += ` ${type} JOIN "${table}" ON ${on}`;
-      });
-
-      // Handle conditions (WHERE clauses)
-      if (conditions.length > 0) {
-        conditions.forEach((condition, index) => {
-          const { column, value, operator = "=" } = condition;
-
-          if (value !== undefined && value !== null) {
-            whereClauses.push(`"${column}" ${operator} $${values.length + 1}`);
-            values.push(value);
-
-            if (index < conditions.length - 1) {
-              whereClauses.push(` ${logicalOperators[index] || "AND"} `);
-            }
-          }
-        });
-
-        if (whereClauses.length > 0) {
-          query += ` WHERE ${whereClauses.join("")}`;
+        const setColumns = columns.join(", ");
+        let query = `SELECT ${setColumns} FROM "${tableName}"`; 
+        const values = [];
+        const whereClauses = [];
+        let flag=0;
+        if (joins.length > 0) {
+          joins.forEach((join) => {
+            const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+            query += ` ${type} JOIN "${table}" ON ${on}`;
+          });
         }
+
+        if (conditions.length > 0) {
+            
+            conditions.forEach((condition, index) => {
+                const { column, value, operator = "=" } = condition;
+
+                if (value !== undefined && value !== null) {
+                    if (operator === "BETWEEN" && Array.isArray(value) && value.length === 2) {
+                        // Handle BETWEEN condition
+                        whereClauses.push(`"${column}" BETWEEN $${flag + 1} AND $${flag + 2}`);
+                        values.push(value[0], value[1]); // Push both values for the BETWEEN clause
+                        flag+=2
+                    } else {
+                        whereClauses.push(`"${column}" ${operator} $${flag + 1}`);
+                        values.push(value);
+                        flag++;
+                    }
+
+                    // Add logical operator if it's not the last condition
+                    if (index < conditions.length - 1) {
+                        whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+                    }
+                }
+            });
+
+            if (whereClauses.length > 0) {
+                query += ` WHERE ${whereClauses.join("")}`;
+            }
+        }
+
+        if (order.length > 0) {
+          const orderByClauses = order.map((order) => {
+              const { column , direction } = order
+              return `"${column}" ${direction.toUpperCase()}`; e
+          }).join(", ");
+          query += ` ORDER BY ${orderByClauses}`;
       }
-      // Execute query
-      const result = await pool.query(query, values);
-      return result.rows;
-    } catch (error) {
-      console.error("Error executing findWithConditions:", error);
-      throw new Error(`Find with conditions failed: ${error.message}`);
+
+      if(limit){
+        query += ` LIMIT $${flag+1}`;
+        values.push(limit)
+      }
+
+      if (offset) {
+        query += ` OFFSET ${flag+2}`;
+        values.push(offset)
     }
-  },
+        console.log(query); 
+        // Execute query
+        const result = await pool.query(query, values);
+        return result.rows;
+    } catch (error) {
+        console.error("Error executing findWithConditions:", error);
+        throw new Error(`Find with conditions failed: ${error.message}`);
+    }
+},
+
 
   findById: async (tableName, idColumn, idValue) => {
     try {
@@ -164,7 +195,6 @@ const baseModel = {
       const setColumns = keyArr.join(", ");
       const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
       const query = `INSERT INTO "${tableName}" (${setColumns}) VALUES (${placeholders}) RETURNING *`;
-
       const result = await pool.query(query, values);
       return result.rows.length > 0 ? result.rows[0] : null;
     } catch (error) {
@@ -176,9 +206,9 @@ const baseModel = {
   update: async (tableName, idColumn, idValue, columns, values) => {
     try {
       // Check if columns are populated
-      if (columns.length === 0) {
-        throw new Error("No columns provided for the update operation.");
-      }
+      // if (columns.length === 0) {
+      //   throw new Error("No columns provided for the update operation.");
+      // }
   
       const setClause = columns
         .map((col, i) => `"${col}" = $${i + 1}`) // safely create SET clause
@@ -186,11 +216,9 @@ const baseModel = {
   
       const query = `UPDATE "${tableName}" SET ${setClause} WHERE "${idColumn}" = $${columns.length + 1} RETURNING *`;
   
-      // Log the query and values for debugging
-      console.log("Generated query:", query);
-      console.log("Values:", [...values, idValue]);
-  
-      // Execute the query
+      // // Log the query and values for debugging
+      // console.log("Generated query:", query);
+      // console.log("Values:", [...values, idValue]);
       const result = await pool.query(query, [...values, idValue]);
   
       return result.rows[0];
@@ -199,7 +227,19 @@ const baseModel = {
       throw new Error(`Update operation failed: ${error.message}`);
     }
   },
+
   
+
+  deleteById: async (tableName, idColumn, idValue) => {
+    try {
+      const query = `DELETE FROM "${tableName}" WHERE "${idColumn}" = $1`;
+      await pool.query(query, [idValue]);
+      return true;
+    } catch (error) {
+      console.error("Error executing delete:", error);
+      throw new Error(`Delete operation failed: ${error.message}`);
+    }
+  },
 
   deleteWithConditions: async (tableName, { conditions = [], logicalOperator = " AND " } = {}) => {
     try {
@@ -219,17 +259,6 @@ const baseModel = {
       const result = await pool.query(query, values);
 
       return result.rowCount;
-    } catch (error) {
-      console.error("Error executing delete:", error);
-      throw new Error(`Delete operation failed: ${error.message}`);
-    }
-  },
-
-  deleteById: async (tableName, idColumn, idValue) => {
-    try {
-      const query = `DELETE FROM "${tableName}" WHERE "${idColumn}" = $1`;
-      await pool.query(query, [idValue]);
-      return true;
     } catch (error) {
       console.error("Error executing delete:", error);
       throw new Error(`Delete operation failed: ${error.message}`);
@@ -257,6 +286,90 @@ const baseModel = {
       throw new Error(`Delete operation failed: ${error.message}`);
     }
   }, 
+
+  executeTransaction: async (transactionCallback) => {
+    try {
+      await pool.query('BEGIN'); // Start transaction
+      const result = await transactionCallback(); // Execute the callback
+      await pool.query('COMMIT'); // Commit transaction if successful
+      return result;
+    } catch (error) {
+      await pool.query('ROLLBACK'); // Rollback if there's an error
+      throw error;
+    } finally{
+      (await pool.connect()).release();
+    }
+  },
+
+  updateWithConditions: async (
+    tableName, 
+    columns, 
+    values, 
+    conditions = [], 
+    logicalOperators = ["AND"]
+  ) => {
+    try {
+      // Check if columns are populated
+      if (columns.length === 0) {
+        throw new Error("No columns provided for the update operation.");
+      }
+  
+      // Construct the SET clause
+      const setClause = columns
+        .map((col, i) => `"${col}" = $${i + 1}`) // safely create SET clause
+        .join(", ");
+  
+      // Prepare the initial update query
+      let query = `UPDATE "${tableName}" SET ${setClause}`;
+      const whereClauses = [];
+      const conditionValues = [];
+  
+      // Add conditions for WHERE clause if provided
+      if (conditions.length > 0) {
+        let flag = columns.length; // Flag starts after the update values
+        conditions.forEach((condition, index) => {
+          const { column, value, operator = "=" } = condition;
+  
+          if (value !== undefined && value !== null) {
+            if (operator === "BETWEEN" && Array.isArray(value) && value.length === 2) {
+              // Handle BETWEEN condition
+              whereClauses.push(`"${column}" BETWEEN $${flag + 1} AND $${flag + 2}`);
+              conditionValues.push(value[0], value[1]);
+              flag += 2;
+            } else {
+              whereClauses.push(`"${column}" ${operator} $${flag + 1}`);
+              conditionValues.push(value);
+              flag++;
+            }
+  
+            // Add logical operator if it's not the last condition
+            if (index < conditions.length - 1) {
+              whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+            }
+          }
+        });
+  
+        if (whereClauses.length > 0) {
+          query += ` WHERE ${whereClauses.join("")}`;
+        }
+      }
+  
+      // Append RETURNING * to get the updated row(s)
+      query += ` RETURNING *`;
+  
+      // Combine the update values with the condition values
+      const finalValues = [...values, ...conditionValues];
+  
+      // Execute query
+      const result = await pool.query(query, finalValues);
+  
+      return result.rows;
+    } catch (error) {
+      console.error("Error executing update:", error);
+      throw new Error(`Update operation failed: ${error.message}`);
+    }
+  }
+  
   
 };
 

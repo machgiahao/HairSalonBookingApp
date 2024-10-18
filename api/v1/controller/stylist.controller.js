@@ -45,17 +45,13 @@ module.exports.getStylistDetail = async (req, res) => {
     }
 };
 
-
-
-
-
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const updatedStylist = await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req,res);
+        const updatedStylist = await baseModel.executeTransaction(async()=> { return await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req,res);})
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
@@ -89,31 +85,40 @@ module.exports.softDel = async (req, res) => {
 // Get all stylists
 module.exports.getAllStylists = async (req, res) => {
     try {
+        // Validate and set limit
+        const limit = Math.abs(parseInt(req.query.perpage)) || 10; // Default to 10 if invalid
 
-        const columns = columnsRefactor(stylistTable,[usersTable]);
-        
+        // Optional: Set an offset if needed (e.g., for pagination)
+        const offset = Math.abs(parseInt(req.query.page)) || 0; // Default to page 0 if not provided
+
+        const columns = columnsRefactor(stylistTable, [usersTable]);
+
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,  // main table name
-            columns, // columns
-            [],
-            [], // logical operators (defaults to AND)
+            columns,            // columns
+            [],                 // conditions (can be added later)
+            [],                 // logical operators (defaults to AND)
             [ // joins
-              {
-                table: usersTable.name,
-                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                type: "INNER"
-              }
-            ]
-          );
+                {
+                    table: usersTable.name,
+                    on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                    type: "INNER"
+                }
+            ],
+            [],                 // order (can be added later)
+            limit,              // limit
+            offset              // offset for pagination
+        );
 
         if (!stylistList || stylistList.length === 0) {
-            return handleResponse(res, 404, { error: 'No stylists found' });
+            return handleResponse(res, 404, { error: 'No stylists found', limit, offset });
         }
 
-        console.log('Retrieved Stylist List:', stylistList);
-        return handleResponse(res, 200, { data: { users: stylistList } });
+        // Return the retrieved stylist list with pagination info
+        return handleResponse(res, 200, { data: { users: stylistList, limit, offset } });
     } catch (error) {
         console.error("Error retrieving stylist list:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };
+

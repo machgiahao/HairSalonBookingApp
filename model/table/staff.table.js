@@ -8,7 +8,6 @@ const staffTable = {
         gender: "gender",
         address: "address",
         hireDate: "hireDate",
-        salaryID: "salaryID",
         userID: "userID",
         deleted: "deleted",
     }

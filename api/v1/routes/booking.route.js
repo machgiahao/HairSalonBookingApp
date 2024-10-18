@@ -1,12 +1,12 @@
-const bookController = require("../controller/booking.controller");
+const bookingController = require("../controller/booking.controller");
 const route = require("express").Router();
 
-route.get("/detail", bookController);
-route.post("/create", bookController);
-route.patch("/update", bookController);
-route.delete("/delete", bookController);c
+route.post("/create", bookingController.create);
+// route.get("/detail", bookingController);
+// route.patch("/update", bookingController);
+// route.delete("/delete", bookingController);
 
-
+module.exports = route;
 
 
 
