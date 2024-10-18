@@ -219,6 +219,7 @@ const baseModel = {
       // // Log the query and values for debugging
       // console.log("Generated query:", query);
       // console.log("Values:", [...values, idValue]);
+      console.log(query);
       const result = await pool.query(query, [...values, idValue]);
   
       return result.rows[0];

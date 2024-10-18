@@ -1,7 +1,7 @@
 const managerTable = require("../../../model/table/manager.table");
 const userTable = require("../../../model/table/user.table");
 const baseModel = require("../../../model/base.model");
-const extractField = require("../../../helper/extractField.helper")
+
 
 const managerController = {
     detail: async (req, res) => {
@@ -43,13 +43,14 @@ const managerController = {
 
     update: async (req, res) => {
         try {
+
             // const id = req.query.id;
             const result = await baseModel.executeTransaction(async () => {
                 const managerColumns = [];
                 const managerValues = [];
                 const userColumns = [];
                 const userValues = [];
-
+   
                 for (const key in req.body) {
                     // Kiểm tra và xử lý các cột cho bảng Customer
                     if (managerTable.columns[key] !== undefined && req.body[key] !== "") {
@@ -63,6 +64,7 @@ const managerController = {
                         userValues.push(req.body[key]);
                     }
                 }
+
 
                 // Cập nhật bảng Customer
                 const managerId = req.body.managerID;
