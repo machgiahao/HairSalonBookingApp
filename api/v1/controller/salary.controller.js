@@ -5,7 +5,7 @@ const bookingTable = require("../../../model/table/booking.table");
 const salaryTable = require("../../../model/table/salary.table");
 const dailySalaryTable = require("../../../model/table/dailySalary.table");
 const extractField = require("../../../helper/extractField.helper");
-const columnsRefactor= require("../../../helper/columnsRefactor.heper");
+const dateRefactor = require("../../../helper/dateRefactor.helper")
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -38,49 +38,63 @@ module.exports.create = async (req,res)=>{
     }
 }
 
-module.exports.newDaily = async (req,res)=>{
-    const id = req.query.id;
-    if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
+// module.exports.newDaily = async (req,res)=>{
+//     const id = req.query.id;
+//     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
-    try{
-    const columns = [];
-    const values = [];
+//     try{
+//     const columns = [];
+//     const values = [];
 
-    for (const key in req.body) {
-        if (dailySalaryTable.columns[key] !== undefined) {
-            columns.push(dailySalaryTable.columns[key]);
-            values.push(req.body[key]);
-        }
-    }
+//     for (const key in req.body) {
+//         if (dailySalaryTable.columns[key] !== undefined) {
+//             columns.push(dailySalaryTable.columns[key]);
+//             values.push(req.body[key]);
+//         }
+//     }
 
-    if (columns.length === 0) {
-        return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-    }
+//     if (columns.length === 0) {
+//         return handleResponse(res, 400, { error: 'No valid fields provided for update' });
+//     }
 
-    const result = await baseModel.create(dailySalaryTable.name,columns,values);
+//     const result = await baseModel.create(dailySalaryTable.name,columns,values);
 
-    return handleResponse(res,200,{data:result})
+//     return handleResponse(res,200,{data:result})
 
-    }catch(error) {
-        return handleResponse(res,500,{error:error})
+//     }catch(error) {
+//         return handleResponse(res,500,{error:error})
 
-    }
-}
+//     }
+// }
 
 module.exports.dailySalary = async (req, res) => {
     const id = req.query.id;
     const requestedDate = req.query.date; 
 
+    // Validate ID
     if (!isValidId(id)) {
         return handleResponse(res, 400, { error: 'Valid ID is required' });
     }
 
     try {
-        // Use requested date if provided, otherwise use the current date
-        const dateToUse = requestedDate ? new Date(requestedDate) : new Date();
-        
-        // Format the date to YYYY-MM-DD 00:00:00 for timestamp without timezone
-        const formattedDate = dateToUse.toISOString().split('T')[0] + " 00:00:00"; 
+        // Validate date
+        const formattedDate = dateRefactor.convert(requestedDate);
+        if (!formattedDate) {
+            return handleResponse(res, 400, { error: 'Invalid date format' });
+        }
+
+        let bonus = await baseModel.findWithConditionsJoin(
+            bookingTable.name,
+            [`SUM("${bookingTable.columns.totalPrice}") AS sum`], // Sum totalPrice as 'sum'
+            [
+                { column: bookingTable.columns.appointmentAt, value: formattedDate },
+                { column: bookingTable.columns.deleted, value: false },
+                { column: bookingTable.columns.stylistID, value: id }
+            ],
+            ["AND", "AND"]
+        );
+
+        const bonusSalary = bonus.length && bonus[0]?.sum ? bonus[0].sum * 15 / 100 : 0;
 
         let result = await baseModel.findWithConditionsJoin(
             dailySalaryTable.name,
@@ -90,25 +104,35 @@ module.exports.dailySalary = async (req, res) => {
                 { column: dailySalaryTable.columns.deleted, value: false },
                 { column: dailySalaryTable.columns.stylistID, value: id }
             ],
-            ["AND", "AND"] // Logical operators for conditions
+            ["AND", "AND"]
         );
 
         if (result.length > 0) {
-            return handleResponse(res, 200, { data: result[0] }); 
+            const updateResult = await baseModel.updateWithConditions(
+                dailySalaryTable.name,
+                [dailySalaryTable.columns.salary_bonus],
+                [bonusSalary],
+                [
+                    { column: dailySalaryTable.columns.upToDay, value: formattedDate },
+                    { column: dailySalaryTable.columns.deleted, value: false },
+                    { column: dailySalaryTable.columns.stylistID, value: id }
+                ]
+            );
+            return handleResponse(res, 201, { data: updateResult[0] });
         } else {
-            // No existing record found; prepare to insert a new one
-            const columns = [];
-            const values = [id, formattedDate, 0, false];
+            // No record exists; insert a new one
+            const columns = [
+                dailySalaryTable.columns.stylistID,
+                dailySalaryTable.columns.upToDay,
+                dailySalaryTable.columns.salary_bonus,
+                dailySalaryTable.columns.deleted
+            ];
 
-            for (const key in dailySalaryTable.columns) {
-                if (dailySalaryTable.columns[key] !== dailySalaryTable.columns.dailyID) {
-                    columns.push(dailySalaryTable.columns[key]);
-                }
-            }
+            const values = [id, formattedDate, bonusSalary, false];
 
             // Insert new record
-            result = await baseModel.create(dailySalaryTable.name, columns, values);
-            return handleResponse(res, 201, { data: result }); // Return newly created record
+            const insertResult = await baseModel.create(dailySalaryTable.name, columns, values);
+            return handleResponse(res, 201, { data: insertResult });
         }
     } catch (error) {
         console.error('Error processing daily salary:', error);
