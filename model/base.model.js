@@ -232,9 +232,9 @@ const baseModel = {
   update: async (tableName, idColumn, idValue, columns, values) => {
     try {
       // Check if columns are populated
-      if (columns.length === 0) {
-        throw new Error("No columns provided for the update operation.");
-      }
+      // if (columns.length === 0) {
+      //   throw new Error("No columns provided for the update operation.");
+      // }
   
       const setClause = columns
         .map((col, i) => `"${col}" = $${i + 1}`) // safely create SET clause
@@ -245,8 +245,6 @@ const baseModel = {
       // // Log the query and values for debugging
       // console.log("Generated query:", query);
       // console.log("Values:", [...values, idValue]);
-  
-      // Execute the query
       const result = await pool.query(query, [...values, idValue]);
   
       return result.rows[0];
@@ -317,7 +315,6 @@ const baseModel = {
     try {
       await pool.query('BEGIN'); // Start transaction
       const result = await transactionCallback(); // Execute the callback
-      console.log("tranasac " + result);
       await pool.query('COMMIT'); // Commit transaction if successful
       return result;
     } catch (error) {

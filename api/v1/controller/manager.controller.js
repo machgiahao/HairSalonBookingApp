@@ -30,18 +30,50 @@ const managerController = {
 
     update: async (req, res) => {
         try {
-            const id = req.query.id;
-            if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
+            // const id = req.query.id;
+            const result = await baseModel.executeTransaction(async () => {
+                const managerColumns = [];
+                const managerValues = [];
+                const userColumns = [];
+                const userValues = [];
 
-            const updateManager = await extractField([managerTable, userTable], [managerTable.columns.managerID, userTable.columns.userID], req, res);
+                for (const key in req.body) {
+                    // Kiểm tra và xử lý các cột cho bảng Customer
+                    if (managerTable.columns[key] !== undefined && req.body[key] !== "") {
+                        managerColumns.push(managerTable.columns[key]);
+                        managerValues.push(req.body[key]);
+                    }
 
-            if (!updateManager) {
-                return res.status(404).json({ error: 'Manager not found' });
-            }
+                    // Kiểm tra và xử lý các cột cho bảng Users
+                    if (userTable.columns[key] !== undefined && req.body[key] !== "") {
+                        userColumns.push(userTable.columns[key]);
+                        userValues.push(req.body[key]);
+                    }
+                }
+
+                // Cập nhật bảng Customer
+                const managerId = req.body.managerID;
+                const updateManager = await baseModel.update(managerTable.name, managerTable.columns.managerID, managerId, managerColumns, managerValues);
+                if (!updateManager) {
+                    return res.status(404).json({ error: 'Manager not found' });
+                }
+
+                // Cập nhật bảng Users 
+                const userId = req.body.userID;
+                const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, userColumns, userValues);
+                if (!updateUser) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+
+                return {updateManager: updateManager, updateUser: updateUser}
+            })
             res.status(200).json({
                 success: true,
                 msg: "Update successfully",
-                data: updateManager
+                data: {
+                    updateManager: result.updateManager,
+                    updateUser: result.updateUser
+                }
             })
         } catch (error) {
             console.log(error)

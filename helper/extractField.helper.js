@@ -42,6 +42,7 @@ module.exports = async (tables = [], idColumns = [], req) => {
         try {
             // Update the base model with the gathered data
             const result = await baseModel.update(table.name, idColumn, idValue, columns, values);
+            console.log(result)
         } catch (error) {
             console.error(`Error updating ${table.name}:`, error);
             throw new Error(`Error updating ${table.name}: ${error.message}`); // More context on the error
