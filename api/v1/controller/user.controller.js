@@ -47,12 +47,6 @@ const userController = {
             record: { ...others }
         })
     },
-
-    changePassword: async (req, res) => {
-        
-    }
-
-
 }
 
 module.exports = userController;

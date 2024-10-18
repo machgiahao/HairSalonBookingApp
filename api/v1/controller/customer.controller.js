@@ -14,9 +14,21 @@ const customerController = {
                     msg: "Customer not found"
                 })
             }
+
+            const user = await baseModel.findById("Users", "userID", customer.userID);
+            if (!user) {
+                return res.status(400).json({
+                    success: false,
+                    msg: "User not found"
+                })
+            }
+
             return res.status(200).json({
                 success: true,
-                customer: customer
+                data: {
+                    customer: customer,
+                    user: user
+                }
             })
 
         } catch (error) {
