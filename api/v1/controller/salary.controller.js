@@ -9,63 +9,27 @@ const dateRefactor = require("../../../helper/dateRefactor.helper")
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
-module.exports.create = async (req,res)=>{
+module.exports.getAllDailySalary = async (req,res)=>{
     const id = req.query.id;
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try{
-    const columns = [];
-    const values = [];
 
-    for (const key in req.body) {
-        if (salaryTable.columns[key] !== undefined) {
-            columns.push(salaryTable.columns[key]);
-            values.push(req.body[key]);
-        }
-    }
-
-    if (columns.length === 0) {
-        return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-    }
-
-    const result = await baseModel.create(salaryTable.name,columns,values);
+        let result = await baseModel.findWithConditionsJoin(
+            dailySalaryTable.name,
+            undefined, 
+            [
+                { column: dailySalaryTable.columns.stylistID, value: id }
+            ]
+        );
 
     return handleResponse(res,200,{data:result})
 
     }catch(error) {
-        return handleResponse(res,200,{error:error})
+        return handleResponse(res,500,{error:error})
 
     }
 }
-
-// module.exports.newDaily = async (req,res)=>{
-//     const id = req.query.id;
-//     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
-
-//     try{
-//     const columns = [];
-//     const values = [];
-
-//     for (const key in req.body) {
-//         if (dailySalaryTable.columns[key] !== undefined) {
-//             columns.push(dailySalaryTable.columns[key]);
-//             values.push(req.body[key]);
-//         }
-//     }
-
-//     if (columns.length === 0) {
-//         return handleResponse(res, 400, { error: 'No valid fields provided for update' });
-//     }
-
-//     const result = await baseModel.create(dailySalaryTable.name,columns,values);
-
-//     return handleResponse(res,200,{data:result})
-
-//     }catch(error) {
-//         return handleResponse(res,500,{error:error})
-
-//     }
-// }
 
 module.exports.dailySalary = async (req, res) => {
     const id = req.query.id;
