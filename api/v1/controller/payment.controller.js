@@ -14,9 +14,14 @@ const paymentController = {
         });
       }
 
+      const paymentDetailsWithTotalPrice = await Promise.all(paymentList.map(async (paymentDetail) => {
+        const bookingID = paymentDetail.bookingID;
+        const bookingInfo = await baseModel.findById("Booking", "bookingID", bookingID);
+        paymentDetail.totalPrice = bookingInfo ? bookingInfo.totalPrice : 0; 
+      }));
       res.status(200).json({
         success: true,
-        paymentList: paymentList,
+        paymentList: paymentDetailsWithTotalPrice,
       });
     } catch (error) {
       return res.status(500).json({
@@ -28,7 +33,7 @@ const paymentController = {
   getDetail: async (req, res) => {
     const id = req.query.id;
     try {
-      const paymentDetail = await baseModel.findById(
+      let paymentDetail = await baseModel.findById(
         "Payment",
         "paymentID",
         id
@@ -40,6 +45,11 @@ const paymentController = {
           msg: "Payment not found",
         });
       }
+      let bookingID = paymentDetail.bookingID;
+      const bookingInfo = await baseModel.findById("Booking", "bookingID", bookingID);
+      const totalPrice = bookingInfo.totalPrice;
+      paymentDetail.totalPrice = totalPrice;
+
       return res.status(200).json({
         success: true,
         payment: paymentDetail,
