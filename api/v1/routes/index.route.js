@@ -6,6 +6,7 @@ const stylistRouter = require("./stylist.route");
 const managerRouter = require("./manager.route");
 const serviceRouter = require("./service.route");
 const workshiftRouter = require("./workshift.route");
+const paymentRouter = require("./payment.route");
 
 
 module.exports = (app) => {
@@ -34,6 +35,9 @@ module.exports = (app) => {
     
     //BOOKING ROUTE
     app.use("/api/v1/booking",workshiftRouter);
+
+    // PAYMENT ROUTE
+    app.use("/api/v1/payment", paymentRouter);
 }
 
 
