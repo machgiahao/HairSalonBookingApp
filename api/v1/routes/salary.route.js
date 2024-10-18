@@ -8,7 +8,7 @@ router.post("/newDaily",(req,res)=>{res.send("daily")})
 
 router.get("/salary",(req,res)=>{res.send("salary")})
 
-router.get("/dailySalary",salaryController.dailySalary);
+router.post("/dailySalary",salaryController.dailySalary);
 
 router.get("/totalSalary",(req,res)=>{res.send("salary")})
 

@@ -131,9 +131,11 @@ module.exports.updateStaff = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const updatedStaff = await baseModel.executeTransaction(async () => { 
-            return await extractField([staffTable, usersTable], [staffTable.columns.staffID, usersTable.columns.userID], req);
-        });
+        // const updatedStaff = await baseModel.executeTransaction(async () => { 
+        //     return await extractField([staffTable, usersTable], [staffTable.columns.staffID, usersTable.columns.userID], req);
+        // });
+
+        const updatedStaff = await extractField([staffTable, usersTable], [staffTable.columns.staffID, usersTable.columns.userID], req);
         
         console.log(updatedStaff);
             
