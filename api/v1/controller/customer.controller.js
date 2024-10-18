@@ -7,7 +7,7 @@ const customerController = {
         try {
             const id = req.query.id;
 
-            const customer = await baseModel.findById("Customer", "customerID", id);
+            const customer = await baseModel.findById(customerTable.name, customerTable.columns.customerID, id);
             if (!customer) {
                 return res.status(400).json({
                     success: false,
@@ -15,7 +15,7 @@ const customerController = {
                 })
             }
 
-            const user = await baseModel.findById("Users", "userID", customer.userID);
+            const user = await baseModel.findById(userTable.name, userTable.columns.userID, customer.userID);
             if (!user) {
                 return res.status(400).json({
                     success: false,
@@ -42,46 +42,53 @@ const customerController = {
         try {
             const id = req.query.id;
 
-            const CustomerColumns = [];
-            const CustomerValues = [];
-            const UserColumns = [];
-            const UserValues = [];
+            const result = await baseModel.executeTransaction(async () => {
+                const CustomerColumns = [];
+                const CustomerValues = [];
+                const UserColumns = [];
+                const UserValues = [];
 
-            for (const key in req.body) {
-                // Kiểm tra và xử lý các cột cho bảng Customer
-                if (customerTable.columns[key] !== undefined && req.body[key] !== "") {
-                    CustomerColumns.push(customerTable.columns[key]);
-                    if (key === 'loyaltyPoints') {
-                        CustomerValues.push(parseFloat(req.body[key]));
-                    } else {
-                        CustomerValues.push(req.body[key]);
+                for (const key in req.body) {
+                    // Kiểm tra và xử lý các cột cho bảng Customer
+                    if (customerTable.columns[key] !== undefined && req.body[key] !== "") {
+                        CustomerColumns.push(customerTable.columns[key]);
+                        if (key === 'loyaltyPoints') {
+                            CustomerValues.push(parseFloat(req.body[key]));
+                        } else {
+                            CustomerValues.push(req.body[key]);
+                        }
+                    }
+
+                    // Kiểm tra và xử lý các cột cho bảng Users
+                    if (userTable.columns[key] !== undefined && req.body[key] !== "") {
+                        UserColumns.push(userTable.columns[key]);
+                        UserValues.push(req.body[key]);
                     }
                 }
 
-                // Kiểm tra và xử lý các cột cho bảng Users
-                if (userTable.columns[key] !== undefined && req.body[key] !== "") {
-                    UserColumns.push(userTable.columns[key]);
-                    UserValues.push(req.body[key]);
+                // Cập nhật bảng Customer
+                const updateCustomer = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, CustomerColumns, CustomerValues);
+                if (!updateCustomer) {
+                    return res.status(404).json({ error: 'Customer not found' });
                 }
-            }
 
-            // Cập nhật bảng Customer
-            const updateCustomer = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, CustomerColumns, CustomerValues);
-            if (!updateCustomer) {
-                return res.status(404).json({ error: 'Customer not found' });
-            }
+                // Cập nhật bảng Users 
+                const userId = req.body.userID;
+                const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, UserColumns, UserValues);
+                if (!updateUser) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
 
-            // Cập nhật bảng Users 
-            const userId = req.body.userID;
-            const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, UserColumns, UserValues);
-            if (!updateUser) {
-                return res.status(404).json({ error: 'User not found' });
-            }
+                return { updateCustomer: updateCustomer, updateUser: updateUser }
+            })
 
             res.status(200).json({
                 success: true,
                 msg: "Update successfully",
-                data: [updateCustomer, updateUser]
+                data: {
+                    updateManager: result.updateManager,
+                    updateUser: result.updateUser
+                }
             })
         } catch (error) {
             console.log(error)
@@ -96,23 +103,25 @@ const customerController = {
         try {
             const id = req.query.id;
 
-            const customer = {
-                deleted: true
-            }
-            const update = await baseModel.update("Customer", "customerID", id, Object.keys(customer), Object.values(customer));
-            if (!update) {
-                return res.status(404).json({
-                    success: false,
-                    msg: "Delete fail"
-                });
-            }
+            const result = await baseModel.executeTransaction(async () => {
+                const deleted = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, ["deleted"], [true]);
+                if (!deleted) {
+                    return res.status(404).json({
+                        success: false,
+                        msg: "Delete fail"
+                    });
+                }
+                return deleted
+            })
+
             res.status(200).json({
                 success: true,
                 msg: "Delete successfully",
-                data: update
+                data: result
             })
 
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
