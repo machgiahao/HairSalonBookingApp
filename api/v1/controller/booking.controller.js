@@ -1,4 +1,4 @@
-const queryModel = require("../../../model/query.model");
+const baseModel = require("../../../model/base.model")
 const bookingTable = require("../../../model/table/booking.table");
 const detailTable = require("../../../model/table/bookingDetail.table")
 const { getColsVals } = require("../../../helper/getColsVals.helper");
@@ -6,16 +6,16 @@ const { getColsVals } = require("../../../helper/getColsVals.helper");
 const bookingController = {
     create: async (req, res) => {
         try {
-            const result = await queryModel.executeTransaction(async (client) => {
-                req.body.status = req.body.status ?? "Confirmed";
+            const result = await baseModel.executeTransaction(async () => {
+                req.body.status = req.body.status ?? "In-progress";
                 const { columns, values } = getColsVals(bookingTable, req.body);
                 // Create query to create booking
-                const newBooking = await queryModel.create(bookingTable.name, columns, values, client);
+                const newBooking = await queryModel.create(bookingTable.name, columns, values);
                 // Reassign to let bookingDetail can get
                 req.body.bookingID = newBooking.bookingID;
                 const { columns: columnsDetail, values: valuesDetail } = getColsVals(detailTable, req.body);
                 // Create query to create detail
-                const newDetail = await queryModel.create(detailTable.name, columnsDetail, valuesDetail, client);
+                const newDetail = await queryModel.create(detailTable.name, columnsDetail, valuesDetail);
 
                 return {newBooking: newBooking, newDetail: newDetail}
             });

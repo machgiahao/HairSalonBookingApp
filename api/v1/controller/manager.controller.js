@@ -16,7 +16,7 @@ const managerController = {
                 })
             }
 
-            const user = await baseModel.findById(userTable.name, userTable.columns.userID, customer.userID);
+            const user = await baseModel.findById(userTable.name, userTable.columns.userID, manager.userID);
             if (!user) {
                 return res.status(400).json({
                     success: false,
@@ -33,6 +33,7 @@ const managerController = {
             })
 
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
