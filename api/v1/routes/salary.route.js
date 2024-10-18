@@ -6,7 +6,7 @@ router.post("/create",(req,res)=>{res.send("ok")})
 
 router.post("/newDaily",(req,res)=>{res.send("daily")})
 
-router.get("/salary",(req,res)=>{res.send("salary")})
+router.get("/getAll",salaryController.getAllDailySalary)
 
 router.post("/dailySalary",salaryController.dailySalary);
 

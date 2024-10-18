@@ -81,14 +81,17 @@ const baseModel = {
     columns = ["*"],
     conditions = [],
     logicalOperators = ["AND"],
-    joins = []
+    joins = [],
+    order =[],
+    limit ,
+    offset,
 ) => {
     try {
         const setColumns = columns.join(", ");
         let query = `SELECT ${setColumns} FROM "${tableName}"`; 
         const values = [];
         const whereClauses = [];
-
+        let flag=0;
         if (joins.length > 0) {
           joins.forEach((join) => {
             const { table, on, type = "INNER" } = join; // Default to INNER JOIN
@@ -97,7 +100,7 @@ const baseModel = {
         }
 
         if (conditions.length > 0) {
-            let flag=0;
+            
             conditions.forEach((condition, index) => {
                 const { column, value, operator = "=" } = condition;
 
@@ -125,7 +128,24 @@ const baseModel = {
             }
         }
 
-        // console.log(query); 
+        if (order.length > 0) {
+          const orderByClauses = order.map((order) => {
+              const { column , direction } = order
+              return `"${column}" ${direction.toUpperCase()}`; e
+          }).join(", ");
+          query += ` ORDER BY ${orderByClauses}`;
+      }
+
+      if(limit){
+        query += ` LIMIT $${flag+1}`;
+        values.push(limit)
+      }
+
+      if (offset) {
+        query += ` OFFSET ${flag+2}`;
+        values.push(offset)
+    }
+        console.log(query); 
         // Execute query
         const result = await pool.query(query, values);
         return result.rows;
