@@ -202,7 +202,7 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
 module.exports.getAllWorkshift = async (req, res) => {
     try {
         
-        const workshiftList = await baseModel.findWithConditions(stylistWorkshift.name,undefined,
+        const workshiftList = await baseModel.findWithConditionsJoin(stylistWorkshift.name,undefined,
             [
                 {column:stylistWorkshift.columns.stylistID, value:req.query.id}
             ]);
@@ -213,6 +213,48 @@ module.exports.getAllWorkshift = async (req, res) => {
         return handleResponse(res, 200, { data: { workshifts: workshiftList } });
     } catch (error) {
         console.error("Error retrieving workshift list:", error);
+        return handleResponse(res, 500, { error: error.message });
+    }
+};
+
+
+// Update stylist workshift details
+module.exports.updateStylistWorkshift = async (req, res) => {
+    const stylistID = req.body[stylistWorkshift.columns.stylistID];
+    const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
+    const status = req.body[stylistWorkshift.columns.status]; // assuming status is being updated
+
+    // Check if stylistID and workShiftID are provided
+    if (!stylistID || !workShiftID || !status) {
+        return handleResponse(res, 400, { error: "Stylist ID, WorkShift ID, and Status are required" });
+    }
+
+    const columns = [stylistWorkshift.columns.status];
+    const values = [status];
+
+    // Create conditions for update
+    const conditions = [
+        { column: stylistWorkshift.columns.stylistID, value: stylistID },
+        { column: stylistWorkshift.columns.workShiftID, value: workShiftID }
+    ];
+
+    try {
+        // Call updateWithConditions to update the status where conditions match
+        const updatedStylistWorkshift = await baseModel.updateWithConditions(
+            stylistWorkshift.name,
+            columns,
+            values,
+            conditions,
+            ["AND"] // Logical operator can be adjusted based on requirements
+        );
+
+        if (!updatedStylistWorkshift || updatedStylistWorkshift.length === 0) {
+            return handleResponse(res, 404, { error: 'Stylist work shift not found' });
+        }
+
+        return handleResponse(res, 200, { data:  updatedStylistWorkshift[0]  });
+    } catch (error) {
+        console.error("Error updating stylist work shift:", error);
         return handleResponse(res, 500, { error: error.message });
     }
 };

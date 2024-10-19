@@ -24,6 +24,9 @@ route.delete("/softDel", workshiftController.softDel);
 // Route to update a workship by ID
 route.patch("/update", workshiftController.update);
 
+//update shift of stylist status
+route.patch("/updateStatus", workshiftController.updateStylistWorkshift);
+
 //Remove stylist out of workshift
 route.delete("/removeStylist", workshiftController.removeStylistFromWorkShift);
 
