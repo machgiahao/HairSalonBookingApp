@@ -28,20 +28,30 @@ const serviceController = {
 
     getAll: async (req, res) => {
         try {
-            const serviceList = await baseModel.find("Service");
+            const limit = Math.abs(parseInt(req.query.perpage)) || 10;
+            const offset = Math.abs(parseInt(req.query.page)) || 0;
 
-            if (!serviceList || serviceList.length === 0) {
+            const services = await baseModel.findWithConditions(
+                serviceTable.name,
+                undefined,
+                [],
+                [],
+                [],
+                limit,
+                offset
+            )
+
+            if (!services || services.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    msg: 'No user found'
-                });
+                    msg: "No booking found"
+                })
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
-                userList: serviceList
+                services: services
             })
-
         } catch (error) {
             return res.status(500).json({
                 success: false,

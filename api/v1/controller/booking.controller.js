@@ -72,7 +72,7 @@ const bookingController = {
 
     getAll: async (req, res) => {
         try {
-            const limit = Math.abs(parseInt(req.query.perpage)) || 2;
+            const limit = Math.abs(parseInt(req.query.perpage)) || 10;
             const offset = Math.abs(parseInt(req.query.page)) || 0;
 
             const bookings = await baseModel.findWithConditions(
