@@ -10,7 +10,7 @@ router.get("/getAll",salaryController.getAllDailySalary)
 
 router.post("/dailySalary",salaryController.dailySalary);
 
-router.get("/totalSalary",(req,res)=>{res.send("salary")})
+router.get("/monthlySalary",salaryController.monthlySalary)
 
 
 

@@ -1,6 +1,7 @@
 const baseModel = require("../../../model/base.model");
 const workshift = require("../../../model/table/workshift.table");
 const stylistWorkshift = require("../../../model/table/stylistWorkshift.table");
+const columnsRefactor = require("../../../helper/columnsRefactor.heper")
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -135,7 +136,7 @@ module.exports.addStylistToWorkShift = async (req, res) => {
         const stylistID = req.body[stylistWorkshift.columns.stylistID];
         const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
 
-        const existingEntry = await baseModel.findWithConditions(
+        const existingEntry = await baseModel.findWithConditionsJoinditions(
             stylistWorkshift.name,
             undefined,
             [
@@ -174,7 +175,7 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
             return handleResponse(res, 400, { error: "Stylist ID or WorkShift ID missing" });
         }
 
-        const existingEntry = await baseModel.findWithConditions(
+        const existingEntry = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
             undefined,
             [
@@ -199,18 +200,37 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
 };
 
 
+//get all stylist workshift
 module.exports.getAllWorkshift = async (req, res) => {
     try {
         
-        const workshiftList = await baseModel.findWithConditionsJoin(stylistWorkshift.name,undefined,
+        const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
+        // const workshiftList = await baseModel.findWithConditionsJoin(stylistWorkshift.name,undefined,
+        //     [
+        //         {column:stylistWorkshift.columns.stylistID, value:req.query.id}
+        //     ]);
+        const workshiftList = await baseModel.findWithConditionsJoin(
+            stylistWorkshift.name,
+            undefined,
             [
-                {column:stylistWorkshift.columns.stylistID, value:req.query.id}
-            ]);
+                {column:stylistWorkshift.columns.stylistID, value:req.query.id},
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
+
+            ],
+            ["AND"],
+            [
+                {
+                    table: workshift.name, // join with users table
+                    on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
+                    type: "INNER" // type of join
+                  }
+            ]
+        );
         if (!workshiftList || workshiftList.length === 0) {
             return handleResponse(res, 404, { error: 'No workshifts found' });
         }
         console.log('Retrieved Workshift List:', workshiftList);
-        return handleResponse(res, 200, { data: { workshifts: workshiftList } });
+        return handleResponse(res, 200, { data:  workshiftList  });
     } catch (error) {
         console.error("Error retrieving workshift list:", error);
         return handleResponse(res, 500, { error: error.message });
@@ -222,7 +242,7 @@ module.exports.getAllWorkshift = async (req, res) => {
 module.exports.updateStylistWorkshift = async (req, res) => {
     const stylistID = req.body[stylistWorkshift.columns.stylistID];
     const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
-    const status = req.body[stylistWorkshift.columns.status]; // assuming status is being updated
+    const status = req.body[stylistWorkshift.columns.status]; 
 
     // Check if stylistID and workShiftID are provided
     if (!stylistID || !workShiftID || !status) {

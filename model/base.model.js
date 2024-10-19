@@ -108,75 +108,83 @@ const baseModel = {
     order = [],
     limit,
     offset,
-  ) => {
+    groupBy = [] // New parameter for GROUP BY columns
+) => {
     try {
-      const setColumns = columns.join(", ");
-      let query = `SELECT ${setColumns} FROM "${tableName}"`;
-      const values = [];
-      const whereClauses = [];
-      let flag = 0;
-      if (joins.length > 0) {
-        joins.forEach((join) => {
-          const { table, on, type = "INNER" } = join; // Default to INNER JOIN
-          query += ` ${type} JOIN "${table}" ON ${on}`;
-        });
-      }
+        const setColumns = columns.join(", ");
+        let query = `SELECT ${setColumns} FROM "${tableName}"`; 
+        const values = [];
+        const whereClauses = [];
+        let flag = 0;
 
-      if (conditions.length > 0) {
-
-        conditions.forEach((condition, index) => {
-          const { column, value, operator = "=" } = condition;
-
-          if (value !== undefined && value !== null) {
-            if (operator === "BETWEEN" && Array.isArray(value) && value.length === 2) {
-              // Handle BETWEEN condition
-              whereClauses.push(`"${column}" BETWEEN $${flag + 1} AND $${flag + 2}`);
-              values.push(value[0], value[1]); // Push both values for the BETWEEN clause
-              flag += 2
-            } else {
-              whereClauses.push(`"${column}" ${operator} $${flag + 1}`);
-              values.push(value);
-              flag++;
-            }
-
-            // Add logical operator if it's not the last condition
-            if (index < conditions.length - 1) {
-              whereClauses.push(` ${logicalOperators[index] || "AND"} `);
-            }
-          }
-        });
-
-        if (whereClauses.length > 0) {
-          query += ` WHERE ${whereClauses.join("")}`;
+        if (joins.length > 0) {
+            joins.forEach((join) => {
+                const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+                query += ` ${type} JOIN "${table}" ON ${on}`;
+            });
         }
-      }
 
-      if (order.length > 0) {
-        const orderByClauses = order.map((order) => {
-          const { column, direction } = order
-          return `"${column}" ${direction.toUpperCase()}`; e
-        }).join(", ");
-        query += ` ORDER BY ${orderByClauses}`;
-      }
+        if (conditions.length > 0) {
+            conditions.forEach((condition, index) => {
+                const { column, value, operator = "=" } = condition;
 
-      if (limit) {
-        query += ` LIMIT $${flag + 1}`;
-        values.push(limit)
-      }
+                if (value !== undefined && value !== null) {
+                    if (operator === "BETWEEN" && Array.isArray(value) && value.length === 2) {
+                        // Handle BETWEEN condition
+                        whereClauses.push(`"${column}" BETWEEN $${flag + 1} AND $${flag + 2}`);
+                        values.push(value[0], value[1]); // Push both values for the BETWEEN clause
+                        flag += 2;
+                    } else {
+                        whereClauses.push(`"${column}" ${operator} $${flag + 1}`);
+                        values.push(value);
+                        flag++;
+                    }
 
-      if (offset) {
-        query += ` OFFSET $${flag + 2}`;
-        values.push(offset)
-      }
-      console.log(query);
-      // Execute query
-      const result = await pool.query(query, values);
-      return result.rows;
+                    // Add logical operator if it's not the last condition
+                    if (index < conditions.length - 1) {
+                        whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+                    }
+                }
+            });
+
+            if (whereClauses.length > 0) {
+                query += ` WHERE ${whereClauses.join("")}`;
+            }
+        }
+
+        if (groupBy.length > 0) {
+            const groupByClauses = groupBy.map(column => `${column}`).join(", ");
+            query += ` GROUP BY ${groupByClauses}`;
+        }
+
+        if (order.length > 0) {
+            const orderByClauses = order.map((order) => {
+                const { column, direction } = order;
+                return `"${column}" ${direction.toUpperCase()}`;
+            }).join(", ");
+            query += ` ORDER BY ${orderByClauses}`;
+        }
+
+        if (limit) {
+            query += ` LIMIT $${flag + 1}`;
+            values.push(limit);
+        }
+
+        if (offset) {
+            query += ` OFFSET $${flag + 2}`;
+            values.push(offset);
+        }
+
+        console.log(query); 
+        // Execute query
+        const result = await pool.query(query, values);
+        return result.rows;
     } catch (error) {
       console.error("Error executing findWithConditions:", error);
       throw new Error(`Find with conditions failed: ${error.message}`);
     }
   },
+
 
 
   findById: async (tableName, idColumn, idValue) => {

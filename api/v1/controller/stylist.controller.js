@@ -1,7 +1,7 @@
 const baseModel = require("../../../model/base.model");
 const stylistTable = require("../../../model/table/stylist.table");
 const usersTable= require("../../../model/table/user.table");
-const columnsRefactor = require("../../../helper/columnsRefactor.heper");
+const refactor = require("../../../helper/columnsRefactor.heper");
 const extractField =require("../../../helper/extractField.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
@@ -14,7 +14,7 @@ module.exports.getStylistDetail = async (req, res) => {
 
     try {
         // Define the columns to retrieve from both tables
-        const columns = columnsRefactor(stylistTable,[usersTable]);
+        const columns = refactor.columnsRefactor(stylistTable,[usersTable]);
         
 
         const stylistDetail = await baseModel.findWithConditionsJoin(
@@ -89,7 +89,7 @@ module.exports.getAllStylists = async (req, res) => {
 
         const offset = Math.abs(parseInt(req.query.page)) || 0; 
 
-        const columns = columnsRefactor(stylistTable, [usersTable]);
+        const columns = refactor(stylistTable, [usersTable]);
 
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,  // main table name
