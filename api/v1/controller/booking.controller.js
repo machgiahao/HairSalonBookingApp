@@ -39,7 +39,6 @@ const bookingController = {
                 updateWorkshift: result.updateWorkshift
             })
         } catch (error) {
-            console.log(error)
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
@@ -48,16 +47,61 @@ const bookingController = {
     },
 
     detail: async (req, res) => {
-        const id = req.query.id;
+        try {
+            const id = req.query.bookingID;
 
-        const booking = await baseModel.findByField(bookingTable.name, "bookingID", id);
-        if (!booking) {
-            return res.status(400).json({
+            const booking = await baseModel.findByField(bookingTable.name, "bookingID", id);
+            if (!booking) {
+                return res.status(400).json({
+                    success: false,
+                    msg: "Booking not found"
+                })
+            }
+
+            return res.status(200).json({
+                success: true,
+                booking: booking
+            })
+        } catch (error) {
+            return res.status(500).json({
                 success: false,
-                msg: "Booking not found"
+                msg: "Internal server error"
             })
         }
+    },
 
+    getAll: async (req, res) => {
+        try {
+            const limit = Math.abs(parseInt(req.query.perpage)) || 2;
+            const offset = Math.abs(parseInt(req.query.page)) || 0;
+
+            const bookings = await baseModel.findWithConditions(
+                bookingTable.name,
+                undefined,
+                [],
+                [],
+                [],
+                limit,
+                offset
+            )
+
+            if (!bookings || bookings.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    msg: "No booking found"
+                })
+            }
+
+            return res.status(200).json({
+                success: true,
+                bookings: bookings
+            })
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                msg: "Internal server error"
+            })
+        }
     }
 }
 
