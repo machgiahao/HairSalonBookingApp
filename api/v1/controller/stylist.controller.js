@@ -85,11 +85,9 @@ module.exports.softDel = async (req, res) => {
 // Get all stylists
 module.exports.getAllStylists = async (req, res) => {
     try {
-        // Validate and set limit
-        const limit = Math.abs(parseInt(req.query.perpage)) || 10; // Default to 10 if invalid
+        const limit = Math.abs(parseInt(req.query.perpage)) || 10; 
 
-        // Optional: Set an offset if needed (e.g., for pagination)
-        const offset = Math.abs(parseInt(req.query.page)) || 0; // Default to page 0 if not provided
+        const offset = Math.abs(parseInt(req.query.page)) || 0; 
 
         const columns = columnsRefactor(stylistTable, [usersTable]);
 
@@ -115,7 +113,7 @@ module.exports.getAllStylists = async (req, res) => {
         }
 
         // Return the retrieved stylist list with pagination info
-        return handleResponse(res, 200, { data: { users: stylistList, limit, offset } });
+        return handleResponse(res, 200, { data: { users: stylistList} });
     } catch (error) {
         console.error("Error retrieving stylist list:", error);
         return handleResponse(res, 500, { error: error.message });

@@ -94,7 +94,7 @@ module.exports.getAllStaff = async (req, res) => {
         }
 
         // Return the retrieved staff list
-        return handleResponse(res, 200, { data: { users: staffList, limit, offset } });
+        return handleResponse(res, 200, { data: { users: staffList } });
     } catch (error) {
         console.error("Error retrieving staff list:", error);
         return handleResponse(res, 500, { error: error.message });

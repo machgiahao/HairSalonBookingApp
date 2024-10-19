@@ -142,7 +142,7 @@ const baseModel = {
       }
 
       if (offset) {
-        query += ` OFFSET ${flag+2}`;
+        query += ` OFFSET $${flag+2}`;
         values.push(offset)
     }
         console.log(query); 
@@ -356,13 +356,13 @@ const baseModel = {
   
       // Append RETURNING * to get the updated row(s)
       query += ` RETURNING *`;
-  
+      console.log(query)
       // Combine the update values with the condition values
       const finalValues = [...values, ...conditionValues];
   
       // Execute query
       const result = await pool.query(query, finalValues);
-  
+      
       return result.rows;
     } catch (error) {
       console.error("Error executing update:", error);
