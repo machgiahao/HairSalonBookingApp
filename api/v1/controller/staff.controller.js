@@ -1,7 +1,7 @@
 const baseModel = require("../../../model/base.model");
 const staffTable = require("../../../model/table/staff.table");
 const usersTable = require("../../../model/table/user.table");
-const columnsRefactor= require("../../../helper/columnsRefactor.heper");
+const refactor= require("../../../helper/columnsRefactor.heper");
 const extractField = require("../../../helper/extractField.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
@@ -14,7 +14,7 @@ module.exports.getStaffDetail = async (req, res) => {
 
     try {
         // Define the columns to retrieve from both tables
-        const columns = columnsRefactor(staffTable,[usersTable]);
+        const columns = refactor(staffTable,[usersTable]);
         const staffDetail = await baseModel.findWithConditionsJoin(
             staffTable.name, // main table (staff)
             columns, // columns to select
@@ -70,7 +70,7 @@ module.exports.getAllStaff = async (req, res) => {
 
         const offset = Math.abs(parseInt(req.query.page)) || 0; // Default to page 0 if not provided
 
-        const columns = columnsRefactor(staffTable, [usersTable]);
+        const columns = refactor.columnsRefactor(staffTable, [usersTable]);
 
         const staffList = await baseModel.findWithConditionsJoin(
             staffTable.name,  // main table name

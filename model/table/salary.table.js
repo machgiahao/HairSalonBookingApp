@@ -4,6 +4,7 @@ const table = {
         salaryID: "salaryID", // ID column
         baseSalary: "baseSalary",
         totalSalary: "totalSalary",
+        receivedDate:"receivedDate",
         userID: "userID",
         deleted: "deleted",
     },
