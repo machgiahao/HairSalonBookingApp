@@ -136,7 +136,7 @@ module.exports.addStylistToWorkShift = async (req, res) => {
         const stylistID = req.body[stylistWorkshift.columns.stylistID];
         const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
 
-        const existingEntry = await baseModel.findWithConditionsJoinditions(
+        const existingEntry = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
             undefined,
             [
