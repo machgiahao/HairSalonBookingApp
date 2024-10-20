@@ -89,7 +89,7 @@ module.exports.getAllStylists = async (req, res) => {
 
         const offset = Math.abs(parseInt(req.query.page)) || 0; 
 
-        const columns = refactor(stylistTable, [usersTable]);
+        const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
 
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,  // main table name
