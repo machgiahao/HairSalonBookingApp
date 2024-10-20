@@ -214,9 +214,7 @@ module.exports.getAllWorkshift = async (req, res) => {
             undefined,
             [
                 {column:stylistWorkshift.columns.stylistID, value:req.query.id},
-                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false},
-                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.status}`, value:"active"}
-
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
             ],
             ["AND"],
             [
