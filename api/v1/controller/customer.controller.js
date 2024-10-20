@@ -7,7 +7,7 @@ const customerController = {
         try {
             const id = req.query.id;
 
-            const customer = await baseModel.findById(customerTable.name, customerTable.columns.customerID, id);
+            const customer = await baseModel.findByField(customerTable.name, customerTable.columns.customerID, id);
             if (!customer) {
                 return res.status(400).json({
                     success: false,
@@ -15,7 +15,7 @@ const customerController = {
                 })
             }
 
-            const user = await baseModel.findById(userTable.name, userTable.columns.userID, customer.userID);
+            const user = await baseModel.findByField(userTable.name, userTable.columns.userID, customer.userID);
             if (!user) {
                 return res.status(400).json({
                     success: false,

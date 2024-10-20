@@ -52,6 +52,7 @@ const baseModel = {
       let query = `SELECT ${setColumns} FROM "${tableName}"`;
       const values = [];
       const whereClauses = [];
+      let flag = 0;
 
       if (conditions.length > 0) {
         conditions.forEach((condition, index) => {
@@ -81,12 +82,12 @@ const baseModel = {
       }
 
       if (limit) {
-        query += ` LIMIT $${values.length + 1}`;
+        query += ` LIMIT $${flag+ 1}`;
         values.push(limit);
       }
 
       if (offset) {
-        query += ` OFFSET $${values.length + 2}`;
+        query += ` OFFSET $${flag + 2}`;
         values.push(offset);
       }
       console.log(query);
@@ -214,6 +215,17 @@ const baseModel = {
       const query = `SELECT * FROM "${tableName}" WHERE "${columnName}" = $1`;
       const result = await pool.query(query, [value]);
       return result.rows[0];
+    } catch (error) {
+      console.error("Error executing findByPhone:", error);
+      throw new Error(`Find by phone operation failed: ${error.message}`);
+    }
+  },
+
+  findAllByField: async (tableName, columnName, value) => {
+    try {
+      const query = `SELECT * FROM "${tableName}" WHERE "${columnName}" = $1`;
+      const result = await pool.query(query, [value]);
+      return result.rows;
     } catch (error) {
       console.error("Error executing findByPhone:", error);
       throw new Error(`Find by phone operation failed: ${error.message}`);

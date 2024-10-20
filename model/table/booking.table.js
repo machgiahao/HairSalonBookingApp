@@ -3,6 +3,7 @@ const bookingTable = {
     columns: {
         bookingID: "bookingID",
         stylistID: "stylistID",
+        stylistWorkShiftID: "stylistWorkShiftID",
         guest: "guestID",
         customerID: "customerID", 
         status: "status",

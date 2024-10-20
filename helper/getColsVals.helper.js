@@ -4,7 +4,7 @@ module.exports.getColsVals = (table, body) => {
     const values = [];
 
     for (const key in body) {
-        if (table.columns[key] !== undefined && body[key] !== "") {
+        if (table.columns[key] !== undefined && body[key] !== null && body[key] !== "") {
             columns.push(table.columns[key]);
             values.push(body[key]);
         }
