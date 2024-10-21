@@ -220,14 +220,14 @@ module.exports.getAllWorkshift = async (req, res) => {
                     table: workshift.name, // join with users table
                     on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
                     type: "INNER" // type of join
-                },
-                {
-                    table: bookingTable.name, // join with users table
-                    on: `"${bookingTable.name}"."${bookingTable.columns.stylistWorkShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistWorkShiftID
+                }
+                // {
+                //     table: bookingTable.name, // join with booking table
+                //     on: `"${bookingTable.name}"."${bookingTable.columns.stylistWorkShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistWorkShiftID
 
-                    }"`,
-                    type: "INNER" // type of join
-                },
+                //     }"`,
+                //     type: "" // type of join
+                // },
             ]
         );
 
