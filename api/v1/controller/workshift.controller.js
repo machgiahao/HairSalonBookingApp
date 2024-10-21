@@ -1,6 +1,7 @@
 const baseModel = require("../../../model/base.model");
 const workshift = require("../../../model/table/workshift.table");
 const stylistWorkshift = require("../../../model/table/stylistWorkshift.table");
+const bookingTable = require("../../../model/table/booking.table");
 const columnsRefactor = require("../../../helper/columnsRefactor.heper")
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
@@ -205,15 +206,12 @@ module.exports.getAllWorkshift = async (req, res) => {
     try {
         
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
-        // const workshiftList = await baseModel.findWithConditionsJoin(stylistWorkshift.name,undefined,
-        //     [
-        //         {column:stylistWorkshift.columns.stylistID, value:req.query.id}
-        //     ]);
+        
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
             undefined,
             [
-                {column:stylistWorkshift.columns.stylistID, value:req.query.id},
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id},
                 {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
             ],
             ["AND"],
@@ -222,9 +220,18 @@ module.exports.getAllWorkshift = async (req, res) => {
                     table: workshift.name, // join with users table
                     on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
                     type: "INNER" // type of join
-                  }
+                },
+                {
+                    table: bookingTable.name, // join with users table
+                    on: `"${bookingTable.name}"."${bookingTable.columns.stylistWorkShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistWorkShiftID
+
+                    }"`,
+                    type: "INNER" // type of join
+                },
             ]
         );
+
+       
         if (!workshiftList || workshiftList.length === 0) {
             return handleResponse(res, 404, { error: 'No workshifts found' });
         }
