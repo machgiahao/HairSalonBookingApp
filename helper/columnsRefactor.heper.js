@@ -15,15 +15,15 @@
 // }
 
 const refactor = {
-    columnsRefactor:(mainTable, joinTable = []) => {
-        const columns =[];
-        for(var key in mainTable.columns){
+    columnsRefactor: (mainTable, joinTable = []) => {
+        const columns = [];
+        for (var key in mainTable.columns) {
             columns.push(`"${mainTable.name}"."${mainTable.columns[key]}"`);
-    
+
         }
-        if(joinTable.length<=0) return columns;
-    
-        joinTable.forEach((table)=>{
+        if (joinTable.length <= 0) return columns;
+
+        joinTable.forEach((table) => {
             for (const key in table.columns) {
                 columns.push(`"${table.name}"."${table.columns[key]}"`);
             }
@@ -38,7 +38,7 @@ const refactor = {
         }
         return refactoredColumns;
     }
-    
+
 }
 
-module.exports =refactor
+module.exports = refactor
