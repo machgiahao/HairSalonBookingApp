@@ -62,28 +62,35 @@ module.exports.dailySalary = async (req, res) => {
         ];
 
         let result = await baseModel.findWithConditionsJoin(dailySalaryTable.name, undefined, dailySalaryConditions, ["AND", "AND"]);
-        if (result.length > 0) {
-            // Update existing record
-            const updateResult = await baseModel.updateWithConditions(
-                dailySalaryTable.name,
-                [dailySalaryTable.columns.salary_bonus],
-                [bonusSalary],
-                dailySalaryConditions
-            );
-            return handleResponse(res, 201, { data: updateResult[0] });
-        } else {
-            // Insert new record
-            const columns = [
-                dailySalaryTable.columns.stylistID,
-                dailySalaryTable.columns.upToDay,
-                dailySalaryTable.columns.salary_bonus,
-                dailySalaryTable.columns.deleted
-            ];
-            const values = [id, formattedDate, bonusSalary, false];
+        let data = await baseModel.executeTransaction(async()=>{
+            if (result.length > 0) {
+                // Update existing record
+                const updateResult = await baseModel.updateWithConditions(
+                    dailySalaryTable.name,
+                    [dailySalaryTable.columns.salary_bonus],
+                    [bonusSalary],
+                    dailySalaryConditions
+                );
+                // return handleResponse(res, 201, { data: updateResult[0] });
+                return updateResult[0]
+            } else {
+                // Insert new record
+                const columns = [
+                    dailySalaryTable.columns.stylistID,
+                    dailySalaryTable.columns.upToDay,
+                    dailySalaryTable.columns.salary_bonus,
+                    dailySalaryTable.columns.deleted
+                ];
+                const values = [id, formattedDate, bonusSalary, false];
+    
+                const insertResult = await baseModel.create(dailySalaryTable.name, columns, values);
+                // return handleResponse(res, 201, { data: insertResult });
+                return insertResult
+            }
+        })
+        
+        return handleResponse(res, 201, { data: data });
 
-            const insertResult = await baseModel.create(dailySalaryTable.name, columns, values);
-            return handleResponse(res, 201, { data: insertResult });
-        }
     } catch (error) {
         console.error('Error processing daily salary:', error);
         return handleResponse(res, 500, { error: 'Internal Server Error' });
@@ -92,7 +99,6 @@ module.exports.dailySalary = async (req, res) => {
 
 module.exports.monthlySalary = async (req, res) => {
     const id = req.query.id;
-    const stylistID = req.query.stylistID || 'SL001';
     const requestedDate = req.query.date;
 
     if (!isValidId(id)) {
@@ -103,24 +109,26 @@ module.exports.monthlySalary = async (req, res) => {
         // Get the date range for the current month
         const { date: { firstDay, lastDay } } = dateRefactor.rangeMonth(requestedDate);
 
-        // Prepare query parameters
+        // Prepare query parameters for daily salary
         let columns = [
             `"${dailySalaryTable.name}"."${dailySalaryTable.columns.stylistID}"`, 
             `SUM("${dailySalaryTable.name}"."${dailySalaryTable.columns.salary_bonus}") AS sum`,
-            `"${stylistTable.name}"."${stylistTable.columns.userID}"`
+            `"${stylistTable.name}"."${stylistTable.columns.userID}"`,
         ];
 
         let conditions = [
             { column: `${dailySalaryTable.name}"."${dailySalaryTable.columns.upToDay}`, value: [firstDay, lastDay], operator: 'BETWEEN' },
             { column: `${dailySalaryTable.name}"."${dailySalaryTable.columns.deleted}`, value: false },
-            { column: `${dailySalaryTable.name}"."${dailySalaryTable.columns.stylistID}`, value: stylistID }
+            { column: `${dailySalaryTable.name}"."${dailySalaryTable.columns.stylistID}`, value: id },
         ];
+
+        
 
         let joins = [
-            { table: stylistTable.name, on: `"${dailySalaryTable.name}"."${dailySalaryTable.columns.stylistID}" = "${stylistTable.name}"."${stylistTable.columns.stylistID}"` }
+            { table: stylistTable.name, on: `"${dailySalaryTable.name}"."${dailySalaryTable.columns.stylistID}" = "${stylistTable.name}"."${stylistTable.columns.stylistID}"` },
         ];
 
-        // Execute the query
+        // Execute the query to get daily salary bonus
         const result = await baseModel.findWithConditionsJoin(
             dailySalaryTable.name,
             columns,
@@ -133,52 +141,71 @@ module.exports.monthlySalary = async (req, res) => {
             [`"${dailySalaryTable.name}"."${dailySalaryTable.columns.stylistID}"`, `"${stylistTable.name}"."${stylistTable.columns.stylistID}"`]
         );
 
-        const bonusSalary = result.length && result[0]?.sum ? Math.ceil(result[0].sum) : 0;
-        const userID =result[0].userID;
-        conditions = [
-            { column: `${salaryTable.columns.userID}`, value: userID},
-            { column: `${salaryTable.columns.receivedDate}`, value: lastDay},
-            { column: `${salaryTable.columns.deleted}`, value: false}
+        let bonusSalary = 0; // Default to no bonus if no records found
+        let userID;
 
-        ]
+        if (result.length && result[0]?.userID) {
+            bonusSalary = result[0]?.sum ? Math.ceil(result[0].sum) : 0;
+            userID = result[0].userID;
+        } else {
+            return handleResponse(res, 200, { data: "No daily salary records found." });
+        }
+
+        // Prepare conditions for checking/updating the salary table
+        conditions = [
+            { column: `${salaryTable.columns.userID}`, value: userID },
+            { column: `${salaryTable.columns.receivedDate}`, value: lastDay },
+            { column: `${salaryTable.columns.deleted}`, value: false }
+        ];
 
         let salary = await baseModel.findWithConditionsJoin(
             salaryTable.name,
             undefined,
-            conditions,
-        )
-        console.log(salary);
-        console.log(lastDay);
+            conditions
+        );
+        let data = await baseModel.executeTransaction(async()=>{
+            let baseSalary;
+            if (salary.length > 0) {
+                // If salary record exists, use the base salary from that record
+                baseSalary = salary[0].baseSalary;
+                const newSalary = baseSalary + bonusSalary;
+                
+                // Update existing salary record
+                salary = await baseModel.updateWithConditions(
+                    salaryTable.name,
+                    [salaryTable.columns.totalSalary],
+                    [newSalary],
+                    conditions
+                );
+                // return handleResponse(res, 200, { data: salary[0] });
+                return salary[0];
+            } else {
+                baseSalary =  5000000; 
 
-        let newSalary;
-        if(salary.length>0){
-            newSalary=salary[0].baseSalary + bonusSalary;
-            salary = await baseModel.updateWithConditions(
-                salaryTable.name,
-                [salaryTable.columns.totalSalary],
-                [newSalary],
-                conditions
-            )
-            return handleResponse(res, 201, { data: salary[0] });
+                columns = [
+                    salaryTable.columns.baseSalary,
+                    salaryTable.columns.totalSalary,
+                    salaryTable.columns.receivedDate,
+                    salaryTable.columns.deleted,
+                    salaryTable.columns.userID
+                ];
+                let totalSalary = baseSalary + bonusSalary;
+                let values = [baseSalary, totalSalary, lastDay, false, userID];
+                salary = await baseModel.create(salaryTable.name, columns, values);
+                // return handleResponse(res, 201, { data: salary });
+                return salary;
 
-        }else{
-            columns = [
-                salaryTable.columns.baseSalary,
-                salaryTable.columns.totalSalary,
-                salaryTable.columns.receivedDate,
-                salaryTable.columns.deleted,
-                salaryTable.columns.userID
-            ]
-            let base=5000000
-            let value = [base,base+bonusSalary,lastDay,false,userID]
-            salary = await baseModel.create(salaryTable.name,columns,value)
-            return handleResponse(res, 201, { data: salary });
-
-        }
+            }
+        })
         
+        return handleResponse(res, 201, { data: data });
 
     } catch (error) {
         console.error('Error processing monthly salary:', error);
         return handleResponse(res, 500, { error: 'Internal Server Error' });
     }
 };
+
+module.exports.updateSalary = async (req,res) => { 
+
+}
