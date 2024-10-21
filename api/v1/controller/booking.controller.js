@@ -1,6 +1,8 @@
 const baseModel = require("../../../model/base.model")
 const bookingTable = require("../../../model/table/booking.table");
 const detailTable = require("../../../model/table/bookingDetail.table");
+const customerTable = require("../../../model/table/customer.table");
+const userTable = require("../../../model/table/user.table");
 const stylistWorkShiftTable = require("../../../model/table/stylistWorkshift.table");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const e = require("express");
@@ -70,6 +72,7 @@ const bookingController = {
                 })
             }
 
+
             return res.status(200).json({
                 success: true,
                 booking: booking,
@@ -89,14 +92,26 @@ const bookingController = {
             const page = Math.abs(parseInt(req.query.page)) || 1;
             const offset = (page - 1) * limit;
 
-            const bookings = await baseModel.findWithConditions(
-                bookingTable.name,
-                undefined,
-                [],
-                [],
-                [],
-                limit,
-                offset
+            const bookings = await baseModel.findWithConditionsJoin(
+                bookingTable.name, // Booking
+                ['"Booking".*', '"Users"."phoneNumber"'], // Tất cả các cột của bảng booking và cột phone từ user
+                [], // Không có điều kiện lọc nào
+                [], // Không có điều kiện logic nào
+                [ // Joins
+                    {
+                        table: customerTable.name,
+                        on: `"${customerTable.name}"."${customerTable.columns.customerID}" = "${bookingTable.name}"."${bookingTable.columns.customerID}"`,
+                        type: 'INNER'
+                    }, // Join bảng customer
+                    {
+                        table: userTable.name,
+                        on: `"${customerTable.name}"."${customerTable.columns.userID}" = "${userTable.name}"."${userTable.columns.userID}"`,
+                        type: 'INNER'
+                    } // Join bảng user
+                ],
+                [], // Không có sắp xếp cụ thể nào
+                limit, // Giới hạn số lượng kết quả trả về
+                offset // Vị trí bắt đầu lấy kết quả
             )
 
             if (!bookings || bookings.length === 0) {
@@ -148,8 +163,8 @@ const bookingController = {
                 // new stylistWorkShift
                 const newStylistWorkShiftID = req.body.stylistWorkShiftID;
                 const newStylistWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
-                if(newStylistWorkshift.status === "Inactive") {
-                    throw new Error("Already booked"); 
+                if (newStylistWorkshift.status === "Inactive") {
+                    throw new Error("Already booked");
                 }
                 // Assign old data
                 let newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, oldBooking.stylistWorkShiftID);
