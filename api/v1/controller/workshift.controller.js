@@ -220,14 +220,50 @@ module.exports.getAllWorkshift = async (req, res) => {
                     table: workshift.name, // join with users table
                     on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
                     type: "INNER" // type of join
-                }
-                // {
-                //     table: bookingTable.name, // join with booking table
-                //     on: `"${bookingTable.name}"."${bookingTable.columns.stylistWorkShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistWorkShiftID
+                },
+                
+            ]
+        );
 
-                //     }"`,
-                //     type: "" // type of join
-                // },
+       
+        if (!workshiftList || workshiftList.length === 0) {
+            return handleResponse(res, 404, { error: 'No workshifts found' });
+        }
+        console.log('Retrieved Workshift List:', workshiftList);
+        return handleResponse(res, 200, { data:  workshiftList  });
+    } catch (error) {
+        console.error("Error retrieving workshift list:", error);
+        return handleResponse(res, 500, { error: error.message });
+    }
+};
+
+//get all workshift details
+module.exports.getAllWorkshiftDetail = async (req, res) => {
+    try {
+        
+        const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
+        
+        const workshiftList = await baseModel.findWithConditionsJoin(
+            stylistWorkshift.name,
+            undefined,
+            [
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id},
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
+            ],
+            ["AND"],
+            [
+                {
+                    table: workshift.name, // join with users table
+                    on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
+                    type: "INNER" // type of join
+                },
+                {
+                    table: bookingTable.name, // join with booking table
+                    on: `"${bookingTable.name}"."${bookingTable.columns.stylistWorkShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistWorkShiftID
+
+                    }"`,
+                    type: "INNER" // type of join
+                },
             ]
         );
 
