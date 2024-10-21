@@ -56,7 +56,27 @@ const bookingController = {
         try {
             const id = req.query.bookingID;
 
-            const booking = await baseModel.findByField(bookingTable.name, "bookingID", id);
+            const booking = await baseModel.findWithConditionsJoin(
+                bookingTable.name, // Booking
+                ['"Booking".*', '"Users"."phoneNumber"', '"Customer"."fullName"'], 
+                [  { column: 'bookingID', value: id, operator: '=' }],
+                [],
+                [ // Joins
+                    {
+                        table: customerTable.name,
+                        on: `"${customerTable.name}"."${customerTable.columns.customerID}" = "${bookingTable.name}"."${bookingTable.columns.customerID}"`,
+                        type: 'INNER'
+                    }, // Join table customer
+                    {
+                        table: userTable.name,
+                        on: `"${customerTable.name}"."${customerTable.columns.userID}" = "${userTable.name}"."${userTable.columns.userID}"`,
+                        type: 'INNER'
+                    } // Join table user
+                ],
+                [],
+                undefined, 
+                undefined 
+            )
             if (!booking) {
                 return res.status(400).json({
                     success: false,
@@ -64,7 +84,7 @@ const bookingController = {
                 })
             }
 
-            const details = await baseModel.findAllByField(bookingTable.name, "bookingID", id);
+            const details = await baseModel.findAllByField(detailTable.name, "bookingID", id);
             if (!details) {
                 return res.status(400).json({
                     success: false,
@@ -79,6 +99,7 @@ const bookingController = {
                 details: details
             })
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
@@ -94,24 +115,24 @@ const bookingController = {
 
             const bookings = await baseModel.findWithConditionsJoin(
                 bookingTable.name, // Booking
-                ['"Booking".*', '"Users"."phoneNumber"'], // Tất cả các cột của bảng booking và cột phone từ user
-                [], // Không có điều kiện lọc nào
-                [], // Không có điều kiện logic nào
+                ['"Booking".*', '"Users"."phoneNumber"'], 
+                [],
+                [],
                 [ // Joins
                     {
                         table: customerTable.name,
                         on: `"${customerTable.name}"."${customerTable.columns.customerID}" = "${bookingTable.name}"."${bookingTable.columns.customerID}"`,
                         type: 'INNER'
-                    }, // Join bảng customer
+                    }, // Join table customer
                     {
                         table: userTable.name,
                         on: `"${customerTable.name}"."${customerTable.columns.userID}" = "${userTable.name}"."${userTable.columns.userID}"`,
                         type: 'INNER'
-                    } // Join bảng user
+                    } // Join table user
                 ],
-                [], // Không có sắp xếp cụ thể nào
-                limit, // Giới hạn số lượng kết quả trả về
-                offset // Vị trí bắt đầu lấy kết quả
+                [],
+                limit, 
+                offset 
             )
 
             if (!bookings || bookings.length === 0) {
