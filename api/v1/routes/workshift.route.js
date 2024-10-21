@@ -12,8 +12,11 @@ route.post("/addStylist", workshiftController.addStylistToWorkShift);
 // Route to get all workships
 route.get("/getAll", workshiftController.getAll);
 
-// Route to get all workships of stylist
+// Route to get all workships of tylist
 route.get("/getWorkshfit", workshiftController.getAllWorkshift);
+
+// Route to get all workships of stylist include details
+route.get("/getWorkshfitDetail", workshiftController.getAllWorkshiftDetail);
 
 // Route to get the details of a specific workship by ID
 route.get("/detail", workshiftController.detail);
