@@ -2,7 +2,7 @@ const express = require("express");
 const salaryController = require("../controller/salary.controller");
 const router = express.Router();
 
-router.post("/create",(req,res)=>{res.send("ok")})
+router.patch("/update",salaryController.updateSalary)
 
 router.post("/newDaily",(req,res)=>{res.send("daily")})
 
