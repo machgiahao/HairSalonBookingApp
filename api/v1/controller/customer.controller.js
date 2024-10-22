@@ -1,3 +1,4 @@
+const { getColsVals } = require("../../../helper/getColsVals.helper");
 const baseModel = require("../../../model/base.model")
 const customerTable = require("../../../model/table/customer.table")
 const userTable = require("../../../model/table/user.table")
@@ -42,44 +43,22 @@ const customerController = {
         try {
             const id = req.query.id;
 
-            const result = await baseModel.executeTransaction(async () => {
-                const CustomerColumns = [];
-                const CustomerValues = [];
-                const UserColumns = [];
-                const UserValues = [];
-
-                for (const key in req.body) {
-                    // Kiểm tra và xử lý các cột cho bảng Customer
-                    if (customerTable.columns[key] !== undefined && req.body[key] !== "") {
-                        CustomerColumns.push(customerTable.columns[key]);
-                        if (key === 'loyaltyPoints') {
-                            CustomerValues.push(parseFloat(req.body[key]));
-                        } else {
-                            CustomerValues.push(req.body[key]);
-                        }
-                    }
-
-                    // Kiểm tra và xử lý các cột cho bảng Users
-                    if (userTable.columns[key] !== undefined && req.body[key] !== "") {
-                        UserColumns.push(userTable.columns[key]);
-                        UserValues.push(req.body[key]);
-                    }
-                }
-
-                // Cập nhật bảng Customer
-                const updateCustomer = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, CustomerColumns, CustomerValues);
+            const result = await baseModel.executeTransaction(async () => {           
+                const { columns: customerColumns, values: customerValues } = getColsVals(customerTable, req.body);
+                const { columns: userColumns, values: userValues } = getColsVals(userTable, req.body);
+                // Update table customer
+                const updateCustomer = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, customerColumns, customerValues);
                 if (!updateCustomer) {
                     return res.status(404).json({ error: 'Customer not found' });
                 }
-
-                // Cập nhật bảng Users 
+                // Update table user
                 const userId = req.body.userID;
-                const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, UserColumns, UserValues);
+                const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, userColumns, userValues);
                 if (!updateUser) {
                     return res.status(404).json({ error: 'User not found' });
                 }
-
-                return { updateCustomer: updateCustomer, updateUser: updateUser }
+                const { refreshToken, password, ...others } = updateUser;
+                return { updateCustomer: updateCustomer, updateUser: others }
             })
 
             res.status(200).json({
