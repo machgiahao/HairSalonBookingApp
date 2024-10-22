@@ -204,17 +204,26 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
 //get all stylist workshift
 module.exports.getAllWorkshift = async (req, res) => {
     try {
+        const shiftDate = req.query.shiftDate;
+        let conditions=[
         
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id},
+                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
+        ]
+
+        let logicalOperator = ["AND"]
+        if (shiftDate){
+
+            conditions.push({column:`${workshift.name}"."${workshift.columns.shiftDay}`, value:shiftDate});
+            logicalOperator.push("AND");
+        }
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
         
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
             undefined,
-            [
-                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id},
-                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
-            ],
-            ["AND"],
+            conditions,
+            logicalOperator,
             [
                 {
                     table: workshift.name, // join with users table
