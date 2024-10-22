@@ -86,7 +86,7 @@ const customerController = {
                 success: true,
                 msg: "Update successfully",
                 data: {
-                    updateManager: result.updateManager,
+                    updateCustomer: result.updateCustomer,
                     updateUser: result.updateUser
                 }
             })

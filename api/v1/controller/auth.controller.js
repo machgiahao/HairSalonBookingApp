@@ -29,13 +29,16 @@ const authController = {
             const { columns, values } = getColsVals(userTable, req.body);
 
             // Create and save to db
-            const user = await baseModel.create(userTable.name, columns, values);
-            const userByRole = await roleHelper.handleRole(user, req.body);
+            const result = await baseModel.executeTransaction(async () => {
+                const user = await baseModel.create(userTable.name, columns, values);
+                const userByRole = await roleHelper.handleRole(user, req.body);
+                return { user: user, userByRole: userByRole }
+            })
             return res.status(200).json({
                 success: true,
                 data: {
-                    user: user,
-                    userByRole: userByRole
+                    user: result.user,
+                    userByRole: result.userByRole
                 }
             });
         } catch (error) {
@@ -73,12 +76,14 @@ const authController = {
                     msg: "Incorrect password !"
                 })
             }
-            
+
             // Generate Token
             const accessToken = generate.generateAccessToken(user);
             const refreshTokenStr = generate.generateRefreshToken(user);
             // Save refresh token in DB
-            await baseModel.update("Users", "phoneNumber", user.phoneNumber, ["refreshToken"], [refreshTokenStr]);
+            await baseModel.executeTransaction(async () => {
+                await baseModel.update("Users", "phoneNumber", user.phoneNumber, ["refreshToken"], [refreshTokenStr]);
+            })
             // Save refresh token in cookie
             res.cookie("refreshToken", refreshTokenStr, {
                 httpOnly: true,
@@ -107,7 +112,9 @@ const authController = {
 
     logout: async (req, res) => {
         res.clearCookie("refreshToken");
-        await baseModel.update("Users", "userID", req.body.userID, ["refreshToken"], [""]);
+        await baseModel.executeTransaction(async () => {
+            await baseModel.update("Users", "userID", req.body.userID, ["refreshToken"], [""]);
+        })
         res.status(200).json({
             success: true,
             msg: "Logged out!"
@@ -141,7 +148,9 @@ const authController = {
             }
             const newAccessToken = generate.generateAccessToken(response);
             const newRefreshtoken = generate.generateRefreshToken(response);
-            await baseModel.update("Users", "userID", user.userID, ["refreshToken"], [newRefreshtoken]);
+            await baseModel.executeTransaction(async () => {
+                await baseModel.update("Users", "userID", user.userID, ["refreshToken"], [newRefreshtoken]);
+            })
             res.cookie("refreshToken", newRefreshtoken, {
                 httpOnly: true,
                 secure: false,
@@ -225,9 +234,10 @@ const authController = {
             // hash password
             const salt = await bcrypt.genSalt(10);
             const hashed = await bcrypt.hash(newPassword, salt);
-
-            await baseModel.update("Users", "userID", user.userID, ["password"], [hashed]);
-            await baseModel.update("OtpRequest", "id", otpRequest.id, ["used"], ["true"]);
+            await baseModel.executeTransaction(async () => {
+                await baseModel.update("Users", "userID", user.userID, ["password"], [hashed]);
+                await baseModel.update("OtpRequest", "id", otpRequest.id, ["used"], ["true"]);
+            })
 
             return res.status(200).json({
                 success: true,
@@ -240,8 +250,52 @@ const authController = {
                 msg: "Internal server error"
             })
         }
-    }
+    },
 
+    changePassword: async (req, res) => {
+        try {
+            const id = req.user.userID;
+
+            const userById = await baseModel.findByField(userTable.name, userTable.columns.userID, id);
+            if (!userById) {
+                throw new Error("User not found");
+            }
+
+            const oldPassword = userById.password;
+            const inputPassword = req.body.password;
+
+            const validPassword = await bcrypt.compare(inputPassword, oldPassword);
+            if (!validPassword) {
+                throw new Error("Password does not match");
+            }
+
+            const result = await baseModel.executeTransaction(async () => {
+                const newPassword = req.body.newPassword;
+                const salt = await bcrypt.genSalt(10);
+                const hashed = await bcrypt.hash(newPassword, salt);
+                const update = await baseModel.update(userTable.name, userTable.columns.userID, id, ["password"], [hashed]);
+                const { password, refreshToken, ...others } = update;
+                return { update: others };
+            })
+            return res.status(200).json({
+                success: true,
+                msg: "Change password successfully",
+                data: result.update
+            })
+        } catch (error) {
+            console.log(error)
+            if (error.message === "Password does not match") {
+                return res.status(400).json({
+                    success: false,
+                    msg: error.message
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                msg: "Internal server error"
+            })
+        }
+    }
 
 }
 
