@@ -16,19 +16,24 @@ module.exports.getStylistDetail = async (req, res) => {
         // Define the columns to retrieve from both tables
         const columns = refactor.columnsRefactor(stylistTable,[usersTable]);
         
+        let conditions=[{ column: stylistTable.columns.stylistID, value: id }]
+        let logicalOperator=[]
+        let join=[ // joins
+            {
+              table: usersTable.name, // join with users table
+              on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+              type: "INNER" // type of join
+            }
+        ]
+        let order=[]
 
         const stylistDetail = await baseModel.findWithConditionsJoin(
             stylistTable.name, // main table (stylist)
             columns, // columns to select
-            [{ column: stylistTable.columns.stylistID, value: id }], // condition on stylistID
-            [], // logical operators (defaults to AND)
-            [ // joins
-              {
-                table: usersTable.name, // join with users table
-                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                type: "INNER" // type of join
-              }
-            ]
+            conditions, // condition on stylistID
+            logicalOperator, // logical operators (defaults to AND)
+            join,
+            order
         );
 
         // If no stylist found, return 404
@@ -91,19 +96,24 @@ module.exports.getAllStylists = async (req, res) => {
 
         const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
 
+        let conditions=[]
+        let logicalOperator=[]
+        let join=[ // joins
+            {
+                table: usersTable.name,
+                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                type: "INNER"
+            }
+        ]
+        let order=[]
+
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,  // main table name
             columns,            // columns
-            [],                 // conditions (can be added later)
-            [],                 // logical operators (defaults to AND)
-            [ // joins
-                {
-                    table: usersTable.name,
-                    on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                    type: "INNER"
-                }
-            ],
-            [],                 // order (can be added later)
+            conditions,         // conditions (can be added later)
+            logicalOperator,    // logical operators (defaults to AND)
+            join,               //join
+            order,              // order (can be added later)
             limit,              // limit
             offset              // offset for pagination
         );
