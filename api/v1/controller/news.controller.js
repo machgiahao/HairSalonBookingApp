@@ -158,11 +158,9 @@ module.exports.getAll = async (req, res) => {
         let conditions=[]
         let logicalOperator=[]
         let join=[]
-        console.log(req.query.order)
         let orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
         ? req.query.order.toUpperCase() 
         : "DESC";
-        console.log(orderDirection)
         let order = [
             { column: newsTable.columns.newsID, direction: orderDirection }
         ];
