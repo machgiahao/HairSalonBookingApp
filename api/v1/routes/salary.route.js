@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.patch("/update",salaryController.updateSalary)
 
-router.post("/newDaily",(req,res)=>{res.send("daily")})
+router.get("/generalMonthlySalary",salaryController.generalMonthlySalary)
 
 router.get("/getAll",salaryController.getAllDailySalary)
 
