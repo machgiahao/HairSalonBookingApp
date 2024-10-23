@@ -41,7 +41,10 @@ module.exports.dailySalary = async (req, res) => {
             return handleResponse(res, 400, { error: 'Invalid date format' });
         }
 
-        let columns;
+        let columns=[
+            `SUM("${bookingTable.columns.totalPrice}") AS sum`,
+            `COUNT("${bookingTable.columns.bookingID}") AS count`
+        ];
         let values;
         let logicalOperator = ["AND"];
         let conditions = [
@@ -52,11 +55,12 @@ module.exports.dailySalary = async (req, res) => {
 
         const bonus = await baseModel.findWithConditionsJoin(
             bookingTable.name,
-            [`SUM("${bookingTable.columns.totalPrice}") AS sum`],
+            columns,
             conditions,
             logicalOperator
         );
 
+        const count = bonus[0]?.count ? bonus[0]?.count : 0
         const bonusSalary = bonus.length && bonus[0]?.sum ? Math.ceil(bonus[0].sum * 0.15) : 0;
 
         conditions = [
@@ -101,7 +105,7 @@ module.exports.dailySalary = async (req, res) => {
             }
         });
 
-        return handleResponse(res, 201, { data: dailySalary });
+        return handleResponse(res, 201, { data: dailySalary , count:count});
     } catch (error) {
         console.error('Error processing daily salary:', error);
         return handleResponse(res, 500, { error: 'Internal Server Error' });
@@ -182,8 +186,13 @@ module.exports.monthlySalary = async (req, res) => {
                 const base= salary[0].baseSalary 
                 columns=[salaryTable.columns.totalSalary]
                 values=[base+totalDailySalary]
-                return salary= await baseModel.updateWithConditions(salaryTable.name,columns,values)
-                // salary=totalDailySalary
+                conditions=[
+                    {column:salaryTable.columns.userID,value:userID},
+                    {column:salaryTable.columns.deleted,value:false},
+                    {column:salaryTable.columns.receivedDate,value:date.lastDay}
+                ]
+                salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
+                return salary[0]
             }
             else{
                 const base=7000000
@@ -243,3 +252,72 @@ module.exports.updateSalary = async (req,res) => {
     }
     
 }
+
+module.exports.generalMonthlySalary = async (req, res) => {
+    let id = req.query.id;
+    const requestedDate = req.query.date;
+
+    if (!isValidId(id)) {
+        return handleResponse(res, 400, { error: 'Valid ID is required' });
+    }
+
+    try {
+        const date = dateRefactor.rangeMonth(requestedDate);
+        let columns
+        let values
+        let userID
+        let logicalOperator=["AND"];
+        let conditions =[
+            {column:`${usersTable.columns.deleted}`,value:false},
+            {column:`${usersTable.columns.userID}`,value:id},
+        ]    
+
+        if(id){
+            userID=id;
+            console.log(id);
+        }else{
+            return handleResponse(res,404,{error:"No user found"})
+        }
+
+        
+        conditions = [
+            {column:salaryTable.columns.receivedDate,value:date.lastDay},
+            {column:salaryTable.columns.deleted,value:false},
+            {column:salaryTable.columns.userID,value:userID},
+        ]
+
+        let salary = await baseModel.findWithConditionsJoin(
+            salaryTable.name,
+            undefined,
+            conditions,
+            ["AND","AND"],
+        )
+        salary = await baseModel.executeTransaction(async()=>{
+            if(salary.length>0){
+                return salary[0]
+            }
+            else{
+                const base=7000000
+                columns=[
+                    salaryTable.columns.baseSalary,
+                    salaryTable.columns.totalSalary,
+                    salaryTable.columns.receivedDate,
+                    salaryTable.columns.deleted,
+                    salaryTable.columns.userID
+                ]
+                values=[base,base,date.lastDay,false,userID]
+                return salary= await baseModel.create(
+                    salaryTable.name,columns,values
+                )  
+            }
+        })
+        
+
+        return handleResponse(res, 200, { data: salary });
+        
+
+    } catch (error) {
+        console.error('Error processing monthly salary:', error);
+        return handleResponse(res, 500, { error: 'Internal Server Error' });
+    }
+};
