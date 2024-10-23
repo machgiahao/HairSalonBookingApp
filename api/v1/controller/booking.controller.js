@@ -58,8 +58,8 @@ const bookingController = {
 
             const booking = await baseModel.findWithConditionsJoin(
                 bookingTable.name, // Booking
-                ['"Booking".*', '"Users"."phoneNumber"', '"Customer"."fullName"'], 
-                [  { column: 'bookingID', value: id, operator: '=' }],
+                ['"Booking".*', '"Users"."phoneNumber"', '"Customer"."fullName"'],
+                [{ column: 'bookingID', value: id, operator: '=' }],
                 [],
                 [ // Joins
                     {
@@ -74,8 +74,8 @@ const bookingController = {
                     } // Join table user
                 ],
                 [],
-                undefined, 
-                undefined 
+                undefined,
+                undefined
             )
             if (!booking) {
                 return res.status(400).json({
@@ -115,7 +115,7 @@ const bookingController = {
 
             const bookings = await baseModel.findWithConditionsJoin(
                 bookingTable.name, // Booking
-                ['"Booking".*', '"Users"."phoneNumber"'], 
+                ['"Booking".*', '"Users"."phoneNumber"'],
                 [],
                 [],
                 [ // Joins
@@ -131,8 +131,8 @@ const bookingController = {
                     } // Join table user
                 ],
                 [],
-                limit, 
-                offset 
+                limit,
+                offset
             )
 
             if (!bookings || bookings.length === 0) {
@@ -186,19 +186,23 @@ const bookingController = {
                 }
                 // new stylistWorkShift
                 const newStylistWorkShiftID = req.body.stylistWorkShiftID;
-                const newStylistWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
-                if (newStylistWorkshift.status === "Inactive") {
-                    throw new Error("Already booked");
-                }
                 // Assign old data
                 let newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, oldBooking.stylistWorkShiftID);
+                // If has change in stylist then the change will be made
                 if (newStylistWorkShiftID !== oldBooking.stylistWorkShiftID) {
-                    // Update the status of the old workshift
-                    await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, oldBooking.stylistWorkShiftID, ["status"], ["Active"]);
-                    await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID, ["status"], ["Inactive"]);
-                    // Assign new data if there is a change
-                    newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
+                    const newStylistWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
+                    if (newStylistWorkshift.status === "Inactive") {
+                        throw new Error("Already booked");
+                    }
+                    if (newStylistWorkShiftID !== oldBooking.stylistWorkShiftID) {
+                        // Update the status of the old workshift
+                        await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, oldBooking.stylistWorkShiftID, ["status"], ["Active"]);
+                        await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID, ["status"], ["Inactive"]);
+                        // Assign new data if there is a change
+                        newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
+                    }
                 }
+
                 // Return value
                 return { newBooking: updateBooking, newDetails: newDetails, updateWorkshift: newWorkshift }
             })
