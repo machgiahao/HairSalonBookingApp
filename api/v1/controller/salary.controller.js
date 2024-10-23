@@ -41,7 +41,10 @@ module.exports.dailySalary = async (req, res) => {
             return handleResponse(res, 400, { error: 'Invalid date format' });
         }
 
-        let columns;
+        let columns=[
+            `SUM("${bookingTable.columns.totalPrice}") AS sum`,
+            `COUNT("${bookingTable.columns.bookingID}") AS count`
+        ];
         let values;
         let logicalOperator = ["AND"];
         let conditions = [
@@ -52,11 +55,12 @@ module.exports.dailySalary = async (req, res) => {
 
         const bonus = await baseModel.findWithConditionsJoin(
             bookingTable.name,
-            [`SUM("${bookingTable.columns.totalPrice}") AS sum`],
+            columns,
             conditions,
             logicalOperator
         );
 
+        const count = bonus[0]?.count ? bonus[0]?.count : 0
         const bonusSalary = bonus.length && bonus[0]?.sum ? Math.ceil(bonus[0].sum * 0.15) : 0;
 
         conditions = [
@@ -101,7 +105,7 @@ module.exports.dailySalary = async (req, res) => {
             }
         });
 
-        return handleResponse(res, 201, { data: dailySalary });
+        return handleResponse(res, 201, { data: dailySalary , count:count});
     } catch (error) {
         console.error('Error processing daily salary:', error);
         return handleResponse(res, 500, { error: 'Internal Server Error' });
@@ -183,7 +187,6 @@ module.exports.monthlySalary = async (req, res) => {
                 columns=[salaryTable.columns.totalSalary]
                 values=[base+totalDailySalary]
                 return salary= await baseModel.updateWithConditions(salaryTable.name,columns,values)
-                // salary=totalDailySalary
             }
             else{
                 const base=7000000
