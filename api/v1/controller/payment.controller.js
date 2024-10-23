@@ -1,4 +1,5 @@
 const paymentTable = require("../../../model/table/payment.table");
+const bookingTable = require("../../../model/table/booking.table");
 const baseModel = require("../../../model/base.model");
 const vietQRConfig = require("../../../config/vietQR.config");
 
@@ -86,11 +87,26 @@ const paymentController = {
       const columns = [];
       const values = [];
 
+      if (!req.body.bookingID) {
+        return res.status(400).json({
+          success: false,
+          msg: "bookingID is required",
+        });
+      }
+      const booking = await baseModel.findAllByField("Booking", "bookingID", req.body.bookingID);
+
       for (const key in req.body) {
         if (paymentTable.columns[key] !== undefined && req.body[key] != "") {
           columns.push(paymentTable.columns[key]);
           values.push(req.body[key]);
         }
+      }
+
+      if (!booking || booking.length === 0) {
+        return res.status(404).json({
+          success: false,
+          msg: "No booking found with the provided bookingID",
+        });
       }
 
       const newPayment = await baseModel.create("Payment", columns, values);
