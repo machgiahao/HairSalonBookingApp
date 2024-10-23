@@ -9,6 +9,7 @@ const workshiftRouter = require("./workshift.route");
 const bookingRouter = require("./booking.route");
 const salaryRouter = require("./salary.route");
 const paymentRouter = require("./payment.route");
+const newsRouter = require("./news.route");
 
 module.exports = (app) => {
     app.use("/api/v1/auth", authRoute);
@@ -42,6 +43,9 @@ module.exports = (app) => {
 
     // PAYMENT ROUTE
     app.use("/api/v1/payment", paymentRouter);
+
+    // NEWS ROUTE
+    app.use("/api/v1/news", newsRouter);
 }
 
 
