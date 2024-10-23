@@ -1,6 +1,6 @@
-const authRoute = require("./auth.route");
-const customerRoute = require("./customer.route");
-const userRoute = require("./user.route");
+const authRouter = require("./auth.route");
+const customerRouter = require("./customer.route");
+const userRouter = require("./user.route");
 const staffRouter = require("./staff.route");
 const stylistRouter = require("./stylist.route");
 const managerRouter = require("./manager.route");
@@ -10,15 +10,19 @@ const bookingRouter = require("./booking.route");
 const salaryRouter = require("./salary.route");
 const paymentRouter = require("./payment.route");
 const newsRouter = require("./news.route");
+const guestRouter = require("./guest.route");
 
 module.exports = (app) => {
-    app.use("/api/v1/auth", authRoute);
+    app.use("/api/v1/auth", authRouter);
 
     //USER ROUTE
-    app.use("/api/v1/user", userRoute);
+    app.use("/api/v1/guest", guestRouter);
+
+    //GUEST ROUTE
+    app.use("/api/v1/guest", userRouter);
 
     //CUSTOMER ROUTE
-    app.use("/api/v1/customer", customerRoute);
+    app.use("/api/v1/customer", customerRouter);
 
     //MANAGER ROUTE
     app.use("/api/v1/manager", managerRouter);
@@ -39,7 +43,7 @@ module.exports = (app) => {
     app.use("/api/v1/booking", bookingRouter);
 
     //SALARY ROUTE
-    app.use("/api/v1/salary",salaryRouter);
+    app.use("/api/v1/salary", salaryRouter);
 
     // PAYMENT ROUTE
     app.use("/api/v1/payment", paymentRouter);
