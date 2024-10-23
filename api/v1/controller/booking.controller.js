@@ -136,10 +136,7 @@ const bookingController = {
             )
 
             if (!bookings || bookings.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    msg: "No booking found"
-                })
+                throw new Error("No booking found")
             }
 
             return res.status(200).json({
@@ -148,6 +145,12 @@ const bookingController = {
             })
         } catch (error) {
             console.log(error)
+            if (error.message === "No booking found") {
+                return res.status(403).json({
+                    success: false,
+                    msg: error.message
+                });
+            }
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
@@ -223,26 +226,3 @@ const bookingController = {
 }
 
 module.exports = bookingController;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

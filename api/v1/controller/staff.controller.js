@@ -13,29 +13,30 @@ module.exports.getStaffDetail = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        // Define the columns to retrieve from both tables
-        const columns = refactor(staffTable,[usersTable]);
+        const columns = refactor.columnsRefactor(staffTable,[usersTable]);
+        let conditions=[{ column: staffTable.columns.staffID, value: id }]
+        let logicalOperator=[]
+        let join=[ // joins
+            {
+              table: usersTable.name, // join with users table
+              on: `"${staffTable.name}"."${staffTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+              type: "INNER" // type of join
+            }
+        ]
+        let order=[]
         const staffDetail = await baseModel.findWithConditionsJoin(
-            staffTable.name, // main table (staff)
-            columns, // columns to select
-            [{ column: staffTable.columns.staffID, value: id }], // condition on staffID
-            [], // logical operators (defaults to AND)
-            [ // joins
-              {
-                table: usersTable.name, // join with users table
-                on: `"${staffTable.name}"."${staffTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                type: "INNER" // type of join
-              }
-            ]
+            staffTable.name,    // main table (staff)
+            columns,            // columns to select
+            conditions,         // condition on staffID
+            logicalOperator,    // logical operators (defaults to AND)
+            join,
+            order
         );
 
-        // If no staff member found, return 404
         if (!staffDetail || staffDetail.length === 0) {
             return handleResponse(res, 404, { error: 'Staff member not found' });
         }
 
-        // Log and return the staff detail with joined user data
-        console.log('Retrieved Staff Detail with User Info:', staffDetail);
         return handleResponse(res, 200, { data: { user: staffDetail[0] } });
     } catch (error) {
         console.error("Error retrieving staff detail with join:", error);
@@ -72,19 +73,24 @@ module.exports.getAllStaff = async (req, res) => {
 
         const columns = refactor.columnsRefactor(staffTable, [usersTable]);
 
+        let conditions=[]
+        let logicalOperator=[]
+        let join=[ // joins
+            {
+                table: usersTable.name,
+                on: `"${staffTable.name}"."${staffTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                type: "INNER"
+            }
+        ]
+        let order=[]
+
         const staffList = await baseModel.findWithConditionsJoin(
             staffTable.name,  // main table name
             columns,          // columns
-            [],               // conditions (can be added later)
-            [],               // logical operators (defaults to AND)
-            [ // joins
-                {
-                    table: usersTable.name,
-                    on: `"${staffTable.name}"."${staffTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-                    type: "INNER"
-                }
-            ],
-            [],               // order (can be added later)
+            conditions,               // conditions (can be added later)
+            logicalOperator,               // logical operators (defaults to AND)
+            join,
+            order,               // order (can be added later)
             limit,            // limit
             offset            // offset for pagination
         );
