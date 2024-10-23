@@ -1,6 +1,7 @@
 const managerTable = require("../../../model/table/manager.table");
 const userTable = require("../../../model/table/user.table");
 const baseModel = require("../../../model/base.model");
+const { getColsVals } = require("../../../helper/getColsVals.helper");
 
 
 const managerController = {
@@ -23,7 +24,7 @@ const managerController = {
                     msg: "User not found"
                 })
             }
-            
+
             return res.status(200).json({
                 success: true,
                 data: {
@@ -43,44 +44,23 @@ const managerController = {
 
     update: async (req, res) => {
         try {
-
-            // const id = req.query.id;
             const result = await baseModel.executeTransaction(async () => {
-                const managerColumns = [];
-                const managerValues = [];
-                const userColumns = [];
-                const userValues = [];
-   
-                for (const key in req.body) {
-                    // Kiểm tra và xử lý các cột cho bảng Customer
-                    if (managerTable.columns[key] !== undefined && req.body[key] !== "") {
-                        managerColumns.push(managerTable.columns[key]);
-                        managerValues.push(req.body[key]);
-                    }
-
-                    // Kiểm tra và xử lý các cột cho bảng Users
-                    if (userTable.columns[key] !== undefined && req.body[key] !== "") {
-                        userColumns.push(userTable.columns[key]);
-                        userValues.push(req.body[key]);
-                    }
-                }
-
-
-                // Cập nhật bảng Customer
-                const managerId = req.body.managerID;
-                const updateManager = await baseModel.update(managerTable.name, managerTable.columns.managerID, managerId, managerColumns, managerValues);
+                const id = req.body.managerID;
+                const { columns: managerColumns, values: managerValues } = getColsVals(managerTable, req.body);
+                const { columns: userColumns, values: userValues } = getColsVals(userTable, req.body);
+                // Update table customer
+                const updateManager = await baseModel.update(managerTable.name, managerTable.columns.managerID, id, managerColumns, managerValues);
                 if (!updateManager) {
                     return res.status(404).json({ error: 'Manager not found' });
                 }
-
-                // Cập nhật bảng Users 
+                // Update table user
                 const userId = req.body.userID;
                 const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, userColumns, userValues);
                 if (!updateUser) {
                     return res.status(404).json({ error: 'User not found' });
                 }
-
-                return {updateManager: updateManager, updateUser: updateUser}
+                const { refreshToken, password, ...others } = updateUser;
+                return { updateManager: updateManager, updateUser: others }
             })
             res.status(200).json({
                 success: true,
