@@ -34,7 +34,7 @@ const authController = {
                 const userByRole = await roleHelper.handleRole(user, req.body);
                 return { user: user, userByRole: userByRole }
             })
-            return res.status(200).json({
+            return res.status(201).json({
                 success: true,
                 data: {
                     user: result.user,
