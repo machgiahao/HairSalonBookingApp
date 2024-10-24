@@ -43,7 +43,7 @@ const bookingController = {
                     req.body.serviceID = serviceID;  // Update serviceID through each loop
                     const { columns: columnsDetail, values: valuesDetail } = getColsVals(detailTable, req.body);
 
-                    // Create detail for each service
+                    // Create booking detail for each service
                     const result = await baseModel.create(detailTable.name, columnsDetail, valuesDetail);
                     newDetails.push(result); // push result into newDetails
                 }

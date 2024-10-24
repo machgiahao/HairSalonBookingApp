@@ -4,7 +4,7 @@ const bookingTable = {
         bookingID: "bookingID",
         stylistID: "stylistID",
         stylistWorkShiftID: "stylistWorkShiftID",
-        guest: "guestID",
+        guestID: "guestID",
         customerID: "customerID", 
         status: "status",
         totalPrice: "totalPrice",
