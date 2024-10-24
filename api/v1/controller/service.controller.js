@@ -134,11 +134,10 @@ const serviceController = {
                 data: updateService
             })
         } catch (error) {
-            console.error("Error in update:", error);  // Ghi lại lỗi chi tiết
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error",
-                error: error.message  // Thêm thông tin chi tiết về lỗi
+                error: error.message  
             });
         }
         
@@ -148,24 +147,25 @@ const serviceController = {
         try {
             const id = req.query.id;
 
-            const service = {
-                deleted: true
-            }
+            const result = await baseModel.executeTransaction(async () => {
+                const update = await baseModel.update(serviceTable.name, serviceTable.columns.serviceID, id, ["deleted"], [true]);
+                if(!update) throw new Error("Serivce not found")
+                return {update: update}
+           })
 
-            const update = await baseModel.update("Service", "serviceID", id, Object.keys(service), Object.values(service));
-            if (!update) {
-                return res.status(404).json({
-                    success: false,
-                    msg: "Delete fail"
-                });
-            }
             res.status(200).json({
                 success: true,
                 msg: "Delete successfully",
-                data: update
+                data: result.update
             })
 
         } catch (error) {
+            if (error.message === "Serivce not found") {
+                return res.status(404).json({
+                    success: false,
+                    msg: error.message
+                });
+            }
             return res.status(500).json({
                 success: false,
                 msg: "Internal server error"
