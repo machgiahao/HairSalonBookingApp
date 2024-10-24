@@ -7,30 +7,39 @@ const paymentController = {
   getAll: async (req, res) => {
     try {
       const paymentList = await baseModel.find("Payment");
-
+  
       if (!paymentList || paymentList.length === 0) {
         return res.status(404).json({
           success: false,
           msg: "No payment found",
         });
       }
-
-      const paymentDetailsWithTotalPrice = await Promise.all(paymentList.map(async (paymentDetail) => {
-        const bookingID = paymentDetail.bookingID;
-        const bookingInfo = await baseModel.findById("Booking", "bookingID", bookingID);
-        paymentDetail.totalPrice = bookingInfo ? bookingInfo.totalPrice : 0; 
-      }));
+  
+      const paymentDetailsWithTotalPrice = await Promise.all(
+        paymentList.map(async (paymentDetail) => {
+          const bookingID = paymentDetail.bookingID;
+          const bookingInfo = await baseModel.findById("Booking", "bookingID", bookingID);
+  
+          return {
+            ...paymentDetail,
+            totalPrice: bookingInfo ? bookingInfo.totalPrice : 0,
+          };
+        })
+      );
+  
       res.status(200).json({
         success: true,
         paymentList: paymentDetailsWithTotalPrice,
       });
     } catch (error) {
+      console.error(error);
       return res.status(500).json({
         success: false,
         msg: "Internal server error",
       });
     }
   },
+  
   getDetail: async (req, res) => {
     const id = req.query.id;
     try {
@@ -86,36 +95,47 @@ const paymentController = {
     try {
       const columns = [];
       const values = [];
-
+  
       if (!req.body.bookingID) {
         return res.status(400).json({
           success: false,
           msg: "bookingID is required",
         });
       }
+  
       const booking = await baseModel.findAllByField("Booking", "bookingID", req.body.bookingID);
-
-      for (const key in req.body) {
-        if (paymentTable.columns[key] !== undefined && req.body[key] != "") {
-          columns.push(paymentTable.columns[key]);
-          values.push(req.body[key]);
-        }
-      }
-
+  
       if (!booking || booking.length === 0) {
         return res.status(404).json({
           success: false,
           msg: "No booking found with the provided bookingID",
         });
       }
-
+  
+      const existingPayment = await baseModel.findAllByField("Payment", "bookingID", req.body.bookingID);
+  
+      if (existingPayment.length > 0 && existingPayment[0].status === 'paid') {
+        return res.status(400).json({
+          success: false,
+          msg: "This booking has already been paid",
+        });
+      }
+  
+      for (const key in req.body) {
+        if (paymentTable.columns[key] !== undefined && req.body[key] !== "") {
+          columns.push(paymentTable.columns[key]);
+          values.push(req.body[key]);
+        }
+      }
+  
+      // 5. Tạo bản ghi mới trong bảng Payment
       const newPayment = await baseModel.create("Payment", columns, values);
       return res.status(200).json({
         success: true,
         data: newPayment,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).json({
         success: false,
         msg: "Internal server error",
