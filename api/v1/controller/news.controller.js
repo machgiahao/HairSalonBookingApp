@@ -158,14 +158,16 @@ module.exports.getAll = async (req, res) => {
         let conditions=[]
         let logicalOperator=[]
         let join=[]
-        console.log(req.query.order)
         let orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
         ? req.query.order.toUpperCase() 
         : "DESC";
-        console.log(orderDirection)
         let order = [
             { column: newsTable.columns.newsID, direction: orderDirection }
         ];
+
+        if(req.query.id){
+            conditions.push({columns:newsTable.columns.newsID,value:req.query.id})
+        }
 
         const news = await baseModel.findWithConditionsJoin(
             newsTable.name,  // main table name
