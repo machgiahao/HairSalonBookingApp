@@ -16,7 +16,7 @@ route.get("/getAll", workshiftController.getAll);
 route.get("/getWorkshift", workshiftController.getAllWorkshift);
 
 // Route to get all workships of stylist include details
-route.get("/getWorkshfitDetail", workshiftController.getAllWorkshiftDetail);
+route.get("/getWorkshiftDetail", workshiftController.getAllWorkshiftDetail);
 
 // Route to get the details of a specific workship by ID
 route.get("/detail", workshiftController.detail);
