@@ -285,29 +285,67 @@ const baseModel = {
     }
   },
 
-  deleteWithConditions: async (tableName, { conditions = [], logicalOperator = " AND " } = {}) => {
+  deleteWithConditionsJoin: async (
+    tableName,
+    conditions = [], 
+    logicalOperators = ["AND"], 
+    joins = [] 
+  ) => {
     try {
-      if (conditions.length === 0) return false;
-
-      let query = `DELETE FROM "${tableName}" WHERE `;
+      if (conditions.length === 0) return false; // No conditions means no delete
+  
+      let query = `DELETE FROM "${tableName}"`;
       const values = [];
+      let flag = 0;
       const whereClauses = [];
-
-      conditions.forEach((element, i) => {
-        const { column, value, operator = "=" } = element;
-        whereClauses.push(`${column} ${operator} $${i + 1}`);
-        values.push(value);
-      });
-
-      query += whereClauses.join(logicalOperator);
+  
+      // Handling JOIN clauses if any
+      if (joins.length > 0) {
+        joins.forEach((join) => {
+          const { table, on, type = "INNER" } = join; // Default to INNER JOIN
+          query += ` ${type} JOIN "${table}" ON ${on}`;
+        });
+      }
+  
+      // Handling WHERE conditions
+      if (conditions.length > 0) {
+        conditions.forEach((condition, index) => {
+          const { column, value, operator = "=" } = condition;
+  
+          if (value !== undefined && value !== null) {
+            if (operator === "BETWEEN" && Array.isArray(value) && value.length === 2) {
+              // Handle BETWEEN condition
+              whereClauses.push(`"${column}" BETWEEN $${flag + 1} AND $${flag + 2}`);
+              values.push(value[0], value[1]); // Push both values for the BETWEEN clause
+              flag += 2;
+            } else {
+              whereClauses.push(`"${column}" ${operator} $${flag + 1}`);
+              values.push(value);
+              flag++;
+            }
+  
+            // Add logical operator if it's not the last condition
+            if (index < conditions.length - 1) {
+              whereClauses.push(` ${logicalOperators[index] || "AND"} `);
+            }
+          }
+        });
+  
+        if (whereClauses.length > 0) {
+          query += ` WHERE ${whereClauses.join("")}`;
+        }
+      }
+  
+      console.log(query); 
+      // Execute delete query
       const result = await pool.query(query, values);
-
-      return result.rowCount;
+      return result.rowCount; // Return the number of deleted rows
     } catch (error) {
-      console.error("Error executing delete:", error);
+      console.error("Error executing deleteWithConditionsJoin:", error);
       throw new Error(`Delete operation failed: ${error.message}`);
     }
   },
+  
 
   findAllWithPhone: async (roleTable) => {
     try {
@@ -418,4 +456,3 @@ const baseModel = {
 };
 
 module.exports = baseModel;
-
