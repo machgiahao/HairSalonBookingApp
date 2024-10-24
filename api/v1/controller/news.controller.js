@@ -165,6 +165,10 @@ module.exports.getAll = async (req, res) => {
             { column: newsTable.columns.newsID, direction: orderDirection }
         ];
 
+        if(req.query.id){
+            conditions.push({columns:newsTable.columns.newsID,value:req.query.id})
+        }
+
         const news = await baseModel.findWithConditionsJoin(
             newsTable.name,  // main table name
             columns,            // columns
