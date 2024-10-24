@@ -5,7 +5,7 @@ route.post("/create", bookingController.create);
 route.get("/detail", bookingController.detail);
 route.get("/getAll", bookingController.getAll);
 route.patch("/update", bookingController.update);
-// route.delete("/delete", bookingController);
+route.delete("/delete", bookingController.delete);
 
 module.exports = route;
 

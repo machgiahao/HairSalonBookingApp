@@ -1,8 +1,8 @@
 const baseModel = require("../../../model/base.model");
 const stylistTable = require("../../../model/table/stylist.table");
-const usersTable= require("../../../model/table/user.table");
+const usersTable = require("../../../model/table/user.table");
 const refactor = require("../../../helper/columnsRefactor.heper");
-const extractField =require("../../../helper/extractField.helper");
+const extractField = require("../../../helper/extractField.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -14,18 +14,18 @@ module.exports.getStylistDetail = async (req, res) => {
 
     try {
         // Define the columns to retrieve from both tables
-        const columns = refactor.columnsRefactor(stylistTable,[usersTable]);
-        
-        let conditions=[{ column: stylistTable.columns.stylistID, value: id }]
-        let logicalOperator=[]
-        let join=[ // joins
+        const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
+
+        let conditions = [{ column: stylistTable.columns.stylistID, value: id }]
+        let logicalOperator = []
+        let join = [ // joins
             {
-              table: usersTable.name, // join with users table
-              on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
-              type: "INNER" // type of join
+                table: usersTable.name, // join with users table
+                on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
+                type: "INNER" // type of join
             }
         ]
-        let order=[]
+        let order = []
 
         const stylistDetail = await baseModel.findWithConditionsJoin(
             stylistTable.name, // main table (stylist)
@@ -56,7 +56,7 @@ module.exports.updateStylist = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        const updatedStylist = await baseModel.executeTransaction(async()=> { return await extractField([stylistTable,usersTable],[stylistTable.columns.stylistID,usersTable.columns.userID],req,res);})
+        const updatedStylist = await baseModel.executeTransaction(async () => { return await extractField([stylistTable, usersTable], [stylistTable.columns.stylistID, usersTable.columns.userID], req, res); })
         if (!updatedStylist) {
             return handleResponse(res, 404, { error: 'Stylist not found' });
         }
@@ -90,22 +90,22 @@ module.exports.softDel = async (req, res) => {
 // Get all stylists
 module.exports.getAllStylists = async (req, res) => {
     try {
-        const limit = Math.abs(parseInt(req.query.perpage)) || 10; 
+        const limit = Math.abs(parseInt(req.query.perpage)) || 10;
 
-        const offset = Math.abs(parseInt(req.query.page)) || 0; 
+        const offset = Math.abs(parseInt(req.query.page)) || 0;
 
         const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
 
-        let conditions=[]
-        let logicalOperator=[]
-        let join=[ // joins
+        let conditions = []
+        let logicalOperator = []
+        let join = [ // joins
             {
                 table: usersTable.name,
                 on: `"${stylistTable.name}"."${stylistTable.columns.userID}" = "${usersTable.name}"."${usersTable.columns.userID}"`,
                 type: "INNER"
             }
         ]
-        let order=[]
+        let order = []
 
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,  // main table name
@@ -123,7 +123,7 @@ module.exports.getAllStylists = async (req, res) => {
         }
 
         // Return the retrieved stylist list with pagination info
-        return handleResponse(res, 200, { data: { users: stylistList} });
+        return handleResponse(res, 200, { data: { users: stylistList } });
     } catch (error) {
         console.error("Error retrieving stylist list:", error);
         return handleResponse(res, 500, { error: error.message });

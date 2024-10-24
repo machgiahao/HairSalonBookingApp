@@ -351,8 +351,8 @@ const baseModel = {
     try {
       const query = `
           SELECT 
-            r.*,  -- Lấy tất cả các cột của bảng Customer
-            u."phoneNumber"  -- Lấy cột phoneNumber của bảng Users
+            r.*,
+            u."phoneNumber" 
           FROM 
             "${roleTable}" r
           JOIN 
