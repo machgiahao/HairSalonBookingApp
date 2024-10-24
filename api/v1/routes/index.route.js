@@ -19,7 +19,7 @@ module.exports = (app) => {
     app.use("/api/v1/guest", guestRouter);
 
     //GUEST ROUTE
-    app.use("/api/v1/guest", userRouter);
+    app.use("/api/v1/user", userRouter);
 
     //CUSTOMER ROUTE
     app.use("/api/v1/customer", customerRouter);
