@@ -456,4 +456,3 @@ const baseModel = {
 };
 
 module.exports = baseModel;
-
