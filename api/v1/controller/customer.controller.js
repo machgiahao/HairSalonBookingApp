@@ -23,12 +23,12 @@ const customerController = {
                     msg: "User not found"
                 })
             }
-
+            const { password, refreshToken, ...others } = user;
             return res.status(200).json({
                 success: true,
                 data: {
                     customer: customer,
-                    user: user
+                    user: others
                 }
             })
 
@@ -43,7 +43,7 @@ const customerController = {
         try {
             const id = req.query.id;
 
-            const result = await baseModel.executeTransaction(async () => {           
+            const result = await baseModel.executeTransaction(async () => {
                 const { columns: customerColumns, values: customerValues } = getColsVals(customerTable, req.body);
                 const { columns: userColumns, values: userValues } = getColsVals(userTable, req.body);
                 // Update table customer
