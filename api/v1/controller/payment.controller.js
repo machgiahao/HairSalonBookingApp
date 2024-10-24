@@ -127,8 +127,7 @@ const paymentController = {
           values.push(req.body[key]);
         }
       }
-  
-      // 5. Tạo bản ghi mới trong bảng Payment
+      
       const newPayment = await baseModel.create("Payment", columns, values);
       return res.status(200).json({
         success: true,
