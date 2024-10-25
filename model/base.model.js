@@ -438,7 +438,7 @@ const baseModel = {
 
       // Append RETURNING * to get the updated row(s)
       query += ` RETURNING *`;
-      // console.log(query)
+      console.log(query)
       // Combine the update values with the condition values
       const finalValues = [...values, ...conditionValues];
 
