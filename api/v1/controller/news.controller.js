@@ -171,8 +171,8 @@ module.exports.getAll = async (req, res) => {
 
         const news = await baseModel.findWithConditionsJoin(
             newsTable.name,  // main table name
-            columns,            // columns
-            conditions,         // conditions (can be added later)
+            undefined,            // columns
+            undefined,         // conditions (can be added later)
             logicalOperator,    // logical operators (defaults to AND)
             join,               //join
             order,              // order (can be added later)
