@@ -51,13 +51,13 @@ module.exports.update = async (req, res) => {
 
         const result = await baseModel.executeTransaction(async () => {
             let conditions=[
-                {columns:newsTable.columns.newsID,values:newsID}
+                {column:newsTable.columns.newsID,value:req.query.id}
             ]
-            return baseModel.updateWithConditions(newsTable.name, columns, values,conditions);
+            return await baseModel.updateWithConditions(newsTable.name, columns, values,conditions);
         });
 
         return res.status(201).json({
-            data: result[0]
+            data: result
         });
 
     } catch (error) {
