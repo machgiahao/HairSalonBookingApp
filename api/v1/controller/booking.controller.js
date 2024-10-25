@@ -177,13 +177,13 @@ const bookingController = {
                 const id = req.body.bookingID;
                 // Get old data of booking
                 const oldBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
-                
-                
+
+
                 // Delete selected services
                 await baseModel.deleteById(detailTable.name, detailTable.columns.bookingID, id);
                 // Add new data of services
                 const newDetails = []; // Initialize an empty array
-                
+
                 for (const serviceID of req.body.serviceID) {
                     req.body.serviceID = serviceID;  // Update serviceID through each loop
                     const { columns: newColumnsDetail, values: newValuesDetail } = getColsVals(detailTable, req.body);
@@ -194,7 +194,7 @@ const bookingController = {
                 }
                 // new stylistWorkShift
                 const newStylistWorkShiftID = req.body.stylistWorkShiftID;
-                
+
                 // Assign old data
                 let newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, oldBooking.stylistWorkShiftID);
                 // If has change in stylist then the change will be made
@@ -213,7 +213,7 @@ const bookingController = {
                         // Get day and date object to use
                         const currentDate = dateRefactor.getWeekdayAndDate();
                         // Handle date to save into db
-                        
+
                         if (currentDate.weekday === workShift.shiftDay) {
                             // if it matches current, set current date for appointmentAt
                             req.body.appointmentAt = dateRefactor.addDaysAndFormat(currentDate.date, 0);
@@ -223,10 +223,10 @@ const bookingController = {
                         }
                         // Assign new data if there is a change
                         newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
-                        
+
                     }
                 }
-                
+
                 const { columns: columnsBooking, values: valuesBooking } = getColsVals(bookingTable, req.body);
                 const updateBooking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, columnsBooking, valuesBooking);
                 // Return value
@@ -242,7 +242,7 @@ const bookingController = {
 
         } catch (error) {
             console.log(error);
-            
+
             if (error.message === "Already booked") {
                 return res.status(403).json({
                     success: false,
@@ -254,7 +254,40 @@ const bookingController = {
                 msg: "Internal server error"
             })
         }
+    },
+    delete: async (req, res) => {
+        try {
+        const bookingID = req.query.bookingID;
+        
+        const result = await baseModel.executeTransaction(async () => {
+            const deleted = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, bookingID, ["deleted"], [true]);
+            if (!deleted) {
+                throw new Error("Booking not exist")
+            }
+            return deleted
+        })
+
+        res.status(200).json({
+            success: true,
+            msg: "Delete successfully",
+            data: result
+        })
+
+    } catch(error) {
+        console.log(error)
+        if (error.message === "Booking not exist") {
+            return res.status(404).json({
+                success: false,
+                msg: error.message
+            });
+        }
+        return res.status(500).json({
+            success: false,
+            msg: "Internal server error"
+        })
     }
+
+}
 }
 
 module.exports = bookingController;
