@@ -40,9 +40,9 @@ module.exports.dailySalary = async (req, res) => {
         if (!formattedDate) {
             return handleResponse(res, 400, { error: 'Invalid date format' });
         }
-
+        console.log(formattedDate)
         let columns=[
-            `SUM("${bookingTable.columns.totalPrice}") AS sum`,
+            `SUM("${bookingTable.columns.discountPrice}") AS sum`,
             `COUNT("${bookingTable.columns.bookingID}") AS count`
         ];
         let values;
@@ -61,7 +61,7 @@ module.exports.dailySalary = async (req, res) => {
         );
 
         const count = bonus[0]?.count ? bonus[0]?.count : 0
-        const bonusSalary = bonus.length && bonus[0]?.sum ? Math.ceil(bonus[0].sum * 0.15) : 0;
+        const bonusSalary = bonus.length && bonus[0]?.sum ? Math.ceil(bonus[0].sum * 0.20) : 0;
 
         conditions = [
             { column: dailySalaryTable.columns.upToDay, value: formattedDate },
@@ -222,27 +222,27 @@ module.exports.monthlySalary = async (req, res) => {
 
 module.exports.updateSalary = async (req,res) => { 
     const id = req.query.id;
-    if (!isValidId(id)) {
-        return handleResponse(res, 400, { error: 'Valid ID is required' });
+    if (!isValidId(id) || !req.body.baseSalary) {
+        return handleResponse(res, 400, { error: 'Valid ID is required or missing salary value' });
     }
-    conditions = [
-        {column:salaryTable.columns.salaryID,value:id},
-        {column:salaryTable.columns.deleted,value:false},
+    let conditions = [
+        {column:salaryTable.columns.salaryID,value:req.body.salaryID},
     ]
 
-    let columns=[]
-    let values=[]
+    let salary = await baseModel.findWithConditionsJoin(salaryTable.name,undefined,conditions)
 
-    for(var key in req.body){
-        if(key !== undefined &&  key != salaryTable.columns.salaryID){
-            columns.push(key)
-            values.push(req.body[key]);
-        }
-    }
+    if(salary.length<=0)  handleResponse(res, 400, { message: 'No salary found' });
+    let totalSalary = salary[0].totalSalary-salary[0].baseSalary + req.body.baseSalary;
+
+    let columns=[salaryTable.columns.baseSalary,salaryTable.columns.totalSalary]
+    
+    let values=[req.body.baseSalary,totalSalary]
+
+    
     try{
-        salary = await baseModel.executeTransaction(async()=>{
-            return salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
-            // salary=totalDailySalary
+         salary = await baseModel.executeTransaction(async()=>{
+            salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
+            return salary;
         })
         return handleResponse(res, 201, { data: salary });
 
