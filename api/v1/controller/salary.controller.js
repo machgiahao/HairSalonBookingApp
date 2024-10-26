@@ -40,9 +40,9 @@ module.exports.dailySalary = async (req, res) => {
         if (!formattedDate) {
             return handleResponse(res, 400, { error: 'Invalid date format' });
         }
-
+        console.log(formattedDate)
         let columns=[
-            `SUM("${bookingTable.columns.totalPrice}") AS sum`,
+            `SUM("${bookingTable.columns.discountPrice}") AS sum`,
             `COUNT("${bookingTable.columns.bookingID}") AS count`
         ];
         let values;
@@ -61,7 +61,7 @@ module.exports.dailySalary = async (req, res) => {
         );
 
         const count = bonus[0]?.count ? bonus[0]?.count : 0
-        const bonusSalary = bonus.length && bonus[0]?.sum ? Math.ceil(bonus[0].sum * 0.15) : 0;
+        const bonusSalary = bonus.length && bonus[0]?.sum ? Math.ceil(bonus[0].sum * 0.20) : 0;
 
         conditions = [
             { column: dailySalaryTable.columns.upToDay, value: formattedDate },
@@ -232,7 +232,6 @@ module.exports.updateSalary = async (req,res) => {
     let salary = await baseModel.findWithConditionsJoin(salaryTable.name,undefined,conditions)
 
     if(salary.length<=0)  handleResponse(res, 400, { message: 'No salary found' });
-    console.log(salary)
     let totalSalary = salary[0].totalSalary-salary[0].baseSalary + req.body.baseSalary;
 
     let columns=[salaryTable.columns.baseSalary,salaryTable.columns.totalSalary]
