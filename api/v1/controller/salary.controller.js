@@ -258,7 +258,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
     const requestedDate = req.query.date;
 
     if (!isValidId(id)) {
-        return handleResponse(res, 400, { error: 'Valid ID is required' });
+        return handleResponse(res, 400, { error: 'Valid ID is required or missing date' });
     }
 
     try {

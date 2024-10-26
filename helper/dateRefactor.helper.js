@@ -20,8 +20,8 @@ const dateRefactor = {
         const lastDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth() + 1, 0);
         
         return {
-            firstDay: dateUtils.formatDate(firstDay),
-            lastDay: dateUtils.formatDate(lastDay),
+            firstDay: dateRefactor.convert(firstDay),
+            lastDay: dateRefactor.convert(lastDay),
         };
     },
 
@@ -34,8 +34,8 @@ const dateRefactor = {
         const lastDayOfYear = new Date(dateToUse.getFullYear(), 11, 31);
         
         return {
-            firstDayOfYear: dateUtils.formatDate(firstDayOfYear),
-            lastDayOfYear: dateUtils.formatDate(lastDayOfYear),
+            firstDayOfYear: dateRefactor.convert(firstDayOfYear),
+            lastDayOfYear: dateRefactor.convert(lastDayOfYear),
         };
     },
 
@@ -45,7 +45,7 @@ const dateRefactor = {
             throw new Error("Invalid date provided.");
         }
         const firstDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth(), 1);
-        return dateUtils.formatDate(firstDay);
+        return dateRefactor.convert(firstDay);
     },
 
     getLastDay: (date) => {
@@ -54,7 +54,7 @@ const dateRefactor = {
             throw new Error("Invalid date provided.");
         }
         const lastDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth() + 1, 0);
-        return dateUtils.formatDate(lastDay);
+        return dateRefactor.convert(lastDay);
     },
 
     getWeekdayAndDate: () => {
