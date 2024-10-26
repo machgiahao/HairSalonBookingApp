@@ -291,6 +291,7 @@ const bookingController = {
             const bookingID = req.query.bookingID;
 
             const result = await baseModel.executeTransaction(async () => {
+                await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Cancelled"]);
                 const deleted = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, bookingID, ["deleted"], [true]);
                 if (!deleted) {
                     throw new Error("Booking not exist")
