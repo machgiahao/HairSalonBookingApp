@@ -205,11 +205,13 @@ module.exports.getAll = async (req, res) => {
 module.exports.getAllWorkshift = async (req, res) => {
     try {
         const shiftDate = req.query.shiftDate;
-        let conditions=[
-        
-                {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id},
+        let conditions=[]
+        if(req.query.id) {
+            conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id})
+                
                 // {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
-        ]
+        }
+        
 
         let logicalOperator = ["AND"]
         if (shiftDate){
