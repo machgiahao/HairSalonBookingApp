@@ -8,7 +8,6 @@ route.post("/create", workshiftController.create);
 //
 route.post("/addStylist", workshiftController.addStylistToWorkShift);
 
-
 // Route to get all workships
 route.get("/getAll", workshiftController.getAll);
 
