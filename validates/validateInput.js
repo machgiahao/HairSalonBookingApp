@@ -1,6 +1,6 @@
-const validateInputField = (field) => {
+const validateInputField = (field, fieldname) => {
     if(!field) {
-        return `Missing required field: ${field}`;
+        throw new Error(`Missing required field: ${fieldname}`);
     }
     return null;
 }

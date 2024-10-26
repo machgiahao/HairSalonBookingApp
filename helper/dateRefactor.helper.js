@@ -1,70 +1,60 @@
 const dateRefactor = {
     convert: (date) => {
-        // Ensure 'date' is a valid Date object, or use current date
         const dateToUse = date ? new Date(date) : new Date();
         if (isNaN(dateToUse.getTime())) {
             throw new Error("Invalid date provided.");
         }
-        // Return the converted date in the desired format
-        const converted = dateToUse.toISOString().split('T')[0] + " 00:00:00";
-        return converted;
+        // Format date to 'YYYY-MM-DD 00:00:00'
+        const year = dateToUse.getFullYear();
+        const month = String(dateToUse.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const day = String(dateToUse.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day} 00:00:00`;
     },
+
     rangeMonth: (date) => {
-        // Ensure 'date' is a valid Date object, or use current date
         const dateToUse = date ? new Date(date) : new Date();
         if (isNaN(dateToUse.getTime())) {
             throw new Error("Invalid date provided.");
         }
-        // First day of the month
         const firstDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth(), 1);
-        // Last day of the month (corrected to get the last day)
         const lastDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth() + 1, 0);
-        date = {
-            firstDay: firstDay.toISOString().split('T')[0] + " 00:00:00",
-            lastDay: lastDay.toISOString().split('T')[0] + " 00:00:00",
-        }
-        return date
-
-            ;
+        
+        return {
+            firstDay: dateUtils.formatDate(firstDay),
+            lastDay: dateUtils.formatDate(lastDay),
+        };
     },
+
     rangeYear: (date) => {
-        // Ensure 'date' is a valid Date object, or use current date
         const dateToUse = date ? new Date(date) : new Date();
         if (isNaN(dateToUse.getTime())) {
             throw new Error("Invalid date provided.");
         }
-
-        // First day of the year
         const firstDayOfYear = new Date(dateToUse.getFullYear(), 0, 1);
-        // Last day of the year
         const lastDayOfYear = new Date(dateToUse.getFullYear(), 11, 31);
-        date = {
-            firstDayOfYear: firstDayOfYear.toISOString().split('T')[0] + " 00:00:00", // Corrected key
-            lastDayOfYear: lastDayOfYear.toISOString().split('T')[0] + " 00:00:00"   // Corrected key
-        }
-        return date
+        
+        return {
+            firstDayOfYear: dateUtils.formatDate(firstDayOfYear),
+            lastDayOfYear: dateUtils.formatDate(lastDayOfYear),
+        };
+    },
 
-            ;
-    },
     getFirstDay: (date) => {
-        // Ensure 'date' is a valid Date object, or use current date
         const dateToUse = date ? new Date(date) : new Date();
         if (isNaN(dateToUse.getTime())) {
             throw new Error("Invalid date provided.");
         }
-        // Return the first day of the month
         const firstDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth(), 1);
-        return firstDay.toISOString().split('T')[0] + " 00:00:00";
+        return dateUtils.formatDate(firstDay);
     },
+
     getLastDay: (date) => {
-        // Ensure 'date' is a valid Date object, or use current date
         const dateToUse = date ? new Date(date) : new Date();
         if (isNaN(dateToUse.getTime())) {
             throw new Error("Invalid date provided.");
         }
-        // Return the last day of the month
         const lastDay = new Date(dateToUse.getFullYear(), dateToUse.getMonth() + 1, 0);
-        return lastDay.toISOString().split('T')[0] + " 00:00:00";
+        return dateUtils.formatDate(lastDay);
     },
 
     getWeekdayAndDate: () => {
