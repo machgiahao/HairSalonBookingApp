@@ -50,7 +50,7 @@ const bookingController = {
                 return { newBooking: newBooking, newDetails: newDetails, updateStylistWorkshift: updateStylistWorkshift }
             });
 
-            return res.status(200).json({
+            return res.status(201).json({
                 success: true,
                 newBooking: result.newBooking,
                 newDetails: result.newDetails,
@@ -60,7 +60,7 @@ const bookingController = {
             console.log(error)
             return res.status(500).json({
                 success: false,
-                msg: "Internal server error"
+                error: error.message
             })
         }
     },
@@ -91,18 +91,12 @@ const bookingController = {
                 undefined
             )
             if (!booking) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "Booking not found"
-                })
+                throw new Error("Booking not found");
             }
 
             const details = await baseModel.findAllByField(detailTable.name, "bookingID", id);
             if (!details) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "Booking not found"
-                })
+                throw new Error("Booking detail not found");
             }
 
 
@@ -115,7 +109,7 @@ const bookingController = {
             console.log(error)
             return res.status(500).json({
                 success: false,
-                msg: "Internal server error"
+                error: error.message
             })
         }
     },
@@ -157,16 +151,9 @@ const bookingController = {
                 bookings: bookings
             })
         } catch (error) {
-            console.log(error)
-            if (error.message === "No booking found") {
-                return res.status(403).json({
-                    success: false,
-                    msg: error.message
-                });
-            }
             return res.status(500).json({
                 success: false,
-                msg: "Internal server error"
+                error: error.message
             })
         }
     },
@@ -238,17 +225,9 @@ const bookingController = {
             })
 
         } catch (error) {
-            console.log(error);
-
-            if (error.message === "Already booked") {
-                return res.status(403).json({
-                    success: false,
-                    msg: error.message
-                });
-            }
             return res.status(500).json({
                 success: false,
-                msg: "Internal server error"
+                error: error.message
             })
         }
     },
@@ -261,7 +240,7 @@ const bookingController = {
             const result = await baseModel.executeTransaction(async () => {
                 const recordBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
                 if (recordBooking.status === "Completed" || recordBooking.status === "Cancelled") {
-                    throw new Error("Cannot Update");
+                    throw new Error("Cannot Update Status");
                 }
 
                 let booking = null;
@@ -269,6 +248,9 @@ const bookingController = {
                 let stylistWorkShift = null;
 
                 switch (status) {
+                    case "Done":
+                        booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Cancelled"]);
+                        break;
                     case "Completed":
                         booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Completed"]);
                         if (booking.customerID != null) {
@@ -283,11 +265,11 @@ const bookingController = {
                         stylistWorkShift = await baseModel.update(stylistWorkShiftTable.name, stylistWorkShift.columns.stylistWorkShiftID, booking.stylistWorkShiftID, ["status"], ["Active"]);
                         break;
                     default:
-                        break;
+                        throw new Error("Invalid format status");                        
                 }
                 return { booking: booking, customer: customer, stylistWorkShift: stylistWorkShift }
             })
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 data: {
                     booking: result.booking,
@@ -296,10 +278,9 @@ const bookingController = {
                 }
             })
         } catch (error) {
-            console.log(error)
             return res.status(500).json({
                 success: false,
-                msg: `${error.message}`
+                error: error.message
             })
         }
 
@@ -324,16 +305,9 @@ const bookingController = {
             })
 
         } catch (error) {
-            console.log(error)
-            if (error.message === "Booking not exist") {
-                return res.status(404).json({
-                    success: false,
-                    msg: error.message
-                });
-            }
             return res.status(500).json({
                 success: false,
-                msg: "Internal server error"
+                error: error.message
             })
         }
 
