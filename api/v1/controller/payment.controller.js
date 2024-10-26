@@ -1,5 +1,4 @@
 const paymentTable = require("../../../model/table/payment.table");
-const bookingTable = require("../../../model/table/booking.table");
 const baseModel = require("../../../model/base.model");
 const vietQRConfig = require("../../../config/vietQR.config");
 
@@ -113,22 +112,33 @@ const paymentController = {
       }
   
       const existingPayment = await baseModel.findAllByField("Payment", "bookingID", req.body.bookingID);
-  
-      if (existingPayment.length > 0 && existingPayment[0].status === 'paid') {
-        return res.status(400).json({
-          success: false,
-          msg: "This booking has already been paid",
-        });
-      }
-  
-      for (const key in req.body) {
-        if (paymentTable.columns[key] !== undefined && req.body[key] !== "") {
-          columns.push(paymentTable.columns[key]);
-          values.push(req.body[key]);
+
+      if (existingPayment.length > 0) {
+        if (existingPayment[0].status === 'unpaid') {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid request: This booking already has an associated payment.",
+          });
+        }
+        if (existingPayment[0].status === 'paid') {
+          return res.status(400).json({
+            success: false,
+            msg: "This booking has already been paid",
+          });
         }
       }
+  
+      if (!req.body.status) {
+        columns.push('status'); 
+        values.push('unpaid'); 
+      }
+
+      columns.push('bookingID'); 
+      values.push(req.body.bookingID); 
       
       const newPayment = await baseModel.create("Payment", columns, values);
+      
+      console.log(newPayment);
       return res.status(200).json({
         success: true,
         data: newPayment,
