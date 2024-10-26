@@ -178,7 +178,6 @@ const bookingController = {
                 // Get old data of booking
                 const oldBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
 
-
                 // Delete selected services
                 await baseModel.deleteById(detailTable.name, detailTable.columns.bookingID, id);
                 // Add new data of services
@@ -188,7 +187,6 @@ const bookingController = {
                     req.body.serviceID = serviceID;  // Update serviceID through each loop
                     const { columns: newColumnsDetail, values: newValuesDetail } = getColsVals(detailTable, req.body);
 
-                    // Sử dụng await để đợi cho từng thao tác hoàn tất
                     const result = await baseModel.create(detailTable.name, newColumnsDetail, newValuesDetail);
                     newDetails.push(result); // push result into newDetails
                 }
@@ -223,7 +221,6 @@ const bookingController = {
                         }
                         // Assign new data if there is a change
                         newWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
-
                     }
                 }
 
@@ -255,39 +252,92 @@ const bookingController = {
             })
         }
     },
+
+    changeStatus: async (req, res) => {
+        try {
+            const id = req.body.bookingID;
+            console.log(id);
+            const status = req.body.status;
+            const result = await baseModel.executeTransaction(async () => {
+                const recordBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
+                if (recordBooking.status === "Completed" || recordBooking.status === "Cancelled") {
+                    throw new Error("Cannot Update");
+                }
+
+                let booking = null;
+                let customer = null;
+                let stylistWorkShift = null;
+
+                switch (status) {
+                    case "Completed":
+                        booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Completed"]);
+                        if (booking.customerID != null) {
+                            const point = booking.discountPrice * 0.01;
+                            const recordCustomer = await baseModel.findByField(customerTable.name, customerTable.columns.customerID, booking.customerID);
+                            const loyalPoint = recordCustomer.loyaltyPoints + point;
+                            customer = await baseModel.update(customerTable.name, customerTable.columns.customerID, booking.customerID, [`${customerTable.columns.loyaltyPoints}`], [`${loyalPoint}`]);
+                        }
+                        break;
+                    case "Cancelled":
+                        booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Cancelled"]);
+                        stylistWorkShift = await baseModel.update(stylistWorkShiftTable.name, stylistWorkShift.columns.stylistWorkShiftID, booking.stylistWorkShiftID, ["status"], ["Active"]);
+                        break;
+                    default:
+                        break;
+                }
+                return { booking: booking, customer: customer, stylistWorkShift: stylistWorkShift }
+            })
+            return res.status(201).json({
+                success: true,
+                data: {
+                    booking: result.booking,
+                    customer: result.customer,
+                    stylistWorkShift: result.stylistWorkShift
+                }
+            })
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({
+                success: false,
+                msg: `${error.message}`
+            })
+        }
+
+    },
+
     delete: async (req, res) => {
         try {
-        const bookingID = req.query.bookingID;
-        
-        const result = await baseModel.executeTransaction(async () => {
-            const deleted = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, bookingID, ["deleted"], [true]);
-            if (!deleted) {
-                throw new Error("Booking not exist")
+            const bookingID = req.query.bookingID;
+
+            const result = await baseModel.executeTransaction(async () => {
+                const deleted = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, bookingID, ["deleted"], [true]);
+                if (!deleted) {
+                    throw new Error("Booking not exist")
+                }
+                return deleted
+            })
+
+            res.status(200).json({
+                success: true,
+                msg: "Delete successfully",
+                data: result
+            })
+
+        } catch (error) {
+            console.log(error)
+            if (error.message === "Booking not exist") {
+                return res.status(404).json({
+                    success: false,
+                    msg: error.message
+                });
             }
-            return deleted
-        })
-
-        res.status(200).json({
-            success: true,
-            msg: "Delete successfully",
-            data: result
-        })
-
-    } catch(error) {
-        console.log(error)
-        if (error.message === "Booking not exist") {
-            return res.status(404).json({
+            return res.status(500).json({
                 success: false,
-                msg: error.message
-            });
+                msg: "Internal server error"
+            })
         }
-        return res.status(500).json({
-            success: false,
-            msg: "Internal server error"
-        })
-    }
 
-}
+    }
 }
 
 module.exports = bookingController;
