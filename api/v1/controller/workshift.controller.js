@@ -208,7 +208,6 @@ module.exports.getAllWorkshift = async (req, res) => {
         let conditions=[]
         if(req.query.id) {
             conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id})
-                
                 // {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
         }
         

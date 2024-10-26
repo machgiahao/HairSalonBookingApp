@@ -222,27 +222,28 @@ module.exports.monthlySalary = async (req, res) => {
 
 module.exports.updateSalary = async (req,res) => { 
     const id = req.query.id;
-    if (!isValidId(id)) {
-        return handleResponse(res, 400, { error: 'Valid ID is required' });
+    if (!isValidId(id) || !req.body.baseSalary) {
+        return handleResponse(res, 400, { error: 'Valid ID is required or missing salary value' });
     }
-    conditions = [
-        {column:salaryTable.columns.salaryID,value:id},
-        {column:salaryTable.columns.deleted,value:false},
+    let conditions = [
+        {column:salaryTable.columns.salaryID,value:req.body.salaryID},
     ]
 
-    let columns=[]
-    let values=[]
+    let salary = await baseModel.findWithConditionsJoin(salaryTable.name,undefined,conditions)
 
-    for(var key in req.body){
-        if(key !== undefined &&  key != salaryTable.columns.salaryID){
-            columns.push(key)
-            values.push(req.body[key]);
-        }
-    }
+    if(salary.length<=0)  handleResponse(res, 400, { message: 'No salary found' });
+    console.log(salary)
+    let totalSalary = salary[0].totalSalary-salary[0].baseSalary + req.body.baseSalary;
+
+    let columns=[salaryTable.columns.baseSalary,salaryTable.columns.totalSalary]
+    
+    let values=[req.body.baseSalary,totalSalary]
+
+    
     try{
-        salary = await baseModel.executeTransaction(async()=>{
-            return salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
-            // salary=totalDailySalary
+         salary = await baseModel.executeTransaction(async()=>{
+            salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
+            return salary;
         })
         return handleResponse(res, 201, { data: salary });
 
