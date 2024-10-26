@@ -51,13 +51,13 @@ module.exports.update = async (req, res) => {
 
         const result = await baseModel.executeTransaction(async () => {
             let conditions=[
-                {columns:newsTable.columns.newsID,values:newsID}
+                {column:newsTable.columns.newsID,value:req.query.id}
             ]
-            return baseModel.updateWithConditions(newsTable.name, columns, values,conditions);
+            return await baseModel.updateWithConditions(newsTable.name, columns, values,conditions);
         });
 
         return res.status(201).json({
-            data: result[0]
+            data: result
         });
 
     } catch (error) {
@@ -155,7 +155,7 @@ module.exports.getAll = async (req, res) => {
 
         const columns = ['*'];
 
-        let conditions=[]
+        let conditions=[];
         let logicalOperator=[]
         let join=[]
         let orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
@@ -166,12 +166,13 @@ module.exports.getAll = async (req, res) => {
         ];
 
         if(req.query.id){
-            conditions.push({columns:newsTable.columns.newsID,value:req.query.id})
+            
+            conditions.push({column:newsTable.columns.newsID,value:req.query.id});
         }
 
         const news = await baseModel.findWithConditionsJoin(
             newsTable.name,  // main table name
-            columns,            // columns
+            undefined,            // columns
             conditions,         // conditions (can be added later)
             logicalOperator,    // logical operators (defaults to AND)
             join,               //join

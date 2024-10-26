@@ -13,11 +13,11 @@ module.exports.getAllDailySalary = async (req, res) => {
     const id = req.query.id;
 
     try {
-        let conditions = [];
+        let conditions =undefined;
 
         if(id){
             if (isValidId(id)) {
-                conditions.push({ column: dailySalaryTable.columns.stylistID, value: id })
+                conditions=[{ column: dailySalaryTable.columns.stylistID, value: id }]
             }
         }
         const result = await baseModel.findWithConditionsJoin(dailySalaryTable.name, undefined, conditions);
