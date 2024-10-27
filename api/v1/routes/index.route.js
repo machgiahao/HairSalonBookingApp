@@ -11,6 +11,7 @@ const salaryRouter = require("./salary.route");
 const paymentRouter = require("./payment.route");
 const newsRouter = require("./news.route");
 const guestRouter = require("./guest.route");
+const feedbackRouter = require("./feedback.route");
 
 module.exports = (app) => {
     app.use("/api/v1/auth", authRouter);
@@ -50,6 +51,9 @@ module.exports = (app) => {
 
     // NEWS ROUTE
     app.use("/api/v1/news", newsRouter);
+
+    // NEWS ROUTE
+    app.use("/api/v1/feedback", feedbackRouter);
 }
 
 

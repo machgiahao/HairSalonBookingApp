@@ -1,6 +1,6 @@
+const serviceTable = require("../../../model/table/service.table")
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const baseModel = require("../../../model/base.model")
-const serviceTable = require("../../../model/table/service.table")
 const handleError = require("../../../helper/handleError.helper");
 
 const serviceController = {
