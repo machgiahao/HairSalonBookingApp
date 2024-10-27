@@ -64,7 +64,11 @@ module.exports.softDel = async (req, res) => {
         }
 
         const deleted = !staff.deleted; // Toggle deleted status
-        staff = await baseModel.update(staffTable.name, staffTable.columns.staffID, id, [staffTable.columns.deleted], [deleted]);
+        staff = await baseModel.update(
+            staffTable.name, staffTable.columns.staffID, 
+            id, 
+            [staffTable.columns.deleted], 
+            [deleted]);
         console.log('Updated Staff Member (Soft Delete):', staff);
         return handleResponse(res, 200, { data: { user: staff } });
     } catch (error) {
@@ -121,7 +125,10 @@ module.exports.updateStaff = async (req, res) => {
         throw new Error('Valid ID is required');
         }
         const updatedStaff = await baseModel.executeTransaction(async () => {
-            return await extractField([staffTable, usersTable], [staffTable.columns.staffID, usersTable.columns.userID], req);
+            return await extractField(
+                [staffTable, usersTable], 
+                [staffTable.columns.staffID, usersTable.columns.userID], 
+                req);
         });
 
         if (!updatedStaff) {

@@ -46,7 +46,7 @@ module.exports.getStylistDetail = async (req, res) => {
         return handleResponse(res, 200, { data: { user: stylistDetail[0] } });
     } catch (error) {
         console.error("Error retrieving stylist detail with join:", error);
-        return handleError(res, statusCode, error);
+        handleError(res, statusCode, error);
     }
 };
 
@@ -60,17 +60,21 @@ module.exports.updateStylist = async (req, res) => {
         }
 
         const updatedStylist = await baseModel.executeTransaction(async () => {
-            return await extractField([stylistTable, usersTable], [stylistTable.columns.stylistID, usersTable.columns.userID], req, res);
+            return await extractField(
+                [stylistTable, usersTable], 
+                [stylistTable.columns.stylistID, 
+                usersTable.columns.userID], 
+                req);
         });
         if (!updatedStylist) {
             statusCode = 404;
             throw new Error("Stylist not found");
         }
 
-        return handleResponse(res, 200, { data: { user: updatedStylist } });
+        handleResponse(res, 200, { data: { user: updatedStylist } });
     } catch (error) {
         console.error("Error updating stylist:", error);
-        return handleError(res, statusCode, error);
+        handleError(res, statusCode, error);
     }
 };
 
@@ -90,11 +94,16 @@ module.exports.softDel = async (req, res) => {
         }
 
         const deleted = !stylist.deleted;
-        stylist = await baseModel.update(stylistTable.name, stylistTable.columns.stylistID, id, [stylistTable.columns.deleted], [deleted]);
+        stylist = await baseModel.update(
+            stylistTable.name, 
+            stylistTable.columns.stylistID, 
+            id, 
+            [stylistTable.columns.deleted], 
+            [deleted]);
         return handleResponse(res, 200, { data: { user: stylist } });
     } catch (error) {
         console.error("Error updating stylist (soft delete):", error);
-        return handleError(res, statusCode, error);
+        handleError(res, statusCode, error);
     }
 };
 
@@ -133,9 +142,9 @@ module.exports.getAllStylists = async (req, res) => {
             throw new Error("No stylists found");
         }
 
-        return handleResponse(res, 200, { data: { users: stylistList } });
+        handleResponse(res, 200, { data: { users: stylistList } });
     } catch (error) {
         console.error("Error retrieving stylist list:", error);
-        return handleError(res, statusCode, error);
+        handleError(res, statusCode, error);
     }
 };
