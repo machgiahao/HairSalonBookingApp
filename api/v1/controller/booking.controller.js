@@ -100,7 +100,7 @@ const bookingController = {
             const limit = Math.abs(parseInt(req.query.perpage)) || 10;
             const page = Math.abs(parseInt(req.query.page)) || 1;
             const offset = (page - 1) * limit;
-            const order = {column: `${bookingTable.name}"."${bookingTable.columns.bookingID}`, direction: "DESC" }
+            const order = { column: `${bookingTable.name}"."${bookingTable.columns.bookingID}`, direction: "DESC" }
             const bookings = await baseModel.findWithConditionsJoin(
                 bookingTable.name, // Booking
                 ['DISTINCT "Booking".*', '"Users"."phoneNumber"'],
@@ -246,7 +246,7 @@ const bookingController = {
                         stylistWorkShift = await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, booking.stylistWorkShiftID, ["status"], ["Active"]);
                         break;
                     default:
-                        throw new Error("Invalid format status");                        
+                        throw new Error("Invalid format status");
                 }
                 return { booking: booking, customer: customer, stylistWorkShift: stylistWorkShift }
             })
@@ -293,6 +293,38 @@ const bookingController = {
             })
         }
 
+    },
+
+    history: async (req, res) => {
+        try {
+            const customerID = req.query.id;
+            const limit = Math.abs(parseInt(req.query.perpage)) || null;
+            const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
+            const conditions = [
+                { column: bookingTable.columns.status, value: "Completed", operator: '=' },
+                { column: bookingTable.columns.customerID, value: customerID, operator: '=' }
+            ];
+            const logicalOperator = ["AND"];
+            const bookings = await baseModel.findWithConditionsJoin(
+                bookingTable.name, // Booking
+                [`DISTINCT "${bookingTable.name}".*`],
+                conditions,
+                logicalOperator,
+                [],
+                [],
+                limit,
+                offset
+            )
+            return res.status(200).json({
+                data: bookings
+            })
+        } catch (error) {
+            console.log(error);
+            
+            return res.status(500).json({
+                error: error.message
+            })
+        }
     }
 }
 

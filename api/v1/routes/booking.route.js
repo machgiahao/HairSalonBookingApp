@@ -6,6 +6,7 @@ route.use(verifyToken)
 route.post("/create", bookingController.create);
 route.get("/detail", bookingController.detail);
 route.patch("/update", bookingController.update);
+route.get("/history", bookingController.history);
 route.use(checkRole("Manager", "Stylist", "Staff"))
 route.get("/getAll", bookingController.getAll);
 route.patch("/change-status", bookingController.changeStatus);
