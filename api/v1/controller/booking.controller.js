@@ -8,7 +8,7 @@ const workShiftTable = require("../../../model/table/workshift.table");
 const dateRefactor = require("..//../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const findBookingDetail = require("../../../helper/findBookingDetails.helper");
-
+const handleError = require("../../../helper/handleError.helper");
 
 
 const bookingController = {

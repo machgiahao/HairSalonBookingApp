@@ -1,17 +1,16 @@
+const { getColsVals } = require("../../../helper/getColsVals.helper");
 const baseModel = require("../../../model/base.model")
 const serviceTable = require("../../../model/table/service.table")
+const handleError = require("../../../helper/handleError.helper");
 
 const serviceController = {
     detail: async (req, res) => {
         try {
             const id = req.query.id;
 
-            const service = await baseModel.findById("Service", "serviceID", id);
+            const service = await baseModel.findByField(serviceTable.name, serviceTable.columns.serviceID, id);
             if (!service) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "Service not found"
-                })
+                return handleError(res, 404, new Error("Service not found"));
             }
             return res.status(200).json({
                 success: true,
@@ -19,10 +18,7 @@ const serviceController = {
             })
 
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                msg: "Internal server error"
-            })
+            return handleError(res, 500, error);
         }
     },
 
@@ -43,10 +39,7 @@ const serviceController = {
             )
 
             if (!services || services.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    msg: "No booking found"
-                })
+                return handleError(res, 404, new Error("Service not found"));
             }
 
             return res.status(200).json({
@@ -54,43 +47,24 @@ const serviceController = {
                 services: services
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                msg: "Internal server error"
-            })
+            return handleError(res, 500, error);
         }
     },
 
     create: async (req, res) => {
         try {
+            const result = await baseModel.executeTransaction(async () => {
+                const { columns: serviceColumns, values: serviceValues } = getColsVals(serviceTable, req.body);
+                const newService = await baseModel.create(serviceTable.name, serviceColumns, serviceValues);
+                return { newService: newService }
+            })
 
-            const columns = [];
-            const values = [];
-            
-            for(const key in req.body) {
-                if(serviceTable.columns[key] !== undefined && req.body[key] != "") {
-                    columns.push(serviceTable.columns[key]);
-                    if (key === 'price') {
-                        values.push(parseFloat(req.body[key]));  
-                    } else if (key === 'duration') {
-                        values.push(parseInt(req.body[key])); 
-                    } else {
-                        values.push(req.body[key]);  
-                    }
-                }
-            }
-
-            const newService = await baseModel.create("Service", columns, values);
             return res.status(200).json({
                 success: true,
-                data: newService
+                data: result.newService
             })
         } catch (error) {
-            console.log(error)
-            return res.status(500).json({
-                success: false,
-                msg: "Internal server error"
-            })
+            return handleError(res, 500, error);
         }
     },
 
@@ -98,50 +72,24 @@ const serviceController = {
         try {
             const id = req.query.id;
 
-            const columns = [];
-            const values = [];
+            const result = await baseModel.executeTransaction(async () => {
+                const { columns: serviceColumns, values: serviceValues } = getColsVals(serviceTable, req.body);
+                const updateService = await baseModel.update(serviceTable.name, serviceTable.columns.serviceID, id, serviceColumns, serviceValues);
+                return { updateService: updateService }
+            })
 
-            for (const key in req.body) {
-                if (serviceTable.columns[key] !== undefined && req.body[key] !== "" ) {  // Ensure the key is a valid column
-                    columns.push(serviceTable.columns[key]);
-                    if (key === 'price') {
-                        values.push(parseFloat(req.body[key]));  
-                    } else if (key === 'duration') {
-                        values.push(parseInt(req.body[key])); 
-                    } else {
-                        values.push(req.body[key]);  
-                    }
-                }
-            }
-
-            if (columns.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "No valid data to update"
-                });
-            }
-
-            const updateService = await baseModel.update(serviceTable.name, serviceTable.columns.serviceID, id, columns, values);
-            
-            if (!updateService) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "Service not found"
-                })
+            if (!result.updateService) {
+                return handleError(res, 404, new Error("Service not found"));
             }
             return res.status(200).json({
                 success: true,
                 msg: "Update successfully",
-                data: updateService
+                data: result.updateService
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                msg: "Internal server error",
-                error: error.message  
-            });
+            return handleError(res, 500, error);
         }
-        
+
     },
 
     delete: async (req, res) => {
@@ -150,9 +98,9 @@ const serviceController = {
 
             const result = await baseModel.executeTransaction(async () => {
                 const update = await baseModel.update(serviceTable.name, serviceTable.columns.serviceID, id, ["deleted"], [true]);
-                if(!update) throw new Error("Serivce not found")
-                return {update: update}
-           })
+                if (!update) return handleError(res, 404, new Error("Service not found"));
+                return { update: update }
+            })
 
             res.status(200).json({
                 success: true,
@@ -161,16 +109,7 @@ const serviceController = {
             })
 
         } catch (error) {
-            if (error.message === "Serivce not found") {
-                return res.status(404).json({
-                    success: false,
-                    msg: error.message
-                });
-            }
-            return res.status(500).json({
-                success: false,
-                msg: "Internal server error"
-            })
+            return handleError(res, 500, error);
         }
     },
 
