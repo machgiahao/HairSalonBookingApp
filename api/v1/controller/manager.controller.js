@@ -62,7 +62,7 @@ const managerController = {
                 const { refreshToken, password, ...others } = updateUser;
                 return { updateManager: updateManager, updateUser: others }
             })
-            res.status(201).json({
+            res.status(200).json({
                 success: true,
                 msg: "Update successfully",
                 data: {

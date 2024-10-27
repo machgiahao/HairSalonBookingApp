@@ -31,6 +31,7 @@ const bookingController = {
                 }
                 // Default when customer booking is in-progress
                 req.body.status = req.body.status ?? "In-progress";
+                req.body.discountPrice = req.body.originalPrice;
                 const { columns, values } = getColsVals(bookingTable, req.body);
                 // Create query to create booking
                 const newBooking = await baseModel.create(bookingTable.name, columns, values);
@@ -68,7 +69,7 @@ const bookingController = {
     detail: async (req, res) => {
         try {
             const id = req.query.bookingID;
-
+            
             const booking = await baseModel.findWithConditionsJoin(
                 bookingTable.name, // Booking
                 ['"Booking".*', '"Users"."phoneNumber"', '"Customer"."fullName"'],
@@ -119,10 +120,10 @@ const bookingController = {
             const limit = Math.abs(parseInt(req.query.perpage)) || 10;
             const page = Math.abs(parseInt(req.query.page)) || 1;
             const offset = (page - 1) * limit;
-
+            const order = {column: `${bookingTable.name}"."${bookingTable.columns.bookingID}`, direction: "DESC" }
             const bookings = await baseModel.findWithConditionsJoin(
                 bookingTable.name, // Booking
-                ['"Booking".*', '"Users"."phoneNumber"'],
+                ['DISTINCT "Booking".*', '"Users"."phoneNumber"'],
                 [],
                 [],
                 [ // Joins
@@ -137,7 +138,7 @@ const bookingController = {
                         type: 'INNER'
                     } // Join table user
                 ],
-                [],
+                [order],
                 limit,
                 offset
             )
@@ -235,7 +236,7 @@ const bookingController = {
     changeStatus: async (req, res) => {
         try {
             const id = req.body.bookingID;
-            console.log(id);
+
             const status = req.body.status;
             const result = await baseModel.executeTransaction(async () => {
                 const recordBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
@@ -249,7 +250,7 @@ const bookingController = {
 
                 switch (status) {
                     case "Done":
-                        booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Cancelled"]);
+                        booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Done"]);
                         break;
                     case "Completed":
                         booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Completed"]);
@@ -262,7 +263,7 @@ const bookingController = {
                         break;
                     case "Cancelled":
                         booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Cancelled"]);
-                        stylistWorkShift = await baseModel.update(stylistWorkShiftTable.name, stylistWorkShift.columns.stylistWorkShiftID, booking.stylistWorkShiftID, ["status"], ["Active"]);
+                        stylistWorkShift = await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, booking.stylistWorkShiftID, ["status"], ["Active"]);
                         break;
                     default:
                         throw new Error("Invalid format status");                        

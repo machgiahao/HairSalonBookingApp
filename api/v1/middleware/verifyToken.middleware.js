@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken")
 
 const verifyToken = async (req, res, next) => {
     const token = req.headers['token'];
-    
+
     if (token) {
         const accessToken = token.split(" ")[1];
         jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
@@ -20,11 +20,11 @@ const verifyToken = async (req, res, next) => {
     }
 }
 
-const checkRole = (requiredRole) => {
+const checkRole = (...allowedRoles) => {
     return (req, res, next) => {
         const { role } = req.user;
 
-        if (role !== requiredRole) {
+        if (!allowedRoles.includes(role)) {
             return res.status(401).json({
                 success: false,
                 message: "Unauthorized"
