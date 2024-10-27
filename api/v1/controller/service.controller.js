@@ -28,8 +28,9 @@ const serviceController = {
 
     getAll: async (req, res) => {
         try {
-            const limit = Math.abs(parseInt(req.query.perpage)) || 10;
-            const offset = Math.abs(parseInt(req.query.page)) || 0;
+            const limit = Math.abs(parseInt(req.query.perpage)) || null;
+            const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
+
 
             const services = await baseModel.findWithConditions(
                 serviceTable.name,
