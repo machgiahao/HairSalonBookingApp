@@ -258,7 +258,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
     const requestedDate = req.query.date;
 
     if (!isValidId(id)) {
-        return handleResponse(res, 400, { error: 'Valid ID is required' });
+        return handleResponse(res, 400, { error: 'Valid ID is required or missing date' });
     }
 
     try {
@@ -279,6 +279,22 @@ module.exports.generalMonthlySalary = async (req, res) => {
             return handleResponse(res,404,{error:"No user found"})
         }
 
+        conditions=[
+            {column:dailySalaryTable.columns.upToDay,value:[date.firstDay,date.lastDay],operator:"BETWEEN"},
+            {column:dailySalaryTable.columns.stylistID,value:id},
+            {column:dailySalaryTable.columns.deleted,value:false},
+            
+        ]
+        logicalOperator=["AND","AND","AND"];
+        let totalDailySalary= await baseModel.findWithConditionsJoin(
+            dailySalaryTable.name,
+            [`SUM(${dailySalaryTable.columns.salary_bonus})`],
+            conditions,
+            logicalOperator
+        )
+
+        totalDailySalary= totalDailySalary.length>0 ? totalDailySalary[0].sum : 0;
+
         
         conditions = [
             {column:salaryTable.columns.receivedDate,value:date.lastDay},
@@ -294,6 +310,15 @@ module.exports.generalMonthlySalary = async (req, res) => {
         )
         salary = await baseModel.executeTransaction(async()=>{
             if(salary.length>0){
+                const base= salary[0].baseSalary 
+                columns=[salaryTable.columns.totalSalary]
+                values=[base+totalDailySalary]
+                conditions=[
+                    {column:salaryTable.columns.userID,value:userID},
+                    {column:salaryTable.columns.deleted,value:false},
+                    {column:salaryTable.columns.receivedDate,value:date.lastDay}
+                ]
+                salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
                 return salary[0]
             }
             else{
@@ -305,7 +330,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
                     salaryTable.columns.deleted,
                     salaryTable.columns.userID
                 ]
-                values=[base,base,date.lastDay,false,userID]
+                values=[base,base+totalDailySalary,date.lastDay,false,userID]
                 return salary= await baseModel.create(
                     salaryTable.name,columns,values
                 )  
