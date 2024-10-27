@@ -45,6 +45,7 @@ module.exports = async (tables = [], idColumns = [], req) => {
             console.log(result)
         } catch (error) {
             console.error(`Error updating ${table.name}:`, error);
+            throw new Error(`Error updating ${table.name}:`);
             
         }
     }
