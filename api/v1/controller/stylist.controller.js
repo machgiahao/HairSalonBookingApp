@@ -3,7 +3,8 @@ const stylistTable = require("../../../model/table/stylist.table");
 const usersTable = require("../../../model/table/user.table");
 const refactor = require("../../../helper/columnsRefactor.heper");
 const extractField = require("../../../helper/extractField.helper");
-const handleResponse = require("../../../helper/handleReponse.helper");
+const handleResponse = require("../../../helper/handleReponse.helper")
+const handleError = require("../../../helper/handleError.helper")
 const isValidId = require("../../../validates/reqIdParam.validate");
 
 // Get stylist details by ID
@@ -13,7 +14,6 @@ module.exports.getStylistDetail = async (req, res) => {
     if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
 
     try {
-        // Define the columns to retrieve from both tables
         const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
 
         let conditions = [{ column: stylistTable.columns.stylistID, value: id }]
@@ -38,7 +38,7 @@ module.exports.getStylistDetail = async (req, res) => {
 
         // If no stylist found, return 404
         if (!stylistDetail || stylistDetail.length === 0) {
-            return handleResponse(res, 404, { error: 'Stylist not found' });
+            throw new Error("No stylist found")
         }
 
         // Log and return the stylist detail with joined user data
@@ -46,7 +46,7 @@ module.exports.getStylistDetail = async (req, res) => {
         return handleResponse(res, 200, { data: { user: stylistDetail[0] } });
     } catch (error) {
         console.error("Error retrieving stylist detail with join:", error);
-        return handleResponse(res, 500, { error: error.message });
+        return handleError(res, 500, { error: error.message });
     }
 };
 

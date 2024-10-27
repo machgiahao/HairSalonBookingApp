@@ -21,7 +21,7 @@ module.exports.create = async (req, res) => {
 
         const result = await baseModel.executeTransaction(async () => {
             // Create news entry
-            return baseModel.create(newsTable.name, columns, values);
+            return await baseModel.create(newsTable.name, columns, values);
         });
 
         return res.status(201).json({
@@ -129,7 +129,7 @@ module.exports.delete = async (req, res) => {
         ];
         
         const result = await baseModel.executeTransaction(async () => {
-            return baseModel.deleteWithConditionsJoin(newsTable.name,conditions);
+            return await baseModel.deleteWithConditionsJoin(newsTable.name,conditions);
         });
         
           
