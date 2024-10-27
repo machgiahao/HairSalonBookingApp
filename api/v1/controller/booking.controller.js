@@ -7,6 +7,7 @@ const stylistWorkShiftTable = require("../../../model/table/stylistWorkshift.tab
 const workShiftTable = require("../../../model/table/workshift.table");
 const dateRefactor = require("..//../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
+const findBookingDetail = require("../../../helper/findBookingDetails.helper");
 
 
 
@@ -69,41 +70,20 @@ const bookingController = {
     detail: async (req, res) => {
         try {
             const id = req.query.bookingID;
-            
-            const booking = await baseModel.findWithConditionsJoin(
-                bookingTable.name, // Booking
-                ['"Booking".*', '"Users"."phoneNumber"', '"Customer"."fullName"'],
-                [{ column: 'bookingID', value: id, operator: '=' }],
-                [],
-                [ // Joins
-                    {
-                        table: customerTable.name,
-                        on: `"${customerTable.name}"."${customerTable.columns.customerID}" = "${bookingTable.name}"."${bookingTable.columns.customerID}"`,
-                        type: 'INNER'
-                    }, // Join table customer
-                    {
-                        table: userTable.name,
-                        on: `"${customerTable.name}"."${customerTable.columns.userID}" = "${userTable.name}"."${userTable.columns.userID}"`,
-                        type: 'INNER'
-                    } // Join table user
-                ],
-                [],
-                undefined,
-                undefined
-            )
-            if (!booking) {
+            const booking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
+            const result = await findBookingDetail.findDetailJoins(booking);
+            if (!result) {
                 throw new Error("Booking not found");
             }
 
-            const details = await baseModel.findAllByField(detailTable.name, "bookingID", id);
+            const details = await baseModel.findAllByField(detailTable.name, detailTable.columns.bookingID, id);
             if (!details) {
                 throw new Error("Booking detail not found");
             }
 
-
             return res.status(200).json({
                 success: true,
-                booking: booking,
+                booking: result,
                 details: details
             })
         } catch (error) {
