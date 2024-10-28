@@ -6,6 +6,8 @@ const uploadCloudMiddleware= require("../middleware/uploadCloud.middleware");
 
 route.get("/getAll",newsController.getAll)
 
+route.get("/getDetail",newsController.getDetail)
+
 route.patch("/update",uploadCloudMiddleware,newsController.update)
 
 route.patch("/delete",newsController.softDelete)

@@ -218,18 +218,18 @@ module.exports.getAllWorkshift = async (req, res) => {
             conditions.push({column:`${workshift.name}"."${workshift.columns.shiftDay}`, value:shiftDate});
             logicalOperator.push("AND");
         }
-        const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
+        const columns = columnsRefactor.columnsRefactor(stylistWorkshift,[workshift]);
         
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
-            undefined,
+            columns,
             conditions,
             logicalOperator,
             [
                 {
                     table: workshift.name, // join with users table
                     on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
-                    type: "INNER" // type of join
+                    type: "LEFT" // type of join
                 },
                 
             ]
@@ -255,7 +255,7 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
         
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
-            undefined,
+            columns,
             [
                 {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id},
                 {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
