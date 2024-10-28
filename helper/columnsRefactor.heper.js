@@ -18,14 +18,22 @@ const refactor = {
     columnsRefactor: (mainTable, joinTable = []) => {
         const columns = [];
         for (var key in mainTable.columns) {
+            if(mainTable.columns[key]=== `deleted`){
+                columns.push(`"${mainTable.name}"."${mainTable.columns[key]}" as "${mainTable.name+`Deleted`}"`);
+            }else{
             columns.push(`"${mainTable.name}"."${mainTable.columns[key]}"`);
-
+            }
         }
         if (joinTable.length <= 0) return columns;
 
         joinTable.forEach((table) => {
             for (const key in table.columns) {
+                if(table.columns[key]=== `deleted`){
+                    columns.push(`"${table.name}"."${table.columns[key]}" as "${table.name+`Deleted`}"`);
+                }else{
                 columns.push(`"${table.name}"."${table.columns[key]}"`);
+                }
+                
             }
         })
         return columns;
