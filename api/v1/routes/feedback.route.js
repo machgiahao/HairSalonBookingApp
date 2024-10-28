@@ -1,6 +1,12 @@
 const feedbackController = require("../controller/feedback.controller");
-const router = require('express').Router();
+const { verifyToken } = require("../middleware/verifyToken.middleware");
+const route = require('express').Router();
 
-router.post("/create", feedbackController.create);
+route.get("/detail", feedbackController.detail);
+route.get("/getAll", feedbackController.getAll);
+route.use(verifyToken)
+route.post("/create", feedbackController.create);
+route.patch("/update", feedbackController.update);
+route.delete("/delete", feedbackController.delete);
 
-module.exports = router;
+module.exports = route;

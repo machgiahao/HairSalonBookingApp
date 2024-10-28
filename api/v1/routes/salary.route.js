@@ -1,17 +1,17 @@
 const express = require("express");
 const salaryController = require("../controller/salary.controller");
-const router = express.Router();
+const route = express.Router();
 
-router.patch("/update",salaryController.updateSalary)
+route.patch("/update",salaryController.updateSalary)
 
-router.get("/generalMonthlySalary",salaryController.generalMonthlySalary)
+route.get("/generalMonthlySalary",salaryController.generalMonthlySalary)
 
-router.get("/getAll",salaryController.getAllDailySalary)
+route.get("/getAll",salaryController.getAllDailySalary)
 
-router.post("/dailySalary",salaryController.dailySalary);
+route.post("/dailySalary",salaryController.dailySalary);
 
-router.get("/monthlySalary",salaryController.monthlySalary)
+route.get("/monthlySalary",salaryController.monthlySalary)
 
 
 
-module.exports = router;
+module.exports = route;
