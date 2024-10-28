@@ -218,7 +218,20 @@ module.exports.getAllWorkshift = async (req, res) => {
             conditions.push({column:`${workshift.name}"."${workshift.columns.shiftDay}`, value:shiftDate});
             logicalOperator.push("AND");
         }
-        const columns = columnsRefactor.columnsRefactor(stylistWorkshift,[workshift]);
+        // const columns = columnsRefactor.columnsRefactor(stylistWorkshift,[workshift]);
+        const columns = [
+            `"StylistWorkShift"."stylistWorkShiftID"`,
+            `"StylistWorkShift"."stylistID"`,
+            `"StylistWorkShift"."workShiftID"`,
+            `"StylistWorkShift"."status"`,
+            `"StylistWorkShift"."deleted" AS "stylistDeleted"`,
+            `"WorkShift"."workShiftID"`,
+            `"WorkShift"."shiftName"`,
+            `"WorkShift"."startTime"`,
+            `"WorkShift"."endTime"`,
+            `"WorkShift"."shiftDay"`,
+            `"WorkShift"."deleted" AS "workShiftDeleted"`
+        ];
         
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
