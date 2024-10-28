@@ -8,7 +8,7 @@ const workShiftTable = require("../../../model/table/workshift.table");
 const dateRefactor = require("..//../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const findBookingDetail = require("../../../helper/findBookingDetails.helper");
-const handleError = require("../../../helper/handleError.helper");
+
 
 
 const bookingController = {
@@ -59,7 +59,6 @@ const bookingController = {
                 updateWorkshift: result.updateStylistWorkshift
             })
         } catch (error) {
-            console.log(error)
             return res.status(500).json({
                 success: false,
                 error: error.message
@@ -97,31 +96,11 @@ const bookingController = {
 
     getAll: async (req, res) => {
         try {
-            const limit = Math.abs(parseInt(req.query.perpage)) || 10;
+            const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const page = Math.abs(parseInt(req.query.page)) || 1;
             const offset = (page - 1) * limit;
             const order = { column: `${bookingTable.name}"."${bookingTable.columns.bookingID}`, direction: "DESC" }
-            const bookings = await baseModel.findWithConditionsJoin(
-                bookingTable.name, // Booking
-                ['DISTINCT "Booking".*', '"Users"."phoneNumber"'],
-                [],
-                [],
-                [ // Joins
-                    {
-                        table: customerTable.name,
-                        on: `"${customerTable.name}"."${customerTable.columns.customerID}" = "${bookingTable.name}"."${bookingTable.columns.customerID}"`,
-                        type: 'INNER'
-                    }, // Join table customer
-                    {
-                        table: userTable.name,
-                        on: `"${customerTable.name}"."${customerTable.columns.userID}" = "${userTable.name}"."${userTable.columns.userID}"`,
-                        type: 'INNER'
-                    } // Join table user
-                ],
-                [order],
-                limit,
-                offset
-            )
+            const bookings = await findBookingDetail.findAllJoins(limit, offset, order)
 
             if (!bookings || bookings.length === 0) {
                 throw new Error("No booking found")
