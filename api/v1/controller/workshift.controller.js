@@ -2,7 +2,7 @@ const baseModel = require("../../../model/base.model");
 const workshift = require("../../../model/table/workshift.table");
 const stylistWorkshift = require("../../../model/table/stylistWorkshift.table");
 const bookingTable = require("../../../model/table/booking.table");
-const columnsRefactor = require("../../../helper/columnsRefactor.heper")
+const columnsRefactor = require("../../../helper/columnsRefactor.heper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
@@ -117,89 +117,6 @@ module.exports.getAll = async (req, res) => {
 
 //--------------------stylistWorkshift--------------------------------
 
-// Add a Stylist to a WorkShift
-// module.exports.addStylistToWorkShift = async (req, res) => {
-//     try {
-//         const columns = [];
-//         const values = [];
-
-//         for (const key in req.body) {
-//             if (stylistWorkshift.columns[key] !== undefined && key !== stylistWorkshift.columns.stylistWorkShiftID) {
-//                 columns.push(stylistWorkshift.columns[key]);
-//                 values.push(req.body[key]);
-//             }
-//         }
-
-//         if (columns.length === 0) {
-//             return handleResponse(res, 400, { error: 'No valid fields provided for adding stylist to work shift' });
-//         }
-
-//         const stylistID = req.body[stylistWorkshift.columns.stylistID];
-//         const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
-
-//         const existingEntry = await baseModel.findWithConditionsJoin(
-//             stylistWorkshift.name,
-//             undefined,
-//             [
-//                 { column: stylistWorkshift.columns.stylistID, value: stylistID },
-//                 { column: stylistWorkshift.columns.workShiftID, value: workShiftID },
-//             ],
-//             ["AND"]
-//         );
-
-//         if (existingEntry && existingEntry.length > 0) {
-//             return handleResponse(res, 400, {
-//                 error: `Stylist ${existingEntry[0].stylistID} is already assigned to this work shift: ${existingEntry[0].workShiftID}`,
-//             });
-//         }
-
-//         const newStylistWorkShift = await baseModel.create(stylistWorkshift.name, columns, values);
-//         if (!newStylistWorkShift) {
-//             return handleResponse(res, 400, { error: 'Failed to add stylist to work shift' });
-//         }
-
-//         console.log('Added Stylist to WorkShift:', newStylistWorkShift);
-//         return handleResponse(res, 201, { data: { newStylistWorkShift } });
-//     } catch (error) {
-//         console.error("Error adding stylist to work shift:", error);
-//         return handleResponse(res, 500, { error: error.message });
-//     }
-// };
-
-// Remove Stylist from a WorkShift
-// module.exports.removeStylistFromWorkShift = async (req, res) => {
-//     try {
-//         const stylistID = req.body[stylistWorkshift.columns.stylistID];
-//         const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
-
-//         if (!stylistID || !workShiftID) {
-//             return handleResponse(res, 400, { error: "Stylist ID or WorkShift ID missing" });
-//         }
-
-//         const existingEntry = await baseModel.findWithConditionsJoin(
-//             stylistWorkshift.name,
-//             undefined,
-//             [
-//                 { column: stylistWorkshift.columns.stylistID, value: stylistID },
-//                 { column: stylistWorkshift.columns.workShiftID, value: workShiftID }
-//             ]
-//         );
-
-//         if (!existingEntry || existingEntry.length === 0) {
-//             return handleResponse(res, 404, { error: "No stylist found in this workshift" });
-//         }
-
-//         const stylistWorkShiftID = existingEntry[0][stylistWorkshift.columns.stylistWorkShiftID];
-//         const result=await baseModel.deleteById(stylistWorkshift.name, stylistWorkshift.columns.stylistWorkShiftID, stylistWorkShiftID);
-//         console.log(result);
-//         return handleResponse(res, 200, { message: "Stylist removed from the work shift successfully" });
-        
-//     } catch (error) {
-//         console.error("Error removing stylist from work shift:", error);
-//         return handleResponse(res, 500, { error: "An internal server error occurred" });
-//     }
-// };
-
 
 //get all stylist workshift
 module.exports.getAllWorkshift = async (req, res) => {
@@ -219,20 +136,7 @@ module.exports.getAllWorkshift = async (req, res) => {
             logicalOperator.push("AND");
         }
         const columns = columnsRefactor.columnsRefactor(stylistWorkshift,[workshift]);
-        // const columns = [
-        //     `"StylistWorkShift"."stylistWorkShiftID"`,
-        //     `"StylistWorkShift"."stylistID"`,
-        //     `"StylistWorkShift"."workShiftID"`,
-        //     `"StylistWorkShift"."status"`,
-        //     `"StylistWorkShift"."deleted" AS "stylistDeleted"`,
-        //     `"WorkShift"."workShiftID"`,
-        //     `"WorkShift"."shiftName"`,
-        //     `"WorkShift"."startTime"`,
-        //     `"WorkShift"."endTime"`,
-        //     `"WorkShift"."shiftDay"`,
-        //     `"WorkShift"."deleted" AS "workShiftDeleted"`
-        // ];
-        
+
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
             columns,
