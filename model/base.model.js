@@ -176,7 +176,7 @@ const baseModel = {
             values.push(offset);
         }
 
-        // console.log(query); 
+        console.log(query); 
         // Execute query
         const result = await pool.query(query, values);
         return result.rows;
