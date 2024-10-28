@@ -154,7 +154,7 @@ const authController = {
         try {
             const email = req.body.email;
 
-            const user = await baseModel.findByField("Users", "email", email);
+            const user = await baseModel.findByField(userTable.name, userTable.columns.email, email);
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -173,7 +173,8 @@ const authController = {
             await baseModel.executeTransaction(async () => {
                 await baseModel.create("OtpRequest", Object.keys(otpTable), Object.values(otpTable));
             })
-            await mail.sendMail(email, "Your OTP Code", `<p>Your OTP code is: <b>${otp}</b></p>`);
+            const from = process.env.MAIL_FROM_ADDRESS;
+            await mail.sendMail(from, email, "Your OTP Code", `<p>Your OTP code is: <b>${otp}</b></p>`);
 
             return res.status(200).json({
                 success: true,

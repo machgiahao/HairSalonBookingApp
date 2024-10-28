@@ -50,18 +50,18 @@ const sendEmail = (transporter, mailOptions) => {
                 console.log('Error occurred:', error);
                 return reject(error);
             }
-            console.log(`Email sent: ${info.response}`);
+            // console.log(`Email sent: ${info.response}`);
             resolve(info);
         });
     });
 };
 
 // Main function to send mail
-module.exports.sendMail = async (email, subject, html) => {
+module.exports.sendMail = async (from, email, subject, html) => {
     const transporter = createTransporter();
     
     const mailOptions = { 
-        from: process.env.MAIL_FROM_ADDRESS,
+        from: from,
         to: email,
         subject: subject,
         html: html

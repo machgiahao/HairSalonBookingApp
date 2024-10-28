@@ -1,8 +1,10 @@
 const express = require("express");
 const workshiftController = require("../controller/workshift.controller"); 
+const { verifyToken } = require("../middleware/verifyToken.middleware");
 const route = express.Router();
 
 // Route to create a new workship
+route.use(verifyToken);
 route.post("/create", workshiftController.create);
 
 //

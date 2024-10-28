@@ -1,5 +1,6 @@
 const baseModel = require("../../../model/base.model")
-const roleHelper = require("../../../helper/role.helper")
+const roleHelper = require("../../../helper/role.helper");
+const { sendMail } = require("../../../helper/sendMails.helper");
 
 const userController = {
     getAll: async (req, res) => {
@@ -47,6 +48,30 @@ const userController = {
             record: { ...others }
         })
     },
+
+    contact: async (req, res) => {
+        try {
+            const { email, title, content } = req.body;
+            if (!email || !title || !content) {
+                return res.status(400).json({
+                    success: false,
+                    msg: "Email, title, and content fields are required"
+                });
+            }
+
+            const emailReceive = process.env.MAIL_FROM_ADDRESS;
+            await sendMail(email, emailReceive, title, content);
+            return res.status(200).json({
+                success: true,
+                msg: "Email sent successfully"
+            })
+        } catch (error) {
+            return res.status(500).json({
+                success: true,
+                error: error.message
+            })
+        }
+    }
 }
 
 module.exports = userController;

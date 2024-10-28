@@ -277,6 +277,7 @@ const bookingController = {
     history: async (req, res) => {
         try {
             const customerID = req.query.id;
+
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
             const conditions = [
