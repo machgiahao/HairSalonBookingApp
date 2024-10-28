@@ -4,7 +4,7 @@ const newsTable = {
         newsID:"newsID",
         type:"type",
         title:"title",
-        image:"image",
+        img:"img",
         content:"content",
         managerID:"managerID",
         createAt:"createAt",
