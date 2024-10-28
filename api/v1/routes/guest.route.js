@@ -1,6 +1,6 @@
 const guestController = require("../controller/guest.controller");
-const router = require('express').Router();
+const route = require('express').Router();
 
-router.post("/create", guestController.create);
+route.post("/create", guestController.create);
 
-module.exports = router;
+module.exports = route;
