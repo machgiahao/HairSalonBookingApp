@@ -6,12 +6,12 @@ const usersTable = require("../../../model/table/user.table");
 const dailySalaryTable = require("../../../model/table/dailySalary.table");
 const dateRefactor = require("../../../helper/dateRefactor.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
+const handleError = require("../../../helper/handleError.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 const refactor = require("../../../helper/columnsRefactor.heper");
 
 module.exports.getAllDailySalary = async (req, res) => {
     const id = req.query.id;
-
     try {
         let conditions =undefined;
 
@@ -21,26 +21,27 @@ module.exports.getAllDailySalary = async (req, res) => {
             }
         }
         const result = await baseModel.findWithConditionsJoin(dailySalaryTable.name, undefined, conditions);
-        return handleResponse(res, 200, { data: result });
+        handleResponse(res, 200, { data: result });
     } catch (error) {
-        return handleResponse(res, 500, { error: error });
+        handleError(res, 500, { error: error });
     }
 }
 
 module.exports.dailySalary = async (req, res) => {
-    const stylistID = req.query.id;
-    const requestedDate = req.query.date;
-
-    if (!isValidId(stylistID)) {
-        return handleResponse(res, 400, { error: 'Valid ID is required' });
-    }
-
+    let statusCode
     try {
+        const stylistID = req.query.id;
+        const requestedDate = req.query.date;
+    
+        if (!isValidId(stylistID)) {
+            statusCode=400
+            throw new Error(`Valid ID is required`)
+        }
         const formattedDate = dateRefactor.convert(requestedDate);
         if (!formattedDate) {
-            return handleResponse(res, 400, { error: 'Invalid date format' });
+            statusCode=400
+            throw new Error(`Invalid date format`)
         }
-        console.log(formattedDate)
         let columns=[
             `SUM("${bookingTable.columns.discountPrice}") AS sum`,
             `COUNT("${bookingTable.columns.bookingID}") AS count`
@@ -105,22 +106,23 @@ module.exports.dailySalary = async (req, res) => {
             }
         });
 
-        return handleResponse(res, 201, { data: dailySalary , count:count});
+        handleResponse(res, 201, { data: dailySalary , count:count});
     } catch (error) {
         console.error('Error processing daily salary:', error);
-        return handleResponse(res, 500, { error: 'Internal Server Error' });
+        handleError(res, statusCode, { error: 'Internal Server Error' });
     }
 };
 
 module.exports.monthlySalary = async (req, res) => {
-    let id = req.query.id;
-    const requestedDate = req.query.date;
-
-    if (!isValidId(id)) {
-        return handleResponse(res, 400, { error: 'Valid ID is required' });
-    }
+    let statusCode
 
     try {
+        let id = req.query.id;
+        const requestedDate = req.query.date;
+        if (!isValidId(id)) {
+            statusCode=400
+            throw new Error(`Valid ID is required`)
+        }
         const date = dateRefactor.rangeMonth(requestedDate);
         let columns
         let values
@@ -148,9 +150,9 @@ module.exports.monthlySalary = async (req, res) => {
 
         if(user.length>0){
             userID=user[0].userID;
-            console.log(id);
         }else{
-            return handleResponse(res,404,{error:"No user found"})
+            statusCode=404
+            throw new Error(`No user found`)
         }
 
         conditions=[
@@ -204,19 +206,14 @@ module.exports.monthlySalary = async (req, res) => {
                     salaryTable.columns.userID
                 ]
                 values=[base,base+totalDailySalary,date.lastDay,false,userID]
-                return salary= await baseModel.create(
-                    salaryTable.name,columns,values
-                )  
+                salary= await baseModel.create(salaryTable.name,columns,values)  
+                return salary
             }
         })
-        
 
-        return handleResponse(res, 200, { data: salary });
-        
-
+        handleResponse(res, 200, { data: salary });
     } catch (error) {
-        console.error('Error processing monthly salary:', error);
-        return handleResponse(res, 500, { error: 'Internal Server Error' });
+        handleResponse(res, statusCode, error);
     }
 };
 
