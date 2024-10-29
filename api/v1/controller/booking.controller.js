@@ -8,11 +8,15 @@ const workShiftTable = require("../../../model/table/workshift.table");
 const dateRefactor = require("..//../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const findBookingDetail = require("../../../helper/findBookingDetails.helper");
-
+const handlError = require("../../../helper/handleError.helper");
+const handlResponse = require("../../../helper/handleReponse.helper");
+const isValidId = require("../../../validates/reqIdParam.validate");
+const handleResponse = require("../../../helper/handleReponse.helper");
 
 
 const bookingController = {
     create: async (req, res) => {
+        let statusCode
         try {
             const result = await baseModel.executeTransaction(async () => {
                 const stylistWorkShiftID = req.body.stylistWorkShiftID;
@@ -36,6 +40,11 @@ const bookingController = {
                 const { columns, values } = getColsVals(bookingTable, req.body);
                 // Create query to create booking
                 const newBooking = await baseModel.create(bookingTable.name, columns, values);
+                if (!newBooking) {
+                    statusCode = 400
+                    throw new Error("Cannot create booking");
+                }
+
 
                 // Reassign to let bookingDetail can get
                 req.body.bookingID = newBooking.bookingID;
@@ -47,54 +56,58 @@ const bookingController = {
 
                     // Create booking detail for each service
                     const result = await baseModel.create(detailTable.name, columnsDetail, valuesDetail);
+                    if (!result) {
+                        statusCode = 400
+                        throw new Error("Cannot create detail booking");
+                    }
                     newDetails.push(result); // push result into newDetails
                 }
                 return { newBooking: newBooking, newDetails: newDetails, updateStylistWorkshift: updateStylistWorkshift }
             });
 
-            return res.status(201).json({
-                success: true,
+            return handlResponse(res, 201, {
                 newBooking: result.newBooking,
                 newDetails: result.newDetails,
                 updateWorkshift: result.updateStylistWorkshift
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handlError(res, statusCode, error);
         }
     },
 
     detail: async (req, res) => {
+        let statusCode
         try {
             const id = req.query.bookingID;
+            if (!isValidId(id)) {
+                statusCode = 400
+                throw new Error("Invalid ID");
+            }
             const booking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
             const result = await findBookingDetail.findDetailJoins(booking);
             if (!result) {
+                statusCode = 404
                 throw new Error("Booking not found");
             }
 
             const details = await baseModel.findAllByField(detailTable.name, detailTable.columns.bookingID, id);
             if (!details) {
+                statusCode = 404
                 throw new Error("Booking detail not found");
             }
 
-            return res.status(200).json({
+            return handlResponse(res, 201, {
                 success: true,
                 booking: result,
                 details: details
             })
         } catch (error) {
-            console.log(error)
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handlError(res, statusCode, error);
         }
     },
 
     getAll: async (req, res) => {
+        let statusCode
         try {
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const page = Math.abs(parseInt(req.query.page)) || 1;
@@ -103,28 +116,31 @@ const bookingController = {
             const bookings = await findBookingDetail.findAllJoins(limit, offset, order)
 
             if (!bookings || bookings.length === 0) {
+                statusCode = 404
                 throw new Error("No booking found")
             }
 
-            return res.status(200).json({
-                success: true,
-                bookings: bookings
-            })
+            return handlResponse(res, 200, { bookings: bookings });
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handlError(res, statusCode, error);
         }
     },
 
     update: async (req, res) => {
+        let statusCode
         try {
             const result = await baseModel.executeTransaction(async () => {
                 const id = req.body.bookingID;
+                if (!isValidId(id)) {
+                    statusCode = 400
+                    throw new Error("Invalid ID");
+                }
                 // Get old data of booking
                 const oldBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
-
+                if (!oldBooking) {
+                    statusCode = 404
+                    throw new Error("Booking not found");
+                }
                 // Delete selected services
                 await baseModel.deleteById(detailTable.name, detailTable.columns.bookingID, id);
                 // Add new data of services
@@ -147,6 +163,7 @@ const bookingController = {
                     const newStylistWorkshift = await baseModel.findByField(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, newStylistWorkShiftID);
 
                     if (newStylistWorkshift.status === "Inactive") {
+                        statusCode = 409
                         throw new Error("Already booked");
                     }
                     if (newStylistWorkShiftID !== oldBooking.stylistWorkShiftID) {
@@ -177,29 +194,29 @@ const bookingController = {
                 return { newBooking: updateBooking, newDetails: newDetails, updateWorkshift: newWorkshift }
             })
 
-            return res.status(200).json({
-                success: true,
+            return handlResponse(res, 200, {
                 updateBooking: result.newBooking,
                 newDetails: result.newDetails,
                 updateWorkshift: result.updateWorkshift
-            })
-
+            });
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handlError(res, statusCode, error);
         }
     },
 
     changeStatus: async (req, res) => {
+        let statusCode
         try {
             const id = req.body.bookingID;
-
+            if (!isValidId(id)) {
+                statusCode = 400
+                throw new Error("Invalid ID");
+            }
             const status = req.body.status;
             const result = await baseModel.executeTransaction(async () => {
                 const recordBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
                 if (recordBooking.status === "Completed" || recordBooking.status === "Cancelled") {
+                    statusCode = 400
                     throw new Error("Cannot Update Status");
                 }
 
@@ -210,9 +227,17 @@ const bookingController = {
                 switch (status) {
                     case "Done":
                         booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Done"]);
+                        if (!booking) {
+                            statusCode = 404
+                            throw new Error("Update booking fail");
+                        }
                         break;
                     case "Completed":
                         booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Completed"]);
+                        if (!booking) {
+                            statusCode = 404
+                            throw new Error("Update booking fail");
+                        }
                         if (booking.customerID != null) {
                             const point = booking.discountPrice * 0.01;
                             const recordCustomer = await baseModel.findByField(customerTable.name, customerTable.columns.customerID, booking.customerID);
@@ -222,15 +247,25 @@ const bookingController = {
                         break;
                     case "Cancelled":
                         booking = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, id, ["status"], ["Cancelled"]);
+                        if (!booking) {
+                            statusCode = 404
+                            throw new Error("Update booking fail");
+                        }
+                        // Active workshift
                         stylistWorkShift = await baseModel.update(stylistWorkShiftTable.name, stylistWorkShiftTable.columns.stylistWorkShiftID, booking.stylistWorkShiftID, ["status"], ["Active"]);
+
+                        if (!stylistWorkShift) {
+                            statusCode = 404
+                            throw new Error("Update stylist workshift fail");
+                        }
                         break;
                     default:
                         throw new Error("Invalid format status");
                 }
                 return { booking: booking, customer: customer, stylistWorkShift: stylistWorkShift }
             })
-            return res.status(200).json({
-                success: true,
+
+            return handlResponse(res, 200, {
                 data: {
                     booking: result.booking,
                     customer: result.customer,
@@ -238,45 +273,45 @@ const bookingController = {
                 }
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handlError(res, statusCode, error);
         }
 
     },
 
     delete: async (req, res) => {
+        let statusCode
         try {
             const bookingID = req.query.bookingID;
+            if (!isValidId(id)) {
+                statusCode = 400
+                throw new Error("Invalid ID");
+            }
 
             const result = await baseModel.executeTransaction(async () => {
                 await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, bookingID, ["status"], ["Cancelled"]);
                 const deleted = await baseModel.update(bookingTable.name, bookingTable.columns.bookingID, bookingID, ["deleted"], [true]);
                 if (!deleted) {
+                    statusCode = 404
                     throw new Error("Booking not exist")
                 }
                 return deleted
             })
 
-            res.status(200).json({
-                success: true,
-                msg: "Delete successfully",
-                data: result
-            })
-
+            return handleResponse(res, 200, { data: result })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handlError(res, statusCode, error);
         }
 
     },
 
     history: async (req, res) => {
+        let statusCode
         try {
             const customerID = req.query.id;
+            if (!isValidId(customerID)) {
+                statusCode = 400
+                throw new Error("Invalid ID");
+            }
 
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
@@ -295,15 +330,9 @@ const bookingController = {
                 limit,
                 offset
             )
-            return res.status(200).json({
-                data: bookings
-            })
+            return handleResponse(res, 200, { data: bookings })
         } catch (error) {
-            console.log(error);
-            
-            return res.status(500).json({
-                error: error.message
-            })
+            return handlError(res, statusCode, error);s
         }
     }
 }
