@@ -8,7 +8,7 @@ const workShiftTable = require("../../../model/table/workshift.table");
 const dateRefactor = require("..//../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const findBookingDetail = require("../../../helper/findBookingDetails.helper");
-const handlError = require("../../../helper/handleError.helper");
+const handleError = require("../../../helper/handleError.helper");
 const handlResponse = require("../../../helper/handleReponse.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 const handleResponse = require("../../../helper/handleReponse.helper");
@@ -71,7 +71,7 @@ const bookingController = {
                 updateWorkshift: result.updateStylistWorkshift
             })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -102,7 +102,7 @@ const bookingController = {
                 details: details
             })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -122,7 +122,7 @@ const bookingController = {
 
             return handlResponse(res, 200, { bookings: bookings });
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -200,7 +200,7 @@ const bookingController = {
                 updateWorkshift: result.updateWorkshift
             });
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -273,7 +273,7 @@ const bookingController = {
                 }
             })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
 
     },
@@ -299,7 +299,7 @@ const bookingController = {
 
             return handleResponse(res, 200, { data: result })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
 
     },
@@ -332,7 +332,7 @@ const bookingController = {
             )
             return handleResponse(res, 200, { data: bookings })
         } catch (error) {
-            return handlError(res, statusCode, error);s
+            return handleError(res, statusCode, error);s
         }
     }
 }

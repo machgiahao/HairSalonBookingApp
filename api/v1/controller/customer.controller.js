@@ -1,5 +1,6 @@
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
+const handleError= require("../../../helper/handleError.helper");
 const baseModel = require("../../../model/base.model")
 const customerTable = require("../../../model/table/customer.table")
 const userTable = require("../../../model/table/user.table")
@@ -34,7 +35,7 @@ const customerController = {
                 }
             })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
     update: async (req, res) => {
@@ -72,7 +73,7 @@ const customerController = {
                 }
             })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -95,7 +96,7 @@ const customerController = {
 
             return handleResponse(res, 200, { data: result })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -111,7 +112,7 @@ const customerController = {
 
             return handleResponse(res, 200, { customerList: customerList })
         } catch (error) {
-            return handlError(res, statusCode, error);
+            return handleError(res, statusCode, error);
         }
     }
 
