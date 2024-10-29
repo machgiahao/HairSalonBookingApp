@@ -11,13 +11,13 @@ const isValidId = require("../../../validates/reqIdParam.validate");
 // Get workshift details by ID
 module.exports.detail = async (req, res) => {
     let statusCode
-    const id = req.query.id;
-    if (!isValidId(id)) {
-        statusCode=400;
-        throw new Error(`Valid ID is required`)
-    }
-
     try {
+        const id = req.query.id;
+        if (!isValidId(id)) {
+            statusCode=400;
+            throw new Error(`Valid ID is required`)
+        }
+
         const workshiftDetails = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
         if (!workshiftDetails) {
             statusCode=404
@@ -25,7 +25,6 @@ module.exports.detail = async (req, res) => {
         }
         handleResponse(res, 200, { data: { workshiftDetails } });
     } catch (error) {
-        console.error("Error retrieving workshift:", error);
         handleError(res, statusCode, error);
     }
 };
@@ -33,16 +32,15 @@ module.exports.detail = async (req, res) => {
 // Create a new workshift
 module.exports.create = async (req, res) => {
     let statusCode
-
-    const columns = [];
-    const values = [];
-    for (const key in req.body) {
+    try {
+        const columns = [];
+        const values = [];
+        for (const key in req.body) {
         if (workshift.columns[key] !== undefined && key !== workshift.columns.workShiftID) {  
             columns.push(workshift.columns[key]);
             values.push(req.body[key]);
         }
     }
-    try {
         const newWorkshift = await baseModel.create(workshift.name, columns, values);
         if (!newWorkshift) {
             statusCode=400
@@ -57,28 +55,27 @@ module.exports.create = async (req, res) => {
 // Update workshift details
 module.exports.update = async (req, res) => {
     let statusCode
-    const id = req.query.id;
-    if (!isValidId(id)) {
-        statusCode=400
-        throw new Error('Invalid id')
-    }
-
-    const columns = [];
-    const values = [];
-
-    for (const key in req.body) {
-        if (workshift.columns[key] !== undefined && key !== workshift.columns.workShiftID) {  
-            columns.push(workshift.columns[key]);
-            values.push(req.body[key]);
-        }
-    }
-
-    if (columns.length === 0) {
-        statusCode=400
-        throw new Error('No valid fields provided for update')
-    }
-
     try {
+        const id = req.query.id;
+        if (!isValidId(id)) {
+            statusCode=400
+            throw new Error('Invalid id')
+        }
+    
+        const columns = [];
+        const values = [];
+    
+        for (const key in req.body) {
+            if (workshift.columns[key] !== undefined && key !== workshift.columns.workShiftID) {  
+                columns.push(workshift.columns[key]);
+                values.push(req.body[key]);
+            }
+        }
+    
+        if (columns.length === 0) {
+            statusCode=400
+            throw new Error('No valid fields provided for update')
+        }
         const updatedWorkshift = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, columns, values);
         if (!updatedWorkshift) {
             statusCode=404
@@ -94,13 +91,12 @@ module.exports.update = async (req, res) => {
 // Soft delete workshift (toggle deleted status)
 module.exports.softDel = async (req, res) => {
     let statusCode
-    const id = req.query.id;
-    if (!isValidId(id)) {
-        statusCode=400
-        throw new Error(`Valid ID is required`)
-    }
-
     try {
+        const id = req.query.id;
+        if (!isValidId(id)) {
+            statusCode=400
+            throw new Error(`Valid ID is required`)
+        }
         let workshiftDetails = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
         if (!workshiftDetails) {
             statusCode=404
@@ -134,8 +130,8 @@ module.exports.getAll = async (req, res) => {
 
 //get all stylist workshift
 module.exports.getAllWorkshift = async (req, res) => {
+    let statusCode
     try {
-        let statusCode
         const shiftDate = req.query.shiftDate;
         let conditions=[]
         const id = req.query.id
@@ -174,16 +170,15 @@ module.exports.getAllWorkshift = async (req, res) => {
         }
         handleResponse(res, 200, { data:  workshiftList  });
     } catch (error) {
-        console.error("Error retrieving workshift list:", error);
         handleError(res, statusCode, error);
     }
 };
 
 //get all workshift details
 module.exports.getAllWorkshiftDetail = async (req, res) => {
+    let statusCode
+
     try {
-        
-        let statusCode
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
         
         const workshiftList = await baseModel.findWithConditionsJoin(
@@ -224,25 +219,24 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
 // Update stylist workshift details
 module.exports.updateStylistWorkshift = async (req, res) => {
     let statusCode
-    const stylistID = req.body[stylistWorkshift.columns.stylistID];
-    const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
-    const status = req.body[stylistWorkshift.columns.status]; 
-
-    // Check if stylistID and workShiftID are provided
-    if (!stylistID || !workShiftID || !status) {
-        statusCode=400
-        throw new Error("Stylist ID, WorkShift ID, and Status are required")
-    }
-
-    const columns = [stylistWorkshift.columns.status];
-    const values = [status];
-
-    const conditions = [
-        { column: stylistWorkshift.columns.stylistID, value: stylistID },
-        { column: stylistWorkshift.columns.workShiftID, value: workShiftID }
-    ];
-
     try {
+        const stylistID = req.body[stylistWorkshift.columns.stylistID];
+        const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
+        const status = req.body[stylistWorkshift.columns.status]; 
+
+        // Check if stylistID and workShiftID are provided
+        if (!stylistID || !workShiftID || !status) {
+            statusCode=400
+            throw new Error("Stylist ID, WorkShift ID, and Status are required")
+        }
+
+        const columns = [stylistWorkshift.columns.status];
+        const values = [status];
+
+        const conditions = [
+            { column: stylistWorkshift.columns.stylistID, value: stylistID },
+            { column: stylistWorkshift.columns.workShiftID, value: workShiftID }
+        ];
         const updatedStylistWorkshift = await baseModel.updateWithConditions(
             stylistWorkshift.name,
             columns,
@@ -265,8 +259,8 @@ module.exports.updateStylistWorkshift = async (req, res) => {
 
 
 module.exports.addStylistToWorkShift = async (req, res) => {
+    let statusCode
     try {
-        let statusCode
         let columns = [];
         let values = [];
         const existedSWorkShift = [];
@@ -323,8 +317,8 @@ module.exports.addStylistToWorkShift = async (req, res) => {
 };
 
 module.exports.removeStylistFromWorkShift = async (req, res) => {
+    let statusCode
     try {
-        let statusCode
         let columns = [];
         let values = [];
         const removedWorkshift = [];
