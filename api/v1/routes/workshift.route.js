@@ -3,6 +3,7 @@ const workshiftController = require("../controller/workshift.controller");
 const { verifyToken } = require("../middleware/verifyToken.middleware");
 const route = express.Router();
 
+route.get("/getAll", workshiftController.getAll);
 // Route to create a new workship
 route.use(verifyToken);
 route.post("/create", workshiftController.create);
@@ -11,7 +12,6 @@ route.post("/create", workshiftController.create);
 route.post("/addStylist", workshiftController.addStylistToWorkShift);
 
 // Route to get all workships
-route.get("/getAll", workshiftController.getAll);
 
 // Route to get all workships of tylist
 route.get("/getWorkshift", workshiftController.getAllWorkshift);

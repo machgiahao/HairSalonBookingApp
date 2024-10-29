@@ -10,18 +10,14 @@ const customerController = {
 
             const customer = await baseModel.findByField(customerTable.name, customerTable.columns.customerID, id);
             if (!customer) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "Customer not found"
-                })
+                throw new Error("Customer not found");
+                
             }
 
             const user = await baseModel.findByField(userTable.name, userTable.columns.userID, customer.userID);
             if (!user) {
-                return res.status(400).json({
-                    success: false,
-                    msg: "User not found"
-                })
+                throw new Error("User not found");
+                
             }
             const { password, refreshToken, ...others } = user;
             return res.status(200).json({
@@ -35,7 +31,7 @@ const customerController = {
         } catch (error) {
             return res.status(500).json({
                 success: false,
-                msg: "Internal server error"
+                error: error.message
             })
         }
     },
@@ -49,7 +45,7 @@ const customerController = {
                 // Update table customer
                 const updateCustomer = await baseModel.update(customerTable.name, customerTable.columns.customerID, id, customerColumns, customerValues);
                 if (!updateCustomer) {
-                    return res.status(404).json({ error: 'Customer not found' });
+                    throw new Error("Customer not found");               
                 }
                 // Update table user
                 const userId = req.body.userID;
