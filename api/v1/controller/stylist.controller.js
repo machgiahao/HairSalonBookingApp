@@ -6,11 +6,11 @@ const extractField = require("../../../helper/extractField.helper");
 const handleResponse = require("../../../helper/handleReponse.helper")
 const handleError = require("../../../helper/handleError.helper")
 const isValidId = require("../../../validates/reqIdParam.validate");
-let statusCode
 
 // Get stylist details by ID
 // Get stylist details by ID using findWithConditionsJoin
 module.exports.getStylistDetail = async (req, res) => {
+    let statusCode
     try {
         const id = req.query.id;
         if (!isValidId(id)) {
@@ -43,7 +43,7 @@ module.exports.getStylistDetail = async (req, res) => {
             statusCode = 404;
             throw new Error("No stylist found");
         }
-        return handleResponse(res, 200, { data: { user: stylistDetail[0] } });
+        handleResponse(res, 200, { data: { user: stylistDetail[0] } });
     } catch (error) {
         console.error("Error retrieving stylist detail with join:", error);
         handleError(res, statusCode, error);
@@ -52,6 +52,8 @@ module.exports.getStylistDetail = async (req, res) => {
 
 // Update stylist details
 module.exports.updateStylist = async (req, res) => {
+    let statusCode
+
     try {
         const id = req.query.id;
         if (!isValidId(id)) {
@@ -80,6 +82,7 @@ module.exports.updateStylist = async (req, res) => {
 
 // Soft delete stylist (toggle deleted status)
 module.exports.softDel = async (req, res) => {
+    let statusCode
     try {
         const id = req.query.id;
         if (!isValidId(id)) {
@@ -109,6 +112,8 @@ module.exports.softDel = async (req, res) => {
 
 // Get all stylists
 module.exports.getAllStylists = async (req, res) => {
+    let statusCode
+
     try {
         const limit = Math.abs(parseInt(req.query.perpage)) || 10;
         const offset = Math.abs(parseInt(req.query.page)) || 0;
