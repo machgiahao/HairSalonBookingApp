@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 dotenv.config();
 const routesApiV1 = require("./api/v1/routes/index.route");
+require("./schedules/index.schedules");
 
 
 const app = express();
