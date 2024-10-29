@@ -2,28 +2,34 @@ const serviceTable = require("../../../model/table/service.table")
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const baseModel = require("../../../model/base.model")
 const handleError = require("../../../helper/handleError.helper");
+const handleResponse =  require("../../../helper/handleReponse.helper");
+const isValidId =  require("../../../validates/reqIdParam.validate");
 
 const serviceController = {
     detail: async (req, res) => {
+        let statusCode
         try {
             const id = req.query.id;
+            if(!isValidId(id)){
+                statusCode = 400
+                throw new Error("Valid id required");
+            }
 
             const service = await baseModel.findByField(serviceTable.name, serviceTable.columns.serviceID, id);
             if (!service) {
-                return handleError(res, 404, new Error("Service not found"));
+                statusCode = 404
+                throw new Error("Service not found");
             }
-            return res.status(200).json({
-                success: true,
-                service: service
-            })
-
+            handleResponse(res,200,{service: service})
         } catch (error) {
-            return handleError(res, 500, error);
+            handleError(res, statusCode, error);
         }
     },
 
     getAll: async (req, res) => {
+        let statusCode
         try {
+            
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
 
@@ -38,38 +44,37 @@ const serviceController = {
             )
 
             if (!services || services.length === 0) {
-                return handleError(res, 404, new Error("Service not found"));
+                statusCode = 404
+                throw new Error("Service not found");
             }
-
-            return res.status(200).json({
-                success: true,
-                services: services
-            })
+            handleResponse(res,200,{services: services})
         } catch (error) {
-            return handleError(res, 500, error);
+            handleError(res,statusCode, error);
         }
     },
 
     create: async (req, res) => {
+        let statusCode
         try {
             const result = await baseModel.executeTransaction(async () => {
                 const { columns: serviceColumns, values: serviceValues } = getColsVals(serviceTable, req.body);
                 const newService = await baseModel.create(serviceTable.name, serviceColumns, serviceValues);
                 return { newService: newService }
             })
-
-            return res.status(201).json({
-                success: true,
-                data: result.newService
-            })
+            handleResponse(res,201,{data: result.newService})
         } catch (error) {
-            return handleError(res, 500, error);
+            handleError(res, statusCode, error);
         }
     },
 
     update: async (req, res) => {
+        let statusCode
         try {
             const id = req.query.id;
+            if(!isValidId(id)){
+                statusCode = 400
+                throw new Error("Valid id required");
+            }
 
             const result = await baseModel.executeTransaction(async () => {
                 const { columns: serviceColumns, values: serviceValues } = getColsVals(serviceTable, req.body);
@@ -78,37 +83,44 @@ const serviceController = {
             })
 
             if (!result.updateService) {
-                return handleError(res, 404, new Error("Service not found"));
+                statusCode= 404
+                throw new Error("Service not found");
             }
-            return res.status(200).json({
+            handleResponse(res,200,{
                 success: true,
                 msg: "Update successfully",
                 data: result.updateService
             })
         } catch (error) {
-            return handleError(res, 500, error);
+            handleError(res, statusCode, error);
         }
 
     },
 
     delete: async (req, res) => {
+        let statusCode
         try {
             const id = req.query.id;
-
+            if(!isValidId(id)){
+                statusCode = 400
+                throw new Error("Valid id required");
+            }
             const result = await baseModel.executeTransaction(async () => {
                 const update = await baseModel.update(serviceTable.name, serviceTable.columns.serviceID, id, ["deleted"], [true]);
-                if (!update) return handleError(res, 404, new Error("Service not found"));
+                if (!update) {
+                    statusCode=404
+                    throw new Error("Service not found");
+                }
                 return { update: update }
             })
-
-            res.status(200).json({
+            handleResponse(res,200,{
                 success: true,
                 msg: "Delete successfully",
                 data: result.update
             })
 
         } catch (error) {
-            return handleError(res, 500, error);
+            handleError(res, statusCode, error);
         }
     },
 
