@@ -5,6 +5,7 @@ const handleError = require("../../../helper/handleError.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const bookingTable = require("../../../model/table/booking.table");
 const customerTable = require("../../../model/table/customer.table");
+const isValidId = require("../../../validates/reqIdParam.validate");
 
 const feedbackController = {
     detail: async (req, res) => {

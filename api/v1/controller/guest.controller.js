@@ -3,6 +3,7 @@ const guestTable = require("../../../model/table/guest.table");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const handleError = require("../../../helper/handleError.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
+const isValidId = require("../../../validates/reqIdParam.validate");
 
 const guestController = {
     create: async (req, res) => {
