@@ -10,8 +10,8 @@ const handleError = require("../../../helper/handleError.helper");
 
 // Get staff details by ID
 module.exports.getStaffDetail = async (req, res) => {
+    let statusCode;
     try {
-        let statusCode;
         const id = req.query.id;
         if (!isValidId(id)) {
             statusCode = 400;
@@ -51,9 +51,8 @@ module.exports.getStaffDetail = async (req, res) => {
 
 // Soft delete staff member (toggle deleted status)
 module.exports.softDel = async (req, res) => {
+    let statusCode;
     try {
-        let statusCode;
-
         const id = req.query.id;
         if (!isValidId(id)) {
             statusCode = 400;
@@ -74,13 +73,13 @@ module.exports.softDel = async (req, res) => {
         console.log('Updated Staff Member (Soft Delete):', staff);
         handleResponse(res, 200, { data: { user: staff } });
     } catch (error) {
-        console.error("Error updating staff member (soft delete):", error);
         handleError(res, statusCode , error);
     }
 };
 
 // Get all staff members
 module.exports.getAllStaff = async (req, res) => {
+    let statusCode;
     try {
         const limit = Math.abs(parseInt(req.query.perpage)) || 10; // Default to 10 if invalid
         const offset = Math.abs(parseInt(req.query.page)) || 0; // Default to page 0 if not provided
@@ -113,18 +112,18 @@ module.exports.getAllStaff = async (req, res) => {
 
         handleResponse(res, 200, { data: { users: staffList } });
     } catch (error) {
-        console.error("Error retrieving staff list:", error);
         handleError(res, statusCode, error);
     }
 };
 
 // Update staff member details
 module.exports.updateStaff = async (req, res) => {
+    let statusCode;
     try {
         const id = req.query.id;
         if (!isValidId(id)) {
-        statusCode = 400;
-        throw new Error('Valid ID is required');
+            statusCode = 400;
+            throw new Error('Valid ID is required');
         }
         const updatedStaff = await baseModel.executeTransaction(async () => {
             return await extractField(
@@ -138,10 +137,8 @@ module.exports.updateStaff = async (req, res) => {
             throw new Error('Staff member not found');
         }
 
-        console.log('Updated Staff Member:', updatedStaff);
         handleResponse(res, 200, { data: { user: updatedStaff } });
     } catch (error) {
-        console.error("Error updating staff member:", error);
         handleError(res, statusCode, error);
     }
 };
