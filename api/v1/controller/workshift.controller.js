@@ -4,29 +4,36 @@ const stylistWorkshift = require("../../../model/table/stylistWorkshift.table");
 const bookingTable = require("../../../model/table/booking.table");
 const columnsRefactor = require("../../../helper/columnsRefactor.heper");
 const handleResponse = require("../../../helper/handleReponse.helper");
+const handleError = require("../../../helper/handleError.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 
 //--------------------workshift--------------------------------
 // Get workshift details by ID
 module.exports.detail = async (req, res) => {
+    let statusCode
     const id = req.query.id;
-    if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
+    if (!isValidId(id)) {
+        statusCode=400;
+        throw new Error(`Valid ID is required`)
+    }
 
     try {
         const workshiftDetails = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
         if (!workshiftDetails) {
-            return handleResponse(res, 404, { error: 'Workshift not found' });
+            statusCode=404
+            throw new Error("Workshift not found")
         }
-        console.log('Retrieved Workshift:', workshiftDetails);
-        return handleResponse(res, 200, { data: { workshiftDetails } });
+        handleResponse(res, 200, { data: { workshiftDetails } });
     } catch (error) {
         console.error("Error retrieving workshift:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
 // Create a new workshift
 module.exports.create = async (req, res) => {
+    let statusCode
+
     const columns = [];
     const values = [];
     for (const key in req.body) {
@@ -38,20 +45,23 @@ module.exports.create = async (req, res) => {
     try {
         const newWorkshift = await baseModel.create(workshift.name, columns, values);
         if (!newWorkshift) {
-            return handleResponse(res, 400, { error: 'Failed to create workshift' });
+            statusCode=400
+            throw new Error("Failed to create workshift")
         }
-        console.log('Created Workshift:', newWorkshift);
-        return handleResponse(res, 201, { data: { newWorkshift } });
+        handleResponse(res, 201, { data: { newWorkshift } });
     } catch (error) {
-        console.error("Error creating workshift:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
 // Update workshift details
 module.exports.update = async (req, res) => {
+    let statusCode
     const id = req.query.id;
-    if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
+    if (!isValidId(id)) {
+        statusCode=400
+        throw new Error('Invalid id')
+    }
 
     const columns = [];
     const values = [];
@@ -64,54 +74,58 @@ module.exports.update = async (req, res) => {
     }
 
     if (columns.length === 0) {
-        return handleResponse(res, 400, { error: 'No valid fields provided for update' });
+        statusCode=400
+        throw new Error('No valid fields provided for update')
     }
 
     try {
         const updatedWorkshift = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, columns, values);
         if (!updatedWorkshift) {
-            return handleResponse(res, 404, { error: 'Workshift not found' });
+            statusCode=404
+            throw new Error('Workshift not found')
         }
         console.log('Updated Workshift:', updatedWorkshift);
-        return handleResponse(res, 200, { data: { updatedWorkshift } });
+        handleResponse(res, 200, { data: { updatedWorkshift } });
     } catch (error) {
-        console.error("Error updating workshift:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
 // Soft delete workshift (toggle deleted status)
 module.exports.softDel = async (req, res) => {
+    let statusCode
     const id = req.query.id;
-    if (!isValidId(id)) return handleResponse(res, 400, { error: 'Valid ID is required' });
+    if (!isValidId(id)) {
+        statusCode=400
+        throw new Error(`Valid ID is required`)
+    }
 
     try {
         let workshiftDetails = await baseModel.findById(workshift.name, workshift.columns.workShiftID, id);
         if (!workshiftDetails) {
-            return handleResponse(res, 404, { error: 'Workshift not found' });
+            statusCode=404
+            throw new Error(`Workshift not found`)
         }
         const deleted = !workshiftDetails.deleted; 
         workshiftDetails = await baseModel.update(workshift.name, workshift.columns.workShiftID, id, [workshift.columns.deleted], [deleted]);
-        console.log('Updated Workshift (Soft Delete):', workshiftDetails);
-        return handleResponse(res, 200, { data: { workshiftDetails } });
+        handleResponse(res, 200, { data: { workshiftDetails } });
     } catch (error) {
-        console.error("Error updating workshift (soft delete):", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
 // Get all workshifts
 module.exports.getAll = async (req, res) => {
+    let statusCode
     try {
         const workshiftList = await baseModel.find(workshift.name);
         if (!workshiftList || workshiftList.length === 0) {
-            return handleResponse(res, 404, { error: 'No workshifts found' });
+            statusCode=404
+            throw new Error('No workshifts found')
         }
-        console.log('Retrieved Workshift List:', workshiftList);
-        return handleResponse(res, 200, { data: { workshifts: workshiftList } });
+        handleResponse(res, 200, { data: { workshifts: workshiftList } });
     } catch (error) {
-        console.error("Error retrieving workshift list:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleResponse(res, statusCode, error);
     }
 };
 
@@ -121,17 +135,18 @@ module.exports.getAll = async (req, res) => {
 //get all stylist workshift
 module.exports.getAllWorkshift = async (req, res) => {
     try {
+        let statusCode
         const shiftDate = req.query.shiftDate;
         let conditions=[]
-        if(req.query.id) {
-            conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id})
-                // {column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.deleted}`, value:false}
+        const id = req.query.id
+        if (!isValidId(id)) {
+            statusCode=400;
+            throw new Error(`Valid ID is required`)
         }
-        
+        conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id})
 
         let logicalOperator = ["AND"]
         if (shiftDate){
-
             conditions.push({column:`${workshift.name}"."${workshift.columns.shiftDay}`, value:shiftDate});
             logicalOperator.push("AND");
         }
@@ -144,9 +159,9 @@ module.exports.getAllWorkshift = async (req, res) => {
             logicalOperator,
             [
                 {
-                    table: workshift.name, // join with users table
+                    table: workshift.name, 
                     on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
-                    type: "LEFT" // type of join
+                    type: "LEFT" 
                 },
                 
             ]
@@ -154,13 +169,13 @@ module.exports.getAllWorkshift = async (req, res) => {
 
        
         if (!workshiftList || workshiftList.length === 0) {
-            return handleResponse(res, 404, { error: 'No workshifts found' });
+            statusCode=404
+            throw new Error('No workshifts found')
         }
-        console.log('Retrieved Workshift List:', workshiftList);
-        return handleResponse(res, 200, { data:  workshiftList  });
+        handleResponse(res, 200, { data:  workshiftList  });
     } catch (error) {
         console.error("Error retrieving workshift list:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
@@ -168,6 +183,7 @@ module.exports.getAllWorkshift = async (req, res) => {
 module.exports.getAllWorkshiftDetail = async (req, res) => {
     try {
         
+        let statusCode
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
         
         const workshiftList = await baseModel.findWithConditionsJoin(
@@ -196,38 +212,37 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
 
        
         if (!workshiftList || workshiftList.length === 0) {
-            return handleResponse(res, 404, { error: 'No workshifts found' });
+            statusCode = 404
+            throw new Error('No workshifts found')
         }
-        console.log('Retrieved Workshift List:', workshiftList);
-        return handleResponse(res, 200, { data:  workshiftList  });
+        handleResponse(res, 200, { data:  workshiftList  });
     } catch (error) {
-        console.error("Error retrieving workshift list:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
 // Update stylist workshift details
 module.exports.updateStylistWorkshift = async (req, res) => {
+    let statusCode
     const stylistID = req.body[stylistWorkshift.columns.stylistID];
     const workShiftID = req.body[stylistWorkshift.columns.workShiftID];
     const status = req.body[stylistWorkshift.columns.status]; 
 
     // Check if stylistID and workShiftID are provided
     if (!stylistID || !workShiftID || !status) {
-        return handleResponse(res, 400, { error: "Stylist ID, WorkShift ID, and Status are required" });
+        statusCode=400
+        throw new Error("Stylist ID, WorkShift ID, and Status are required")
     }
 
     const columns = [stylistWorkshift.columns.status];
     const values = [status];
 
-    // Create conditions for update
     const conditions = [
         { column: stylistWorkshift.columns.stylistID, value: stylistID },
         { column: stylistWorkshift.columns.workShiftID, value: workShiftID }
     ];
 
     try {
-        // Call updateWithConditions to update the status where conditions match
         const updatedStylistWorkshift = await baseModel.updateWithConditions(
             stylistWorkshift.name,
             columns,
@@ -237,19 +252,21 @@ module.exports.updateStylistWorkshift = async (req, res) => {
         );
 
         if (!updatedStylistWorkshift || updatedStylistWorkshift.length === 0) {
-            return handleResponse(res, 404, { error: 'Stylist work shift not found' });
+            statusCode=404
+            throw new Error('Stylist work shift not found')
         }
 
-        return handleResponse(res, 200, { data:  updatedStylistWorkshift[0]  });
+        handleResponse(res, 200, { data:  updatedStylistWorkshift[0]  });
     } catch (error) {
         console.error("Error updating stylist work shift:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleResponse(res, statusCode, error);
     }
 };
 
 
 module.exports.addStylistToWorkShift = async (req, res) => {
     try {
+        let statusCode
         let columns = [];
         let values = [];
         const existedSWorkShift = [];
@@ -260,15 +277,14 @@ module.exports.addStylistToWorkShift = async (req, res) => {
         const workShiftID = [...req.body[stylistWorkshift.columns.workShiftID]];
 
         if (!stylistID || workShiftID.length <= 0) {
-            return handleResponse(res, 400, { message: "Stylist or WorkShift are missed" });
+            statusCode=400
+            throw new Error("Stylist or WorkShift id are missed")
         }
 
-        for (let id of workShiftID) {  // Use 'let' to allow reassignment in the loop
-
+        for (let id of workShiftID) {  
             columns = [stylistWorkshift.columns.status,stylistWorkshift.columns.deleted];
             values = ["active",false];
             
-            // Declare existingEntry with 'let' to allow reassignment
             let existingEntry = await baseModel.findWithConditionsJoin(
                 stylistWorkshift.name,
                 undefined,
@@ -299,15 +315,16 @@ module.exports.addStylistToWorkShift = async (req, res) => {
             }
         }
 
-        return handleResponse(res, 201, { data: { newWorkShift: newWorkShift, existedSWorkShift: existedSWorkShift } });
+        handleResponse(res, 201, { data: { newWorkShift: newWorkShift, existedSWorkShift: existedSWorkShift } });
     } catch (error) {
         console.error("Error adding stylist to work shift:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
 
 module.exports.removeStylistFromWorkShift = async (req, res) => {
     try {
+        let statusCode
         let columns = [];
         let values = [];
         const removedWorkshift = [];
@@ -318,7 +335,8 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
         const workShiftID = [...req.body[stylistWorkshift.columns.workShiftID]];
 
         if (!stylistID || workShiftID.length <= 0) {
-            return handleResponse(res, 400, { message: "Stylist or WorkShift are missed" });
+            statusCode=400
+            throw new Error(`Stylist or WorkShift are missed`)
         }
 
         for (let id of workShiftID) {  // Use 'let' to allow reassignment in the loop
@@ -349,9 +367,9 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
             }
         }
 
-        return handleResponse(res, 201, { data: { removedWorkshift: removedWorkshift, notExistedWorkshift: notExistedWorkshift } });
+        handleResponse(res, 201, { data: { removedWorkshift: removedWorkshift, notExistedWorkshift: notExistedWorkshift } });
     } catch (error) {
         console.error("Error adding stylist to work shift:", error);
-        return handleResponse(res, 500, { error: error.message });
+        handleError(res, statusCode, error);
     }
 };
