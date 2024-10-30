@@ -115,8 +115,8 @@ module.exports.getAllStylists = async (req, res) => {
     let statusCode
 
     try {
-        const limit = Math.abs(parseInt(req.query.perpage)) || 10;
-        const offset = Math.abs(parseInt(req.query.page)) || 0;
+        const limit = Math.abs(parseInt(req.query.perpage)) || null;
+        const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
 
         const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
 
@@ -130,6 +130,10 @@ module.exports.getAllStylists = async (req, res) => {
             }
         ];
         let order = [];
+        const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
+            ? req.query.order.toUpperCase() 
+            : "DESC";
+        order = [{ column: stylistTable.columns.stylistID, direction: orderDirection }];
 
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,

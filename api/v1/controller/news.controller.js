@@ -114,8 +114,8 @@ module.exports.delete = async (req, res) => {
 // Retrieve all news entries with pagination
 module.exports.getAll = async (req, res) => {
     try {
-        const limit = Math.abs(parseInt(req.query.perpage)) || 10;
-        const offset = Math.abs(parseInt(req.query.page)) || 0;
+        const limit = Math.abs(parseInt(req.query.perpage)) || null;
+        const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";

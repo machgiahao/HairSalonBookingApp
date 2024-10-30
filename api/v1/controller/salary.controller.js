@@ -13,14 +13,30 @@ const refactor = require("../../../helper/columnsRefactor.heper");
 module.exports.getAllDailySalary = async (req, res) => {
     const id = req.query.id;
     try {
+        const limit = Math.abs(parseInt(req.query.perpage)) || null;
+        const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
         let conditions =undefined;
+
+        const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
+            ? req.query.order.toUpperCase() 
+            : "DESC";
+        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
 
         if(id){
             if (isValidId(id)) {
                 conditions=[{ column: dailySalaryTable.columns.stylistID, value: id }]
             }
         }
-        const result = await baseModel.findWithConditionsJoin(dailySalaryTable.name, undefined, conditions);
+        const result = await baseModel.findWithConditionsJoin(
+            dailySalaryTable.name,
+            undefined, 
+            conditions,
+            undefined,
+            undefined,
+            order,
+            limit,
+            offset
+        );
         handleResponse(res, 200, { data: result });
     } catch (error) {
         handleError(res, 500, { error: error });
