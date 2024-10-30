@@ -1,80 +1,74 @@
 const baseModel = require("../../../model/base.model");
 const guestTable = require("../../../model/table/guest.table");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
+const handleError = require("../../../helper/handleError.helper");
+const handleResponse = require("../../../helper/handleReponse.helper");
+const isValidId = require("../../../validates/reqIdParam.validate");
 
 const guestController = {
     create: async (req, res) => {
+        let statusCode
         try {
             const result = await baseModel.executeTransaction(async () => {
                 const { columns, values } = getColsVals(guestTable, req.body);
                 const guest = await baseModel.create(guestTable.name, columns, values);
                 if (!guest) {
-                    throw new Error("Cannot create")
+                    statusCode = 400
+                    throw new Error("Create guest fail")
                 }
                 return { guest: guest };
             })
-            return res.status(200).json({
-                success: true,
-                guest: result.guest
-            })
+
+            return handleResponse(res, 200, { guest: result.guest })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
     detail: async (req, res) => {
+        let statusCode
         try {
             const id = req.query.id;
-
+            if (!isValidId(id)) {
+                statusCode = 400
+                throw new Error("Invalid ID");
+            }
             const guest = await baseModel.findByField(guestTable.name, guestTable.columns.guestID, id);
             if (!guest) {
+                statusCode = 404
                 throw new Error("Guest not found")
             }
 
-            return res.status(200).json({
-                success: true,
-                data: guest
-            })
-
+            return handleResponse(res, 200, { data: guest })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
     delete: async (req, res) => {
+        let statusCode
         try {
             const id = req.query.id;
-
+            if (!isValidId(id)) {
+                statusCode = 400
+                throw new Error("Invalid ID");
+            }
             const result = await baseModel.executeTransaction(async () => {
                 const deleted = await baseModel.update(guestTable.name, guestTable.columns.guestID, id, ["deleted"], [true]);
                 if (!deleted) {
-                    throw new Error("Guest not found");
+                    throw new Error("Update guest fail");
                 }
                 return deleted
             })
 
-            res.status(200).json({
-                success: true,
-                msg: "Delete successfully",
-                data: result
-            })
-
+            return handleResponse(res, 200, { data: result })
         } catch (error) {
-            console.log(error)
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
     getAll: async (req, res) => {
+        let statusCode
         try {
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
@@ -90,15 +84,13 @@ const guestController = {
             )
 
             if (!guests || guests.length === 0) {
-                return handleError(res, 404, new Error("Guest not found"));
+                statusCode = 400
+                throw new Error("No records of guest");
             }
-
-            return res.status(200).json({
-                success: true,
-                guests: guests
-            })
+            
+            return handleResponse(res, 200, { guests: guests })
         } catch (error) {
-            return handleError(res, 500, error);
+            return handleError(res, statusCode, error);
         }
     }
 
