@@ -121,6 +121,7 @@ module.exports.updateStaff = async (req, res) => {
     let statusCode;
     try {
         const id = req.query.id;
+        console.log("ID", id);
         if (!isValidId(id)) {
             statusCode = 400;
             throw new Error('Valid ID is required');
