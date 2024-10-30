@@ -132,16 +132,26 @@ module.exports.getAll = async (req, res) => {
 module.exports.getAllWorkshift = async (req, res) => {
     let statusCode
     try {
+        const limit = Math.abs(parseInt(req.query.perpage)) || null;
+        const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
         const shiftDate = req.query.shiftDate;
         let conditions=[]
         const id = req.query.id
+
         if (!isValidId(id)) {
             statusCode=400;
             throw new Error(`Valid ID is required`)
         }
+
         conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id})
+        const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
+            ? req.query.order.toUpperCase() 
+            : "DESC";
+
+        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
 
         let logicalOperator = ["AND"]
+
         if (shiftDate){
             conditions.push({column:`${workshift.name}"."${workshift.columns.shiftDay}`, value:shiftDate});
             logicalOperator.push("AND");
@@ -160,7 +170,10 @@ module.exports.getAllWorkshift = async (req, res) => {
                     type: "LEFT" 
                 },
                 
-            ]
+            ],
+            order,
+            limit,
+            offset
         );
 
        
@@ -179,6 +192,13 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
     let statusCode
 
     try {
+        const limit = Math.abs(parseInt(req.query.perpage)) || null;
+        const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
+        const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
+            ? req.query.order.toUpperCase() 
+            : "DESC";
+        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
+
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
         
         const workshiftList = await baseModel.findWithConditionsJoin(
@@ -202,7 +222,8 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
                     }"`,
                     type: "INNER" // type of join
                 },
-            ]
+            ],
+            order,limit,offset
         );
 
        
