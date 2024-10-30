@@ -6,19 +6,12 @@ const route = express.Router();
 route.get("/getAll",salaryController.getAllDailySalary);
 route.use(verifyToken);
 
-route.use(checkRole("Stylist"))
+route.use(checkRole("Manager", "Stylist", "Staff"));
 route.post("/dailySalary",salaryController.dailySalary);
 route.get("/monthlySalary",salaryController.monthlySalary);
-
-route.use(checkRole("Staff"))
 route.get("/generalMonthlySalary",salaryController.generalMonthlySalary);
 
 route.use(checkRole("Manager"))
 route.patch("/update",salaryController.updateSalary);
-
-
-
-
-
 
 module.exports = route;
