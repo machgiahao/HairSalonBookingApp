@@ -4,7 +4,7 @@ const managerTable = {
         managerID: "managerID", // ID column
         fullName: "fullName",
         avatar: "avatar",
-        yob: "yob",
+        dob: "dob",
         gender: "gender",
         address: "address",
         userID: "userID",

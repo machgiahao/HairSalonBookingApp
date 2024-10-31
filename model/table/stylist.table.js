@@ -4,7 +4,7 @@ const table = {
         stylistID: "stylistID", // ID column
         avatar: "avatar",
         fullName: "fullName",
-        yob: "yob",
+        dob: "dob",
         gender: "gender",
         address: "address",
         level: "level",

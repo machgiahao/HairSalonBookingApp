@@ -7,10 +7,27 @@ const mail = require("../../../helper/sendMails.helper");
 const userTable = require("../../../model/table/user.table");
 const jwt = require("jsonwebtoken");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
+const handleResponse = require("../../../helper/handleReponse.helper");
+const handleError = require("../../../helper/handleError.helper");
 
 const authController = {
     register: async (req, res) => {
         try {
+            const { phoneNumber, email } = req.body;
+
+            // Check exist phone number
+            const checkPhone = await baseModel.findByField("Users", "phoneNumber", phoneNumber);
+            if (checkPhone) {
+                statusCode = 401
+                throw new Error("Phone number already exist");
+            }
+
+            // Check exist email
+            const checkEmail = await baseModel.findByField("Users", "email", email);
+            if (checkEmail) {
+                statusCode = 401
+                throw new Error("Email already exist");
+            }
             // Check password 
             validate.validateInputField(req.body.password, "Password");
             // hash password
@@ -28,33 +45,33 @@ const authController = {
                 const userByRole = await roleHelper.handleRole(user, req.body);
                 return { user: user, userByRole: userByRole }
             })
-            return res.status(201).json({
+            return handleResponse(res, 201, {
                 success: true,
                 data: {
                     user: result.user,
                     userByRole: result.userByRole
                 }
-            });
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
             })
+        } catch (error) {
+            return handleError(res, statusCode, error);
         }
     },
 
     login: async (req, res) => {
+        let statusCode;
         try {
             const phoneNumber = req.body.phoneNumber;
             validate.validateInputField(phoneNumber, "Phone number");
 
             const user = await baseModel.findByPhone("Users", "phoneNumber", phoneNumber);
             if (!user) {
+                statusCode = 401
                 throw new Error("Phone number not registed !");
             }
 
             const validPassword = await bcrypt.compare(req.body.password, user.password);
             if (!validPassword) {
+                statusCode = 401
                 throw new Error("Incorrect password !");
             }
 
@@ -77,17 +94,14 @@ const authController = {
             const actorByRole = await baseModel.findById(tableByRole, "userID", user.userID);
 
             const { password, refreshToken, ...others } = user;
-            return res.status(200).json({
+
+            return handleResponse(res, 201, {
                 success: true,
                 actor: actorByRole,
                 records: { ...others, accessToken }
             })
         } catch (error) {
-            console.log(error)
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -97,15 +111,13 @@ const authController = {
             await baseModel.executeTransaction(async () => {
                 await baseModel.update("Users", "userID", req.body.userID, ["refreshToken"], [""]);
             })
-            res.status(200).json({
+
+            return handleResponse(res, 200, {
                 success: true,
                 msg: "Logged out!"
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -114,16 +126,19 @@ const authController = {
             const cookie = req.cookies;
             // Check refresh token is exist in cookie
             if (!cookie?.refreshToken) {
+                statusCode = 401
                 throw new Error("You're not authenticated!");
             }
             // Check refresh token is valid or not 
             jwt.verify(cookie.refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
                 if (err) {
+                    statusCode = 403
                     throw new Error("Refresh token is not valid!");
                 }
                 // Check refresh token matches with refresh token stored in db
                 const response = await baseModel.findById("Users", "userID", user.userID);
                 if (cookie.refreshToken !== response.refreshToken) {
+                    statusCode = 403
                     throw new Error("Refresh token is not valid!")
                 }
                 const newAccessToken = generate.generateAccessToken(response);
@@ -137,16 +152,14 @@ const authController = {
                     path: "/",
                     sameSite: "strict",
                 });
-                return res.status(200).json({
+
+                return handleResponse(res, 200, {
                     success: true,
                     accessToken: newAccessToken
-                });
+                })
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -156,10 +169,8 @@ const authController = {
 
             const user = await baseModel.findByField(userTable.name, userTable.columns.email, email);
             if (!user) {
-                return res.status(404).json({
-                    success: false,
-                    msg: "Email is not exist"
-                })
+                statusCode = 403
+                throw new Error("Email is not exist");
             }
 
             const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Create OTP 6 digits
@@ -176,27 +187,24 @@ const authController = {
             const from = process.env.MAIL_FROM_ADDRESS;
             await mail.sendMail(from, email, "Your OTP Code", `<p>Your OTP code is: <b>${otp}</b></p>`);
 
-            return res.status(200).json({
+            return handleResponse(res, 200, {
                 success: true,
                 msg: "OTP code has been sent to your email",
                 email: email
             })
-
         } catch (error) {
-            console.error('Error in forgot-password:', error);
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
     resetPassword: async (req, res) => {
+        let statusCode;
         try {
             const { email, otp, newPassword } = req.body;
 
-            const user = await baseModel.findByField(userTable.name,userTable.columns.email, email);
+            const user = await baseModel.findByField(userTable.name, userTable.columns.email, email);
             if (!user) {
+                statusCode = 404
                 throw new Error("Email is not exist");
             }
 
@@ -210,6 +218,7 @@ const authController = {
             const otpRequest = await baseModel.findWithConditions('OtpRequest', ['*'], conditions, ['AND']);
 
             if (!otpRequest || otpRequest.length === 0) {
+                statusCode = 403
                 throw new Error("OTP code is invalid or expired");
             }
 
@@ -220,17 +229,12 @@ const authController = {
                 await baseModel.update("Users", "userID", user.userID, ["password"], [hashed]);
                 await baseModel.update("OtpRequest", "id", otpRequest.id, ["used"], ["true"]);
             })
-
-            return res.status(200).json({
+            return handleResponse(res, 200, {
                 success: true,
                 msg: "Update password successfully"
             })
         } catch (error) {
-            console.error('Error in forgot-password:', error);
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     },
 
@@ -240,6 +244,7 @@ const authController = {
 
             const userById = await baseModel.findByField(userTable.name, userTable.columns.userID, id);
             if (!userById) {
+                statusCode = 404
                 throw new Error("User not found");
             }
 
@@ -248,6 +253,7 @@ const authController = {
 
             const validPassword = await bcrypt.compare(inputPassword, oldPassword);
             if (!validPassword) {
+                statusCode = 403
                 throw new Error("Password does not match");
             }
 
@@ -259,16 +265,14 @@ const authController = {
                 const { password, refreshToken, ...others } = update;
                 return { update: others };
             })
-            return res.status(200).json({
+
+            return handleResponse(res, 200, {
                 success: true,
                 msg: "Change password successfully",
                 data: result.update
             })
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            })
+            return handleError(res, statusCode, error);
         }
     }
 
