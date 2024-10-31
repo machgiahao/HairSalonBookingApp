@@ -130,11 +130,13 @@ const paymentController = {
   },
   returnUrl: async (req, res, next) => {
     try {
-      var vnp_Params = req.query;
+      var vnp_Params = req.query; // Lấy các tham số từ query string
+      console.log("Received parameters from VNPay:", vnp_Params); // Ghi log tham số nhận được
       var secureHash = vnp_Params["vnp_SecureHash"];
       delete vnp_Params["vnp_SecureHash"];
       delete vnp_Params["vnp_SecureHashType"];
 
+      // Xử lý chữ ký và các thông tin khác
       vnp_Params = sortObject(vnp_Params);
       var tmnCode = vnPayConfig.VNP_TMNCODE;
       var secretKey = vnPayConfig.VNP_HASHSECRET;
@@ -145,6 +147,7 @@ const paymentController = {
       var hmac = crypto.createHmac("sha512", secretKey);
       var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
+      // Xác minh chữ ký
       if (secureHash === signed) {
         res.status(200).json({
           success: true,
@@ -167,6 +170,7 @@ const paymentController = {
       });
     }
   },
+
   vnpayIpn: async (res, req, next) => {
     let vnp_Params = req.query;
     let secureHash = vnp_Params["vnp_SecureHash"];
