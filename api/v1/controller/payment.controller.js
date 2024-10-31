@@ -1,6 +1,5 @@
 const paymentTable = require("../../../model/table/payment.table");
 const baseModel = require("../../../model/base.model");
-const vietQRConfig = require("../../../config/vietQR.config");
 const vnPayConfig = require("../../../config/vnpay.config");
 const sortObject = require("../../../helper/sortObjectVnPay.helper");
 
@@ -254,26 +253,6 @@ const paymentController = {
       return res.status(500).json({
         success: false,
         mgs: "Internal server error",
-      });
-    }
-  },
-  generateQR: async (req, res) => {
-    try {
-      const Bank_ID = vietQRConfig.BANK_ID;
-      const Account_No = vietQRConfig.ACCOUNT_NO;
-      const Account_Name = vietQRConfig.ACCOUNT_NAME;
-
-      const { Amount, Description } = req.body;
-      let QR = `https://img.vietqr.io/image/${Bank_ID}-${Account_No}-compact2.png?amount=${Amount}&addInfo=${Description}&accountName=${Account_Name}`;
-      res.status(200).json({
-        success: true,
-        qrCode: QR,
-      });
-    } catch (error) {
-      console.error("Error", error);
-      res.status(500).json({
-        success: false,
-        msg: "Cannot create QR code",
       });
     }
   },

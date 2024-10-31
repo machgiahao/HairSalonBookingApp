@@ -15,7 +15,6 @@ route.get("/return_url", verifyToken, checkRole("Staff"), paymentController.retu
 route.get("/vnpay_ipn", verifyToken, checkRole("Staff"), paymentController.vnpayIpn);
 
 route.use(checkRole("Manager", "Staff"));
-route.post("/generateQR", paymentController.generateQR);
 route.patch("/update", paymentController.update);
 route.delete("/softDel", paymentController.softDel);
 
