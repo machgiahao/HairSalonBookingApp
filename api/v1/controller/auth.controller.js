@@ -11,6 +11,21 @@ const { getColsVals } = require("../../../helper/getColsVals.helper");
 const authController = {
     register: async (req, res) => {
         try {
+            const { phoneNumber, email } = req.body;
+
+            // Check exist phone number
+            const checkPhone = await baseModel.findByField("Users", "phoneNumber", phoneNumber);
+            if (checkPhone) {
+                statusCode = 401
+                throw new Error("Phone number already exist");
+            }
+
+            // Check exist email
+            const checkEmail = await baseModel.findByField("Users", "email", email);
+            if (checkEmail) {
+                statusCode = 401
+                throw new Error("Email already exist");
+            }
             // Check password 
             validate.validateInputField(req.body.password, "Password");
             // hash password
@@ -28,18 +43,15 @@ const authController = {
                 const userByRole = await roleHelper.handleRole(user, req.body);
                 return { user: user, userByRole: userByRole }
             })
-            return res.status(201).json({
+            return handleResponse(res, 201, {
                 success: true,
                 data: {
                     user: result.user,
                     userByRole: result.userByRole
                 }
-            });
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
             })
+        } catch (error) {
+            return handleError(res, statusCode, error);
         }
     },
 
