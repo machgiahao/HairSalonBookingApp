@@ -81,8 +81,8 @@ module.exports.softDel = async (req, res) => {
 module.exports.getAllStaff = async (req, res) => {
     let statusCode;
     try {
-        const limit = Math.abs(parseInt(req.query.perpage)) || 10; // Default to 10 if invalid
-        const offset = Math.abs(parseInt(req.query.page)) || 0; // Default to page 0 if not provided
+        const limit = Math.abs(parseInt(req.query.perpage)) || null;
+        const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
 
         const columns = refactor.columnsRefactor(staffTable, [usersTable]);
         let conditions = [];
@@ -93,6 +93,11 @@ module.exports.getAllStaff = async (req, res) => {
             type: "INNER"
         }];
         let order = [];
+        const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
+            ? req.query.order.toUpperCase() 
+            : "DESC";
+        order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
+
 
         const staffList = await baseModel.findWithConditionsJoin(
             staffTable.name,
@@ -121,6 +126,7 @@ module.exports.updateStaff = async (req, res) => {
     let statusCode;
     try {
         const id = req.query.id;
+        console.log("ID", id);
         if (!isValidId(id)) {
             statusCode = 400;
             throw new Error('Valid ID is required');
