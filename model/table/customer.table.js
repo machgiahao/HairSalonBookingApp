@@ -4,7 +4,7 @@ const customerTable = {
         customerID: "customerID", // ID column
         fullName: "fullName",
         avatar: "avatar",
-        yob: "yob",
+        dob: "dob",
         gender: "gender",
         loyaltyPoints: "loyaltyPoints",
         address: "address",
