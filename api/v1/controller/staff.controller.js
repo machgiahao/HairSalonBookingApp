@@ -96,8 +96,8 @@ module.exports.getAllStaff = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
+        
         order = [{ column: `"${staffTable.name}"."${staffTable.columns.staffID}"`, direction: orderDirection }];
-
 
         const staffList = await baseModel.findWithConditionsJoin(
             staffTable.name,
