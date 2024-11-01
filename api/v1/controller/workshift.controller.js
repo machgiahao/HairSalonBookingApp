@@ -190,7 +190,6 @@ module.exports.getAllWorkshift = async (req, res) => {
 //get all workshift details
 module.exports.getAllWorkshiftDetail = async (req, res) => {
     let statusCode
-
     try {
         const limit = Math.abs(parseInt(req.query.perpage)) || null;
         const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
@@ -200,7 +199,7 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
         let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
 
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
-        
+
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
             columns,
