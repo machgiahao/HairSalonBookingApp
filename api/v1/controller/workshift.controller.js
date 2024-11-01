@@ -355,8 +355,8 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
 
         for (let id of workShiftID) {  // Use 'let' to allow reassignment in the loop
 
-            columns = [stylistWorkshift.columns.deleted];
-            values = [true];
+            columns = [stylistWorkshift.columns.deleted,stylistWorkshift.columns.status];
+            values = [true,'inactive'];
             
             // Declare existingEntry with 'let' to allow reassignment
             let existingEntry = await baseModel.findWithConditionsJoin(
