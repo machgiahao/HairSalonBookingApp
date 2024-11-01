@@ -148,7 +148,9 @@ module.exports.getAllWorkshift = async (req, res) => {
             ? req.query.order.toUpperCase() 
             : "DESC";
 
-        let order = [{ column: `${workshift.name}"."${workshift.columns.workShiftID}`, direction: orderDirection }];
+
+        let order = [{ column: `${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, direction: orderDirection }];
+
 
         let logicalOperator = ["AND"]
 
@@ -197,7 +199,7 @@ module.exports.getAllWorkshiftDetail = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
-        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
+        let order = [{ column: `${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}`, direction: orderDirection }];
 
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
         
