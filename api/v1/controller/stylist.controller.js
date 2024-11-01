@@ -118,7 +118,7 @@ module.exports.getAllStylists = async (req, res) => {
         const limit = Math.abs(parseInt(req.query.perpage)) || null;
         const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
 
-        const columns = refactor.columnsRefactor(stylistTable, [usersTable]);
+        const columns = refactor.columnsRefactor(stylistTable, [usersTable],[usersTable.columns.password,usersTable.columns.refreshToken]);
 
         let conditions = [];
         let logicalOperator = [];
@@ -133,7 +133,9 @@ module.exports.getAllStylists = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
-        order = [{ column: stylistTable.columns.stylistID, direction: orderDirection }];
+
+        order = [{ column: `${stylistTable.name}"."${stylistTable.columns.stylistID}`, direction: orderDirection }];
+
 
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,

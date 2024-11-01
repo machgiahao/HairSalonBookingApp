@@ -147,8 +147,7 @@ module.exports.getAllWorkshift = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
-
-        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
+        let order = [{ column: `${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, direction: orderDirection }];
 
         let logicalOperator = ["AND"]
 
@@ -190,16 +189,16 @@ module.exports.getAllWorkshift = async (req, res) => {
 //get all workshift details
 module.exports.getAllWorkshiftDetail = async (req, res) => {
     let statusCode
-
     try {
         const limit = Math.abs(parseInt(req.query.perpage)) || null;
         const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
-        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
+        let order = [{ column: `${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}`, direction: orderDirection }];
 
         const columns = columnsRefactor.columnsRefactor(workshift,[stylistWorkshift]);
+
         
         const workshiftList = await baseModel.findWithConditionsJoin(
             stylistWorkshift.name,
@@ -356,8 +355,8 @@ module.exports.removeStylistFromWorkShift = async (req, res) => {
 
         for (let id of workShiftID) {  // Use 'let' to allow reassignment in the loop
 
-            columns = [stylistWorkshift.columns.deleted];
-            values = [true];
+            columns = [stylistWorkshift.columns.deleted,stylistWorkshift.columns.status];
+            values = [true,'inactive'];
             
             // Declare existingEntry with 'let' to allow reassignment
             let existingEntry = await baseModel.findWithConditionsJoin(

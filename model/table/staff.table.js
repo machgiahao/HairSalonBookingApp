@@ -4,7 +4,7 @@ const staffTable = {
         staffID: "staffID", // ID column
         fullName: "fullName",
         avatar: "avatar",
-        yob: "yob",
+        dob: "dob",
         gender: "gender",
         address: "address",
         hireDate: "hireDate",
