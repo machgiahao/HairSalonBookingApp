@@ -148,5 +148,3 @@ module.exports.updateStaff = async (req, res) => {
         handleError(res, statusCode, error);
     }
 };
-
-
