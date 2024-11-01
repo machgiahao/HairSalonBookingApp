@@ -133,7 +133,9 @@ module.exports.getAllStylists = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
+
         order = [{ column: `"${stylistTable.name}"."${stylistTable.columns.stylistID}`, direction: orderDirection }];
+
 
         const stylistList = await baseModel.findWithConditionsJoin(
             stylistTable.name,
