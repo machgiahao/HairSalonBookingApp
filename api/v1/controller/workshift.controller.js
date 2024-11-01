@@ -143,12 +143,12 @@ module.exports.getAllWorkshift = async (req, res) => {
             throw new Error(`Valid ID is required`)
         }
 
-        conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:req.query.id})
+        conditions.push({column:`${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, value:id})
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
 
-        let order = [{ column: staffTable.columns.staffID, direction: orderDirection }];
+        let order = [{ column: `${workshift.name}"."${workshift.columns.workShiftID}`, direction: orderDirection }];
 
         let logicalOperator = ["AND"]
 
@@ -167,7 +167,7 @@ module.exports.getAllWorkshift = async (req, res) => {
                 {
                     table: workshift.name, 
                     on: `"${workshift.name}"."${workshift.columns.workShiftID}" = "${stylistWorkshift.name}"."${stylistWorkshift.columns.workShiftID}"`,
-                    type: "LEFT" 
+                    type: "INNER" 
                 },
                 
             ],
