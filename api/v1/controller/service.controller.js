@@ -2,15 +2,15 @@ const serviceTable = require("../../../model/table/service.table")
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const baseModel = require("../../../model/base.model")
 const handleError = require("../../../helper/handleError.helper");
-const handleResponse =  require("../../../helper/handleReponse.helper");
-const isValidId =  require("../../../validates/reqIdParam.validate");
+const handleResponse = require("../../../helper/handleReponse.helper");
+const isValidId = require("../../../validates/reqIdParam.validate");
 
 const serviceController = {
     detail: async (req, res) => {
         let statusCode
         try {
             const id = req.query.id;
-            if(!isValidId(id)){
+            if (!isValidId(id)) {
                 statusCode = 400
                 throw new Error("Valid id required");
             }
@@ -20,7 +20,7 @@ const serviceController = {
                 statusCode = 404
                 throw new Error("Service not found");
             }
-            handleResponse(res,200,{service: service})
+            handleResponse(res, 200, { service: service })
         } catch (error) {
             handleError(res, statusCode, error);
         }
@@ -29,27 +29,36 @@ const serviceController = {
     getAll: async (req, res) => {
         let statusCode
         try {
-            
+
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
 
-            const services = await baseModel.findWithConditions(
+
+            let order = [];
+            const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase())
+                ? req.query.order.toUpperCase()
+                : "DESC";
+            order = [{ column: serviceTable.columns.serviceID, direction: orderDirection }];
+
+            const services = await baseModel.findWithConditionsJoin(
                 serviceTable.name,
                 undefined,
                 [],
                 [],
                 [],
+                order,
                 limit,
                 offset
-            )
+            );
 
             if (!services || services.length === 0) {
                 statusCode = 404
                 throw new Error("Service not found");
             }
-            handleResponse(res,200,{services: services})
+
+            handleResponse(res, 200, { services: services })
         } catch (error) {
-            handleError(res,statusCode, error);
+            handleError(res, statusCode, error);
         }
     },
 
@@ -61,7 +70,7 @@ const serviceController = {
                 const newService = await baseModel.create(serviceTable.name, serviceColumns, serviceValues);
                 return { newService: newService }
             })
-            handleResponse(res,201,{data: result.newService})
+            handleResponse(res, 201, { data: result.newService })
         } catch (error) {
             handleError(res, statusCode, error);
         }
@@ -71,7 +80,7 @@ const serviceController = {
         let statusCode
         try {
             const id = req.query.id;
-            if(!isValidId(id)){
+            if (!isValidId(id)) {
                 statusCode = 400
                 throw new Error("Valid id required");
             }
@@ -83,10 +92,10 @@ const serviceController = {
             })
 
             if (!result.updateService) {
-                statusCode= 404
+                statusCode = 404
                 throw new Error("Service not found");
             }
-            handleResponse(res,200,{
+            handleResponse(res, 200, {
                 success: true,
                 msg: "Update successfully",
                 data: result.updateService
@@ -101,19 +110,19 @@ const serviceController = {
         let statusCode
         try {
             const id = req.query.id;
-            if(!isValidId(id)){
+            if (!isValidId(id)) {
                 statusCode = 400
                 throw new Error("Valid id required");
             }
             const result = await baseModel.executeTransaction(async () => {
                 const update = await baseModel.update(serviceTable.name, serviceTable.columns.serviceID, id, ["deleted"], [true]);
                 if (!update) {
-                    statusCode=404
+                    statusCode = 404
                     throw new Error("Service not found");
                 }
                 return { update: update }
             })
-            handleResponse(res,200,{
+            handleResponse(res, 200, {
                 success: true,
                 msg: "Delete successfully",
                 data: result.update
