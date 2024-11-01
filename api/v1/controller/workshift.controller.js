@@ -149,7 +149,7 @@ module.exports.getAllWorkshift = async (req, res) => {
             : "DESC";
 
 
-        let order = [{ column: `"${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}"`, direction: orderDirection }];
+        let order = [{ column: `${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, direction: orderDirection }];
 
 
         let logicalOperator = ["AND"]
