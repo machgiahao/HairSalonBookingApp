@@ -18,7 +18,6 @@ route.post(
     paymentController.createPaymentUrl
 );
 route.get("/return_url", verifyToken, checkRole("Staff"), paymentController.returnUrl);
-route.get("/vnpay_ipn", verifyToken, checkRole("Staff"), paymentController.vnpayIpn);
 // verifyToken + staff & manager
 route.patch("/update", verifyToken, checkRole("Manager", "Staff"), paymentController.update);
 route.delete("/softDel", verifyToken, checkRole("Manager", "Staff"), paymentController.softDel);
