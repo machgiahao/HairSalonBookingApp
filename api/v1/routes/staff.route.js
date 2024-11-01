@@ -6,7 +6,7 @@ const uploadCloudMiddleware = require("../middleware/uploadCloud.middleware")
 const { verifyToken, checkRole } = require("../middleware/verifyToken.middleware")
 
 route.get("/getAll",staffController.getAllStaff);
-route.use(verifyToken);
+// route.use(verifyToken);
 //get the detail from staff by send param id
 route.get("/detail",staffController.getStaffDetail);
 
