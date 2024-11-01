@@ -18,7 +18,7 @@ const refactor = {
     columnsRefactor: (mainTable, joinTable = [],ignoreColumns=[]) => {
         const columns = [];
         for (var key in mainTable.columns) {
-            if(ignoreColumns.includes(table.columns.key)) continue;
+            if(ignoreColumns.includes(mainTable.columns.key)) continue;
             if(mainTable.columns[key]=== `deleted`){
                 columns.push(`"${mainTable.name}"."${mainTable.columns[key]}" as "${mainTable.name+`Deleted`}"`);
             }else{
