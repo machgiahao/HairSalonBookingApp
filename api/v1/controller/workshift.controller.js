@@ -121,7 +121,7 @@ module.exports.getAll = async (req, res) => {
         }
         handleResponse(res, 200, { data: { workshifts: workshiftList } });
     } catch (error) {
-        handleResponse(res, statusCode, error);
+        handleError(res, statusCode, error);
     }
 };
 
