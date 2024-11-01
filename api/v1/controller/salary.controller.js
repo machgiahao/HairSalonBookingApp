@@ -20,7 +20,7 @@ module.exports.getAllDailySalary = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
-        let order = [{ column: salaryTable.columns.salaryID, direction: orderDirection }];
+        let order = [{ column: dailySalaryTable.columns.dailyID, direction: orderDirection }];
 
         if(id){
             if (isValidId(id)) {
