@@ -435,7 +435,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
             }
         });
 
-        handleResponse(res, 200, { salary });
+        handleResponse(res, 200, { data:salary[0] });
     } catch (error) {
         handleResponse(res, 500, { error: 'Error calculating salary', details: error });
     }
