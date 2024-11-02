@@ -6,6 +6,7 @@ const handleResponse = require("../../../helper/handleReponse.helper");
 const bookingTable = require("../../../model/table/booking.table");
 const customerTable = require("../../../model/table/customer.table");
 const isValidId = require("../../../validates/reqIdParam.validate");
+const { findFeedbackJoin } = require("../../../helper/findBookingDetails.helper");
 
 const feedbackController = {
     detail: async (req, res) => {
@@ -16,13 +17,14 @@ const feedbackController = {
                 statusCode = 400
                 throw new Error("Invalid ID");
             }
-            const feedback = await baseModel.findByField(feedbackTable.name, feedbackTable.columns.feedbackID, feedbackID);
+            const feedback = await baseModel.findByField(feedbackTable.name, feedbackTable.columns.feedbackID, feedbackID);            
             if (!feedback) {
                 statusCode = 404
                 throw new Error("Feedback not found");
             }
+            const result = await findFeedbackJoin(feedback);
 
-            return handleResponse(res, 200, { feedback: feedback })
+            return handleResponse(res, 200, { feedback: result })
         } catch (error) {
             return handleError(res, statusCode, error);
         }

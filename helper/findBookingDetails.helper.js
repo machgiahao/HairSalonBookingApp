@@ -3,6 +3,7 @@ const bookingTable = require("../model/table/booking.table")
 const userTable = require("../model/table/user.table")
 const customerTable = require("../model/table/customer.table")
 const guestTable = require("../model/table/guest.table")
+const feedbackTable = require("../model/table/feedback.table")
 
 const findBookingDetail = {
     findDetailJoins: async (booking) => {
@@ -93,11 +94,34 @@ const findBookingDetail = {
 
         const result = [...recordCustomer, ...recordGuest];
         return result;
+    },
+
+    findFeedbackJoin: async (feedback) => {
+        let result = null;
+        result = await baseModel.findWithConditionsJoin(
+            feedbackTable.name, // Booking
+            ['"Feedback".*', '"Customer"."fullName"'],
+            [{ column: 'feedbackID', value: feedback.feedbackID, operator: '=' }],
+            [],
+            [ // Joins
+                {
+                    table: bookingTable.name,
+                    on: `"${bookingTable.name}"."${bookingTable.columns.bookingID}" = "${feedbackTable.name}"."${feedbackTable.columns.bookingID}"`,
+                    type: 'INNER'
+                }, // Join table customer
+                {
+                    table: customerTable.name,
+                    on: `"${customerTable.name}"."${customerTable.columns.customerID}" = "${bookingTable.name}"."${bookingTable.columns.customerID}"`,
+                    type: 'INNER'
+                } // Join table user
+            ],
+            [],
+            undefined,
+            undefined
+        )
+
+        return result;
     }
-
-
-
 }
-
 module.exports = findBookingDetail;
 

@@ -7,7 +7,6 @@ const customerTable = {
         dob: "dob",
         gender: "gender",
         loyaltyPoints: "loyaltyPoints",
-        address: "address",
         userID: "userID",
         createdAt: "createdAt",
         deleted: "deleted"
