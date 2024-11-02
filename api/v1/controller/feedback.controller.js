@@ -35,7 +35,7 @@ const feedbackController = {
         try {
             const limit = Math.abs(parseInt(req.query.perpage)) || null;
             const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
-
+    
             const feedbacks = await baseModel.findWithConditions(
                 feedbackTable.name,
                 undefined,
@@ -44,18 +44,25 @@ const feedbackController = {
                 [],
                 limit,
                 offset
-            )
-
+            );
+    
             if (!feedbacks || feedbacks.length === 0) {
-                statusCode = 404
+                statusCode = 404; 
                 throw new Error("No records of feedback");
             }
-
-            return handleResponse(res, 200, { feedbacks: feedbacks })
+            const detailedFeedbacks = await Promise.all(
+                feedbacks.map(async (feedback) => {
+                    return await findFeedbackJoin(feedback);
+                })
+            );
+            const flatFeedbacks = detailedFeedbacks.flat(); 
+    
+            return handleResponse(res, 200, { feedbacks: flatFeedbacks });
         } catch (error) {
             return handleError(res, statusCode, error);
         }
     },
+    
 
     create: async (req, res) => {
         let statusCode

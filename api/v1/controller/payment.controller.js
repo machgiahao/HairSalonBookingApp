@@ -48,7 +48,7 @@ const paymentController = {
       const Account_No = vietQRConfig.ACCOUNT_NO;
       const Account_Name = vietQRConfig.ACCOUNT_NAME;
       const { Amount, Description } = req.body;
-      let QR = `https://img.vietqr.io/image/${Bank_ID}-${Account_No}-compact2.png?amount=${Amount}&addInfo=${Description}&accountName=${Account_Name}`;
+      let QR = `https://img.vietqr.io/image/${Bank_ID}-${Account_No}-qr_only.png?amount=${Amount}&addInfo=${Description}&accountName=${Account_Name}`;
       res.status(200).json({
         success: true,
         qrCode: QR,
@@ -139,13 +139,12 @@ const paymentController = {
         }
       }
 
-      if (!req.body.status) {
-        columns.push("status");
-        values.push("unpaid");
-      }
-
       columns.push("bookingID");
       values.push(req.body.bookingID);
+      columns.push("status");
+      values.push(req.body.status);
+      columns.push("method");
+      values.push(req.body.method);
 
       const newPayment = await baseModel.create("Payment", columns, values);
 
