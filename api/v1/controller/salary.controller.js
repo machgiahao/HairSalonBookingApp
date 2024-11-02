@@ -388,7 +388,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
                 [`SUM("${bookingTable.columns.discountPrice}")`]
                 ,
                 [
-                    { column: `${bookingTable.name}"."${bookingTable.columns.createdAt}`, value: ['2024-11-01 00:00:00', '2024-11-30 00:00:00'], operator: "BETWEEN" },
+                    { column: `${bookingTable.name}"."${bookingTable.columns.createdAt}`, value: [date.firstDay, date.lastDay], operator: "BETWEEN" },
                     { column: bookingTable.columns.stylistID, value: stylistID },
                     // { column: bookingTable.columns.deleted, value: false }
                 ],
