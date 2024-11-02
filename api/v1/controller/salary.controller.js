@@ -9,6 +9,7 @@ const handleResponse = require("../../../helper/handleReponse.helper");
 const handleError = require("../../../helper/handleError.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 const refactor = require("../../../helper/columnsRefactor.heper");
+const { columns } = require("../../../model/table/workshift.table");
 
 module.exports.getAllDailySalary = async (req, res) => {
     const id = req.query.id;
@@ -390,7 +391,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
                 [
                     { column: `${bookingTable.name}"."${bookingTable.columns.createdAt}`, value: [date.firstDay, date.lastDay], operator: "BETWEEN" },
                     { column: bookingTable.columns.stylistID, value: stylistID },
-                    // { column: bookingTable.columns.deleted, value: false }
+                    { column: bookingTable.columns.status, value: 'Completed' }
                 ],
                 ["AND", "AND", "AND"]
             );
