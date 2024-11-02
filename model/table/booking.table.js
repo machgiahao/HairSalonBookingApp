@@ -10,7 +10,7 @@ const bookingTable = {
         originalPrice: "originalPrice",
         discountPrice: "discountPrice",
         note: "note",
-        createdAt: "createAt",
+        createdAt: "createdAt",
         appointmentAt: "appointmentAt",
         deleted: "deleted"
     }
