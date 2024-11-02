@@ -16,14 +16,14 @@ const authController = {
             const { phoneNumber, email } = req.body;
 
             // Check exist phone number
-            const checkPhone = await baseModel.findByField("Users", "phoneNumber", phoneNumber);
+            const checkPhone = await baseModel.findByField(userTable.name, userTable.columns.phoneNumber , phoneNumber);
             if (checkPhone) {
                 statusCode = 401
                 throw new Error("Phone number already exist");
             }
 
             // Check exist email
-            const checkEmail = await baseModel.findByField("Users", "email", email);
+            const checkEmail = await baseModel.findByField(userTable.name, userTable.columns.email, email);
             if (checkEmail) {
                 statusCode = 401
                 throw new Error("Email already exist");

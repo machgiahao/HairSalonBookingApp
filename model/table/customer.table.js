@@ -9,6 +9,7 @@ const customerTable = {
         loyaltyPoints: "loyaltyPoints",
         address: "address",
         userID: "userID",
+        createdAt: "createdAt",
         deleted: "deleted"
     }
 }
