@@ -147,7 +147,7 @@ module.exports.getAllWorkshift = async (req, res) => {
         const orderDirection = ["ASC", "DESC"].includes(req.query.order?.toUpperCase()) 
             ? req.query.order.toUpperCase() 
             : "DESC";
-        let order = [{ column: `${stylistWorkshift.name}"."${stylistWorkshift.columns.stylistID}`, direction: orderDirection }];
+        let order = [{ column: `${workshift.name}"."${workshift.columns.workShiftID}`, direction: `ASC` }];
 
         let logicalOperator = ["AND"]
 

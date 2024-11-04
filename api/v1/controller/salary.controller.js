@@ -9,6 +9,7 @@ const handleResponse = require("../../../helper/handleReponse.helper");
 const handleError = require("../../../helper/handleError.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 const refactor = require("../../../helper/columnsRefactor.heper");
+const { columns } = require("../../../model/table/workshift.table");
 
 module.exports.getAllDailySalary = async (req, res) => {
     const id = req.query.id;
@@ -388,9 +389,9 @@ module.exports.generalMonthlySalary = async (req, res) => {
                 [`SUM("${bookingTable.columns.discountPrice}")`]
                 ,
                 [
-                    { column: `${bookingTable.name}"."${bookingTable.columns.createdAt}`, value: ['2024-11-01 00:00:00', '2024-11-30 00:00:00'], operator: "BETWEEN" },
+                    { column: `${bookingTable.name}"."${bookingTable.columns.createdAt}`, value: [date.firstDay, date.lastDay], operator: "BETWEEN" },
                     { column: bookingTable.columns.stylistID, value: stylistID },
-                    // { column: bookingTable.columns.deleted, value: false }
+                    { column: bookingTable.columns.status, value: 'Completed' }
                 ],
                 ["AND", "AND", "AND"]
             );
@@ -435,7 +436,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
             }
         });
 
-        handleResponse(res, 200, { salary });
+        handleResponse(res, 200, { data:salary[0] });
     } catch (error) {
         handleResponse(res, 500, { error: 'Error calculating salary', details: error });
     }
