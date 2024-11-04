@@ -75,7 +75,7 @@ const feedbackController = {
                 return { feedback: feedback, customer: customer }
             })
 
-            return handleResponse(res, 200, {
+            return handleResponse(res, 201, {
                 data: {
                     feedback: result.feedback,
                     customer: result.customer

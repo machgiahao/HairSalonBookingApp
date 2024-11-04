@@ -72,6 +72,8 @@ const serviceController = {
             })
             handleResponse(res, 201, { data: result.newService })
         } catch (error) {
+            console.log(error);
+            
             handleError(res, statusCode, error);
         }
     },

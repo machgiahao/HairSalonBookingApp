@@ -95,7 +95,7 @@ const authController = {
 
             const { password, refreshToken, ...others } = user;
 
-            return handleResponse(res, 201, {
+            return handleResponse(res, 200, {
                 success: true,
                 actor: actorByRole,
                 records: { ...others, accessToken }

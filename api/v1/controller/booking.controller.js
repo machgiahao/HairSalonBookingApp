@@ -96,7 +96,7 @@ const bookingController = {
                 throw new Error("Booking detail not found");
             }
 
-            return handlResponse(res, 201, {
+            return handlResponse(res, 200, {
                 success: true,
                 booking: result,
                 details: details
