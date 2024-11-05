@@ -42,25 +42,6 @@ const paymentController = {
       });
     }
   },
-  generateQR: async (req, res) => {
-    try {
-      const Bank_ID = vietQRConfig.BANK_ID;
-      const Account_No = vietQRConfig.ACCOUNT_NO;
-      const Account_Name = vietQRConfig.ACCOUNT_NAME;
-      const { Amount, Description } = req.body;
-      let QR = `https://img.vietqr.io/image/${Bank_ID}-${Account_No}-qr_only.png?amount=${Amount}&addInfo=${Description}&accountName=${Account_Name}`;
-      res.status(200).json({
-        success: true,
-        qrCode: QR,
-      });
-    } catch (error) {
-      console.error("Error", error);
-      res.status(500).json({
-        success: false,
-        msg: "Cannot create QR code",
-      });
-    }
-  },
   getDetail: async (req, res) => {
     const id = req.query.id;
     try {
@@ -161,6 +142,35 @@ const paymentController = {
       });
     }
   },
+  generateVietQR: async (req,res) => {
+    try {
+      const { Amount, Description } = req.body;
+      const bodyrequest = {
+        accountNo: vietQRConfig.ACCOUNT_NO,
+        accountName: vietQRConfig.ACCOUNT_NAME,
+        acqId: vietQRConfig.ACQID,
+        amount: Amount,
+        addInfo: Description,
+        format: "text",
+        template: "compact"
+      }
+      console.log(bodyrequest);
+      const response = await fetch("https://api.vietqr.io/v2/generate", {
+        method: "POST",
+        headers: {
+          "x-client-id": vietQRConfig.VIETQR_CLIENT_ID, 
+          "x-api-key": vietQRConfig.VIETQR_API_KEY,     
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bodyrequest),
+      });
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate QR code" });
+    }
+  }
+  ,
   update: async (req, res) => {
     try {
       const id = req.query.id;

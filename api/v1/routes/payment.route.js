@@ -7,7 +7,7 @@ route.get("/getAll", paymentController.getAll);
 route.use(verifyToken);
 route.use(checkRole("Staff"));
 route.post("/create", paymentController.create);
-route.post("/generateQR", paymentController.generateQR);
+route.post("/generateQR", paymentController.generateVietQR);
 
 route.use(checkRole("Manager", "Staff"))
 route.patch("/update", paymentController.update);
