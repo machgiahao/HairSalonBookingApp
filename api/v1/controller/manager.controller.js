@@ -8,8 +8,8 @@ const isValidId = require("../../../validates/reqIdParam.validate");
 
 const managerController = {
     detail: async (req, res) => {
+        let statusCode
         try {
-            let statusCode
 
             const id = req.query.id;
             if (!isValidId(id)) {
@@ -41,8 +41,8 @@ const managerController = {
     },
 
     update: async (req, res) => {
+        let statusCode
         try {
-            let statusCode
 
             const result = await baseModel.executeTransaction(async () => {
                 const id = req.body.managerID;

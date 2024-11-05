@@ -9,9 +9,11 @@ const handleResponse = require("../../../helper/handleReponse.helper");
 const handleError = require("../../../helper/handleError.helper");
 const isValidId = require("../../../validates/reqIdParam.validate");
 const refactor = require("../../../helper/columnsRefactor.heper");
+const { columns } = require("../../../model/table/workshift.table");
 
 module.exports.getAllDailySalary = async (req, res) => {
     const id = req.query.id;
+    let statusCode
     try {
         const limit = Math.abs(parseInt(req.query.perpage)) || null;
         const offset = (Math.abs(parseInt(req.query.page) || 1) - 1) * limit;
@@ -39,7 +41,7 @@ module.exports.getAllDailySalary = async (req, res) => {
         );
         handleResponse(res, 200, { data: result });
     } catch (error) {
-        handleError(res, 500, { error: error });
+        handleError(res, 500, error);
     }
 }
 
@@ -125,7 +127,7 @@ module.exports.dailySalary = async (req, res) => {
         handleResponse(res, 201, { data: dailySalary , count:count});
     } catch (error) {
         console.error('Error processing daily salary:', error);
-        handleError(res, statusCode, { error: 'Internal Server Error' });
+        handleError(res, statusCode, error);
     }
 };
 
@@ -235,25 +237,29 @@ module.exports.monthlySalary = async (req, res) => {
 
 module.exports.updateSalary = async (req,res) => { 
     const id = req.query.id;
-    if (!isValidId(id) || !req.body.baseSalary) {
-        return handleResponse(res, 400, { error: 'Valid ID is required or missing salary value' });
-    }
-    let conditions = [
-        {column:salaryTable.columns.salaryID,value:req.body.salaryID},
-    ]
-
-    let salary = await baseModel.findWithConditionsJoin(salaryTable.name,undefined,conditions)
-
-    if(salary.length<=0)  handleResponse(res, 400, { message: 'No salary found' });
-    let totalSalary = salary[0].totalSalary-salary[0].baseSalary + req.body.baseSalary;
-
-    let columns=[salaryTable.columns.baseSalary,salaryTable.columns.totalSalary]
-    
-    let values=[req.body.baseSalary,totalSalary]
-
-    
+    let statusCode
     try{
-         salary = await baseModel.executeTransaction(async()=>{
+        if (!isValidId(id) || !req.body.baseSalary) {
+            statusCode =400
+            throw new Error('Valid ID is required or missing salary value')
+        }
+        let conditions = [
+            {column:salaryTable.columns.salaryID,value:req.body.salaryID},
+        ]
+    
+        let salary = await baseModel.findWithConditionsJoin(salaryTable.name,undefined,conditions)
+    
+        if(salary.length<=0){
+            statusCode=404
+            throw new Error('No salary found');
+        }  
+        let totalSalary = salary[0].totalSalary-salary[0].baseSalary + req.body.baseSalary;
+    
+        let columns=[salaryTable.columns.baseSalary,salaryTable.columns.totalSalary]
+        
+        let values=[req.body.baseSalary,totalSalary]
+    
+        salary = await baseModel.executeTransaction(async()=>{
             salary= await baseModel.updateWithConditions(salaryTable.name,columns,values,conditions)
             return salary;
         })
@@ -261,7 +267,7 @@ module.exports.updateSalary = async (req,res) => {
 
     }catch(error){
         console.error('Error processing monthly salary:', error);
-        return handleResponse(res, 500, { error: 'Internal Server Error' });
+        return handleResponse(res, statusCode, error);
     }
     
 }
@@ -390,7 +396,7 @@ module.exports.generalMonthlySalary = async (req, res) => {
                 [
                     { column: `${bookingTable.name}"."${bookingTable.columns.createdAt}`, value: [date.firstDay, date.lastDay], operator: "BETWEEN" },
                     { column: bookingTable.columns.stylistID, value: stylistID },
-                    // { column: bookingTable.columns.deleted, value: false }
+                    { column: bookingTable.columns.status, value: 'Completed' }
                 ],
                 ["AND", "AND", "AND"]
             );
