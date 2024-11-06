@@ -10,11 +10,22 @@ const { getColsVals } = require("../../../helper/getColsVals.helper");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const handleError = require("../../../helper/handleError.helper");
 
+
 const authController = {
     register: async (req, res) => {
+        let statusCode
         try {
             const { phoneNumber, email } = req.body;
-
+            const validatePhone = validate.validatePhone(phoneNumber);
+            if(!validatePhone) {
+                statusCode = 400
+                throw new Error(`Invalid phone format`)
+            }
+            const validateEmail = validate.validateEmail(email);
+            if(!validateEmail) {
+                statusCode = 400
+                throw new Error(`Invalid email format`)
+            }
             // Check exist phone number
             const checkPhone = await baseModel.findByField(userTable.name, userTable.columns.phoneNumber , phoneNumber);
             if (checkPhone) {
@@ -53,6 +64,8 @@ const authController = {
                 }
             })
         } catch (error) {
+            console.log(error);
+            
             return handleError(res, statusCode, error);
         }
     },
@@ -106,6 +119,7 @@ const authController = {
     },
 
     logout: async (req, res) => {
+        let statusCode
         try {
             res.clearCookie("refreshToken");
             await baseModel.executeTransaction(async () => {
@@ -122,6 +136,7 @@ const authController = {
     },
 
     requestRefreshToken: async (req, res) => {
+        let statusCode
         try {
             const cookie = req.cookies;
             // Check refresh token is exist in cookie
@@ -164,6 +179,7 @@ const authController = {
     },
 
     forgotPassword: async (req, res) => {
+        let statusCode
         try {
             const email = req.body.email;
 
@@ -239,6 +255,7 @@ const authController = {
     },
 
     changePassword: async (req, res) => {
+        let statusCode
         try {
             const id = req.user.userID;
 
