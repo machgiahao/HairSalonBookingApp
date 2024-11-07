@@ -5,7 +5,7 @@ const customerTable = require("../../../model/table/customer.table");
 const userTable = require("../../../model/table/user.table");
 const stylistWorkShiftTable = require("../../../model/table/stylistWorkshift.table");
 const workShiftTable = require("../../../model/table/workshift.table");
-const dateRefactor = require("..//../../helper/dateRefactor.helper");
+const dateRefactor = require("../../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const findBookingDetail = require("../../../helper/findBookingDetails.helper");
 const handleError = require("../../../helper/handleError.helper");
@@ -48,7 +48,10 @@ const bookingController = {
 
                 // Reassign to let bookingDetail can get
                 req.body.bookingID = newBooking.bookingID;
-
+                if (req.body.serviceID.length === 0) {
+                    statusCode = 400;
+                    throw new Error("Cannot create booking without service ID");
+                }
                 const newDetails = []; // Initialize an empty array to contains record of services
                 for (const serviceID of req.body.serviceID) {
                     req.body.serviceID = serviceID;  // Update serviceID through each loop
@@ -208,11 +211,13 @@ const bookingController = {
         let statusCode
         try {
             const id = req.body.bookingID;
+
             if (!isValidId(id)) {
                 statusCode = 400
                 throw new Error("Invalid ID");
             }
             const status = req.body.status;
+            
             const result = await baseModel.executeTransaction(async () => {
                 const recordBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
                 if (recordBooking.status === "Completed" || recordBooking.status === "Cancelled") {
@@ -238,8 +243,9 @@ const bookingController = {
                             statusCode = 404
                             throw new Error("Update booking fail");
                         }
-                        if (booking.customerID != null) {
-                            const point = booking.discountPrice * 0.01;
+                        if (booking.customerID != null) {      
+                            const point = booking.discountPrice * process.env.RATIO_LOYAL_POINT;
+                            
                             const recordCustomer = await baseModel.findByField(customerTable.name, customerTable.columns.customerID, booking.customerID);
                             const loyalPoint = recordCustomer.loyaltyPoints + point;
                             customer = await baseModel.update(customerTable.name, customerTable.columns.customerID, booking.customerID, [`${customerTable.columns.loyaltyPoints}`], [`${loyalPoint}`]);
@@ -273,6 +279,8 @@ const bookingController = {
                 }
             })
         } catch (error) {
+            console.log(error);
+            
             return handleError(res, statusCode, error);
         }
 
