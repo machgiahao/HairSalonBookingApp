@@ -3,6 +3,7 @@ const { verifyToken, checkRole } = require("../middleware/verifyToken.middleware
 const route = require("express").Router();
 
 route.get("/getAll", paymentController.getAll);
+route.get("/getDetail", paymentController.getDetail);
 
 route.use(verifyToken);
 route.use(checkRole("Staff"));
