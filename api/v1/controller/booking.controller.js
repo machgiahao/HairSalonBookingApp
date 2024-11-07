@@ -5,7 +5,7 @@ const customerTable = require("../../../model/table/customer.table");
 const userTable = require("../../../model/table/user.table");
 const stylistWorkShiftTable = require("../../../model/table/stylistWorkshift.table");
 const workShiftTable = require("../../../model/table/workshift.table");
-const dateRefactor = require("..//../../helper/dateRefactor.helper");
+const dateRefactor = require("../../../helper/dateRefactor.helper");
 const { getColsVals } = require("../../../helper/getColsVals.helper");
 const findBookingDetail = require("../../../helper/findBookingDetails.helper");
 const handleError = require("../../../helper/handleError.helper");
@@ -48,7 +48,10 @@ const bookingController = {
 
                 // Reassign to let bookingDetail can get
                 req.body.bookingID = newBooking.bookingID;
-
+                if (req.body.serviceID.length === 0) {
+                    statusCode = 400;
+                    throw new Error("Cannot create booking without service ID");
+                }
                 const newDetails = []; // Initialize an empty array to contains record of services
                 for (const serviceID of req.body.serviceID) {
                     req.body.serviceID = serviceID;  // Update serviceID through each loop
