@@ -64,8 +64,6 @@ const authController = {
                 }
             })
         } catch (error) {
-            console.log(error);
-            
             return handleError(res, statusCode, error);
         }
     },

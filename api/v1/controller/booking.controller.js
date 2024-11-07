@@ -211,11 +211,13 @@ const bookingController = {
         let statusCode
         try {
             const id = req.body.bookingID;
+
             if (!isValidId(id)) {
                 statusCode = 400
                 throw new Error("Invalid ID");
             }
             const status = req.body.status;
+            
             const result = await baseModel.executeTransaction(async () => {
                 const recordBooking = await baseModel.findByField(bookingTable.name, bookingTable.columns.bookingID, id);
                 if (recordBooking.status === "Completed" || recordBooking.status === "Cancelled") {
@@ -241,8 +243,9 @@ const bookingController = {
                             statusCode = 404
                             throw new Error("Update booking fail");
                         }
-                        if (booking.customerID != null) {
-                            const point = booking.discountPrice * 0.01;
+                        if (booking.customerID != null) {      
+                            const point = booking.discountPrice * process.env.RATIO_LOYAL_POINT;
+                            
                             const recordCustomer = await baseModel.findByField(customerTable.name, customerTable.columns.customerID, booking.customerID);
                             const loyalPoint = recordCustomer.loyaltyPoints + point;
                             customer = await baseModel.update(customerTable.name, customerTable.columns.customerID, booking.customerID, [`${customerTable.columns.loyaltyPoints}`], [`${loyalPoint}`]);
@@ -276,6 +279,8 @@ const bookingController = {
                 }
             })
         } catch (error) {
+            console.log(error);
+            
             return handleError(res, statusCode, error);
         }
 
