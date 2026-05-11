@@ -1,85 +1,30 @@
-const managerTable = require("../../../model/table/manager.table");
-const userTable = require("../../../model/table/user.table");
-const baseModel = require("../../../model/base.model");
-const { getColsVals } = require("../../../helper/getColsVals.helper");
-const handleError = require("../../../helper/handleError.helper");
+const managerService = require("../services/manager.service");
 const handleResponse = require("../../../helper/handleReponse.helper");
-const isValidId = require("../../../validates/reqIdParam.validate");
+const handleError = require("../../../helper/handleError.helper");
 
 const managerController = {
     detail: async (req, res) => {
-        let statusCode
         try {
-
             const id = req.query.id;
-            if (!isValidId(id)) {
-                statusCode = 400
-                throw new Error("Invalid ID");
-            }
-            const manager = await baseModel.findById(managerTable.name, managerTable.columns.managerID, id);
-            if (!manager) {
-                statusCode = 404
-                throw new Error("Manager not found");
-            }
-
-            const user = await baseModel.findById(userTable.name, userTable.columns.userID, manager.userID);
-            if (!user) {
-                statusCode = 404
-                throw new Error("User not found");
-            }
-
+            const result = await managerService.getDetail(id);
             return handleResponse(res, 200, {
-                data: {
-                    manager: manager,
-                    user: user
-                }
-            })
-
+                data: { manager: result.manager, user: result.user }
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     update: async (req, res) => {
-        let statusCode
         try {
-
-            const result = await baseModel.executeTransaction(async () => {
-                const id = req.body.managerID;
-                if (!isValidId(id)) {
-                    statusCode = 400
-                    throw new Error("Invalid ID");
-                }
-                const { columns: managerColumns, values: managerValues } = getColsVals(managerTable, req.body);
-                const { columns: userColumns, values: userValues } = getColsVals(userTable, req.body);
-                // Update table customer
-                const updateManager = await baseModel.update(managerTable.name, managerTable.columns.managerID, id, managerColumns, managerValues);
-                if (!updateManager) {
-                    statusCode = 404
-                    throw new Error("Manager not found");
-                }
-                // Update table user
-                const userId = req.body.userID;
-                const updateUser = await baseModel.update(userTable.name, userTable.columns.userID, userId, userColumns, userValues);
-                if (!updateUser) {
-                    statusCode = 404
-                    throw new Error("User not found");
-                }
-                const { refreshToken, password, ...others } = updateUser;
-                return { updateManager: updateManager, updateUser: others }
-            })
-            
+            const result = await managerService.update(req.body);
             return handleResponse(res, 200, {
-                data: {
-                    updateManager: result.updateManager,
-                    updateUser: result.updateUser
-                }
-            })
+                data: { updateManager: result.updateManager, updateUser: result.updateUser }
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
-    },
-
-}
+    }
+};
 
 module.exports = managerController;

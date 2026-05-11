@@ -4,18 +4,21 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 dotenv.config();
 const routesApiV1 = require("./api/v1/routes/index.route");
+const swaggerDocs = require("./config/swagger.config");
 require("./schedules/index.schedules");
 
 
 const app = express();
 const port = process.env.PORT;
 
-app.use(cors()); 
+app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 routesApiV1(app);
 
+// Swagger API Documentation
+swaggerDocs(app);
+
 app.listen(port, () => {
     console.log(`Server is running on ${port}`)
 });
-

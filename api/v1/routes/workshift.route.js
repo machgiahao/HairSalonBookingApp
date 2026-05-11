@@ -1,39 +1,222 @@
+/**
+ * @swagger
+ * /workshift/getAll:
+ *   get:
+ *     tags: [Workshift]
+ *     summary: Get all workshifts
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of workshifts
+ */
+
+/**
+ * @swagger
+ * /workshift/detail:
+ *   get:
+ *     tags: [Workshift]
+ *     summary: Get workshift detail
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: workshiftID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Workshift details
+ */
+
+/**
+ * @swagger
+ * /workshift/create:
+ *   post:
+ *     tags: [Workshift]
+ *     summary: Create workshift
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               shiftDate:
+ *                 type: string
+ *               startTime:
+ *                 type: string
+ *               endTime:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Workshift created
+ */
+
+/**
+ * @swagger
+ * /workshift/addStylist:
+ *   post:
+ *     tags: [Workshift]
+ *     summary: Add stylist to workshift
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               workshiftID:
+ *                 type: string
+ *               stylistID:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Stylist added
+ */
+
+/**
+ * @swagger
+ * /workshift/getWorkshift:
+ *   get:
+ *     tags: [Workshift]
+ *     summary: Get all workshifts with details
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of workshifts with stylists
+ */
+
+/**
+ * @swagger
+ * /workshift/getWorkshiftDetail:
+ *   get:
+ *     tags: [Workshift]
+ *     summary: Get workshift details
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Workshift details
+ */
+
+/**
+ * @swagger
+ * /workshift/softDel:
+ *   delete:
+ *     tags: [Workshift]
+ *     summary: Soft delete workshift
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: workshiftID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Workshift deleted
+ */
+
+/**
+ * @swagger
+ * /workshift/update:
+ *   patch:
+ *     tags: [Workshift]
+ *     summary: Update workshift
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               workshiftID:
+ *                 type: string
+ *               shiftDate:
+ *                 type: string
+ *               startTime:
+ *                 type: string
+ *               endTime:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Workshift updated
+ */
+
+/**
+ * @swagger
+ * /workshift/updateStatus:
+ *   patch:
+ *     tags: [Workshift]
+ *     summary: Update stylist workshift status
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stylistWorkshiftID:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Status updated
+ */
+
+/**
+ * @swagger
+ * /workshift/removeStylist:
+ *   delete:
+ *     tags: [Workshift]
+ *     summary: Remove stylist from workshift
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: stylistWorkshiftID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Stylist removed
+ */
+
 const express = require("express");
-const workshiftController = require("../controller/workshift.controller"); 
-const { verifyToken } = require("../middleware/verifyToken.middleware");
+const workshiftController = require("../controller/workshift.controller");
+const { verifyToken, checkRole } = require("../middleware/verifyToken.middleware");
 const route = express.Router();
 
 route.get("/getAll", workshiftController.getAll);
-// Route to create a new workship
 route.use(verifyToken);
 route.post("/create", workshiftController.create);
-
-//
 route.post("/addStylist", workshiftController.addStylistToWorkShift);
-
-// Route to get all workships
-
-// Route to get all workships of tylist
 route.get("/getWorkshift", workshiftController.getAllWorkshift);
-
-// Route to get all workships of stylist include details
 route.get("/getWorkshiftDetail", workshiftController.getAllWorkshiftDetail);
-
-// Route to get the details of a specific workship by ID
 route.get("/detail", workshiftController.detail);
-
-// Route to soft delete a workship by ID
+route.use(checkRole("Manager"));
 route.delete("/softDel", workshiftController.softDel);
-
-// Route to update a workship by ID
 route.patch("/update", workshiftController.update);
-
-//update shift of stylist status
 route.patch("/updateStatus", workshiftController.updateStylistWorkshift);
-
-//Remove stylist out of workshift
 route.delete("/removeStylist", workshiftController.removeStylistFromWorkShift);
 
-
-// Export the routes for use in other parts of the application
 module.exports = route;

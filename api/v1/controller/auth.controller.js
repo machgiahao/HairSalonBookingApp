@@ -1,296 +1,124 @@
-const bcrypt = require("bcrypt");
-const baseModel = require("../../../model/base.model");
-const validate = require("../../../validates/validateInput");
-const generate = require("../../../helper/generate.helper");
-const roleHelper = require("../../../helper/role.helper");
-const mail = require("../../../helper/sendMails.helper");
-const userTable = require("../../../model/table/user.table");
-const jwt = require("jsonwebtoken");
-const { getColsVals } = require("../../../helper/getColsVals.helper");
+const authService = require("../services/auth.service");
 const handleResponse = require("../../../helper/handleReponse.helper");
 const handleError = require("../../../helper/handleError.helper");
 
-
 const authController = {
     register: async (req, res) => {
-        let statusCode
         try {
-            const { phoneNumber, email } = req.body;
-            const validatePhone = validate.validatePhone(phoneNumber);
-            if(!validatePhone) {
-                statusCode = 400
-                throw new Error(`Invalid phone format`)
-            }
-            const validateEmail = validate.validateEmail(email);
-            if(!validateEmail) {
-                statusCode = 400
-                throw new Error(`Invalid email format`)
-            }
-            // Check exist phone number
-            const checkPhone = await baseModel.findByField(userTable.name, userTable.columns.phoneNumber , phoneNumber);
-            if (checkPhone) {
-                statusCode = 401
-                throw new Error("Phone number already exist");
-            }
-
-            // Check exist email
-            const checkEmail = await baseModel.findByField(userTable.name, userTable.columns.email, email);
-            if (checkEmail) {
-                statusCode = 401
-                throw new Error("Email already exist");
-            }
-            // Check password 
-            validate.validateInputField(req.body.password, "Password");
-            // hash password
-            const salt = await bcrypt.genSalt(10);
-            const hashed = await bcrypt.hash(req.body.password, salt);
-            //Reassign hashed password for req.body.password
-            req.body.password = hashed
-            req.body.role = req.body.role ?? "Customer";
-            // Create user 
-            const { columns, values } = getColsVals(userTable, req.body);
-
-            // Create and save to db
-            const result = await baseModel.executeTransaction(async () => {
-                const user = await baseModel.create(userTable.name, columns, values);
-                const userByRole = await roleHelper.handleRole(user, req.body);
-                return { user: user, userByRole: userByRole }
-            })
+            const result = await authService.register(req.body);
             return handleResponse(res, 201, {
                 success: true,
-                data: {
-                    user: result.user,
-                    userByRole: result.userByRole
-                }
-            })
+                data: result
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     login: async (req, res) => {
-        let statusCode;
         try {
-            const phoneNumber = req.body.phoneNumber;
-            validate.validateInputField(phoneNumber, "Phone number");
+            const { phoneNumber, password } = req.body;
+            const result = await authService.login(phoneNumber, password);
 
-            const user = await baseModel.findByPhone("Users", "phoneNumber", phoneNumber);
-            if (!user) {
-                statusCode = 401
-                throw new Error("Phone number not registed !");
-            }
-
-            const validPassword = await bcrypt.compare(req.body.password, user.password);
-            if (!validPassword) {
-                statusCode = 401
-                throw new Error("Incorrect password !");
-            }
-
-            // Generate Token
-            const accessToken = generate.generateAccessToken(user);
-            const refreshTokenStr = generate.generateRefreshToken(user);
-            // Save refresh token in DB
-            await baseModel.executeTransaction(async () => {
-                await baseModel.update("Users", "phoneNumber", user.phoneNumber, ["refreshToken"], [refreshTokenStr]);
-            })
-            // Save refresh token in cookie
-            res.cookie("refreshToken", refreshTokenStr, {
+            res.cookie("refreshToken", result.refreshToken, {
                 httpOnly: true,
                 secure: false,
                 path: "/",
                 sameSite: "strict"
             });
-            // Get additional information based on user role
-            const tableByRole = roleHelper.getTableByRole(user);
-            const actorByRole = await baseModel.findById(tableByRole, "userID", user.userID);
-
-            const { password, refreshToken, ...others } = user;
 
             return handleResponse(res, 200, {
                 success: true,
-                actor: actorByRole,
-                records: { ...others, accessToken }
-            })
+                actor: result.actor,
+                records: result.records
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     logout: async (req, res) => {
-        let statusCode
         try {
+            await authService.logout(req.body.userID);
             res.clearCookie("refreshToken");
-            await baseModel.executeTransaction(async () => {
-                await baseModel.update("Users", "userID", req.body.userID, ["refreshToken"], [""]);
-            })
 
             return handleResponse(res, 200, {
                 success: true,
                 msg: "Logged out!"
-            })
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     requestRefreshToken: async (req, res) => {
-        let statusCode
         try {
             const cookie = req.cookies;
-            // Check refresh token is exist in cookie
             if (!cookie?.refreshToken) {
-                statusCode = 401
-                throw new Error("You're not authenticated!");
+                throw { statusCode: 401, message: "You're not authenticated!" };
             }
-            // Check refresh token is valid or not 
-            jwt.verify(cookie.refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
-                if (err) {
-                    statusCode = 403
-                    throw new Error("Refresh token is not valid!");
-                }
-                // Check refresh token matches with refresh token stored in db
-                const response = await baseModel.findById("Users", "userID", user.userID);
-                if (cookie.refreshToken !== response.refreshToken) {
-                    statusCode = 403
-                    throw new Error("Refresh token is not valid!")
-                }
-                const newAccessToken = generate.generateAccessToken(response);
-                const newRefreshtoken = generate.generateRefreshToken(response);
-                await baseModel.executeTransaction(async () => {
-                    await baseModel.update("Users", "userID", user.userID, ["refreshToken"], [newRefreshtoken]);
-                })
-                res.cookie("refreshToken", newRefreshtoken, {
-                    httpOnly: true,
-                    secure: false,
-                    path: "/",
-                    sameSite: "strict",
-                });
 
-                return handleResponse(res, 200, {
-                    success: true,
-                    accessToken: newAccessToken
-                })
-            })
+            const result = await authService.refreshToken(req.user.userID, cookie.refreshToken);
+
+            res.cookie("refreshToken", result.newRefreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                sameSite: "strict"
+            });
+
+            return handleResponse(res, 200, {
+                success: true,
+                accessToken: result.accessToken
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     forgotPassword: async (req, res) => {
-        let statusCode
         try {
-            const email = req.body.email;
-
-            const user = await baseModel.findByField(userTable.name, userTable.columns.email, email);
-            if (!user) {
-                statusCode = 403
-                throw new Error("Email is not exist");
-            }
-
-            const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Create OTP 6 digits
-            const expiresAt = new Date(Date.now() + 3 * 60 * 1000); // OTP expired after 3m
-
-            const otpTable = {
-                userID: user.userID,
-                otpCode: otp,
-                expiresAt: expiresAt
-            }
-            await baseModel.executeTransaction(async () => {
-                await baseModel.create("OtpRequest", Object.keys(otpTable), Object.values(otpTable));
-            })
-            const from = process.env.MAIL_FROM_ADDRESS;
-            await mail.sendMail(from, email, "Your OTP Code", `<p>Your OTP code is: <b>${otp}</b></p>`);
+            const { email } = req.body;
+            const result = await authService.forgotPassword(email);
 
             return handleResponse(res, 200, {
                 success: true,
-                msg: "OTP code has been sent to your email",
-                email: email
-            })
+                msg: result.message,
+                email: result.email
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     resetPassword: async (req, res) => {
-        let statusCode;
         try {
             const { email, otp, newPassword } = req.body;
+            const result = await authService.resetPassword(email, otp, newPassword);
 
-            const user = await baseModel.findByField(userTable.name, userTable.columns.email, email);
-            if (!user) {
-                statusCode = 404
-                throw new Error("Email is not exist");
-            }
-
-            const conditions = [
-                { column: 'userID', value: user.userID, operator: '=' },
-                { column: 'otpCode', value: otp, operator: '=' },
-                { column: 'expiresAt', value: new Date(), operator: '>' },
-                { column: 'used', value: false, operator: '=' }
-            ];
-
-            const otpRequest = await baseModel.findWithConditions('OtpRequest', ['*'], conditions, ['AND']);
-
-            if (!otpRequest || otpRequest.length === 0) {
-                statusCode = 403
-                throw new Error("OTP code is invalid or expired");
-            }
-
-            // hash password
-            const salt = await bcrypt.genSalt(10);
-            const hashed = await bcrypt.hash(newPassword, salt);
-            await baseModel.executeTransaction(async () => {
-                await baseModel.update("Users", "userID", user.userID, ["password"], [hashed]);
-                await baseModel.update("OtpRequest", "id", otpRequest.id, ["used"], ["true"]);
-            })
             return handleResponse(res, 200, {
                 success: true,
-                msg: "Update password successfully"
-            })
+                msg: result.message
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     },
 
     changePassword: async (req, res) => {
-        let statusCode
         try {
-            const id = req.user.userID;
-
-            const userById = await baseModel.findByField(userTable.name, userTable.columns.userID, id);
-            if (!userById) {
-                statusCode = 404
-                throw new Error("User not found");
-            }
-
-            const oldPassword = userById.password;
-            const inputPassword = req.body.password;
-
-            const validPassword = await bcrypt.compare(inputPassword, oldPassword);
-            if (!validPassword) {
-                statusCode = 403
-                throw new Error("Password does not match");
-            }
-
-            const result = await baseModel.executeTransaction(async () => {
-                const newPassword = req.body.newPassword;
-                const salt = await bcrypt.genSalt(10);
-                const hashed = await bcrypt.hash(newPassword, salt);
-                const update = await baseModel.update(userTable.name, userTable.columns.userID, id, ["password"], [hashed]);
-                const { password, refreshToken, ...others } = update;
-                return { update: others };
-            })
+            const { password, newPassword } = req.body;
+            const result = await authService.changePassword(req.user.userID, password, newPassword);
 
             return handleResponse(res, 200, {
                 success: true,
-                msg: "Change password successfully",
-                data: result.update
-            })
+                msg: "Password changed successfully",
+                data: result.data
+            });
         } catch (error) {
-            return handleError(res, statusCode, error);
+            return handleError(res, error.statusCode, error);
         }
     }
-
-}
+};
 
 module.exports = authController;

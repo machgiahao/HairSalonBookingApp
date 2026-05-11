@@ -213,8 +213,6 @@ const baseModel = {
   findByField: async (tableName, columnName, value) => {
     try {
       const query = `SELECT * FROM "${tableName}" WHERE "${columnName}" = $1`;
-      console.log(query);
-      
       const result = await pool.query(query, [value]);
       return result.rows[0];
     } catch (error) {
