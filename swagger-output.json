@@ -1,0 +1,2250 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Hair Salon Booking API",
+    "description": "API for Hair Salon Booking Application",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Developer",
+      "email": "developer@hairsalon.com"
+    }
+  },
+  "host": "localhost:3000",
+  "basePath": "/api/v1",
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "bearerAuth": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "JWT Authorization header using Bearer scheme. Example: 'Bearer {token}'"
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "userID": {
+          "type": "string",
+          "example": "user-123"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "example": "0123456789"
+        },
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        },
+        "fullName": {
+          "type": "string",
+          "example": "John Doe"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "Customer",
+            "Staff",
+            "Stylist",
+            "Manager"
+          ]
+        }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "required": [
+        "phoneNumber",
+        "password"
+      ],
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "example": "0123456789"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      }
+    },
+    "RegisterRequest": {
+      "type": "object",
+      "required": [
+        "phoneNumber",
+        "email",
+        "password",
+        "fullName"
+      ],
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "example": "0123456789"
+        },
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        },
+        "fullName": {
+          "type": "string",
+          "example": "John Doe"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "Customer",
+            "Staff",
+            "Stylist",
+            "Manager"
+          ],
+          "example": "Customer"
+        }
+      }
+    },
+    "Booking": {
+      "type": "object",
+      "properties": {
+        "bookingID": {
+          "type": "string",
+          "example": "booking-123"
+        },
+        "customerID": {
+          "type": "string",
+          "example": "customer-123"
+        },
+        "stylistID": {
+          "type": "string",
+          "example": "stylist-123"
+        },
+        "serviceIDs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "service-1",
+            "service-2"
+          ]
+        },
+        "bookingDate": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2024-01-15T10:00:00Z"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Confirmed",
+            "Completed",
+            "Cancelled"
+          ],
+          "example": "Pending"
+        },
+        "totalPrice": {
+          "type": "number",
+          "example": 150000
+        }
+      }
+    },
+    "Service": {
+      "type": "object",
+      "properties": {
+        "serviceID": {
+          "type": "string",
+          "example": "service-123"
+        },
+        "serviceName": {
+          "type": "string",
+          "example": "Haircut"
+        },
+        "description": {
+          "type": "string",
+          "example": "Basic haircut service"
+        },
+        "price": {
+          "type": "number",
+          "example": 50000
+        },
+        "duration": {
+          "type": "number",
+          "example": 30
+        },
+        "imageURL": {
+          "type": "string",
+          "example": "https://example.com/image.jpg"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 400
+        },
+        "message": {
+          "type": "string",
+          "example": "Error message"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "phoneNumber",
+                  "email",
+                  "password",
+                  "fullName"
+                ],
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "phoneNumber",
+                  "password"
+                ],
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh token",
+        "responses": {
+          "200": {
+            "description": "New access token"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout user",
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Request password reset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent"
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Reset password with OTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful"
+          }
+        }
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Change password",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          }
+        }
+      }
+    },
+    "/booking/getAll": {
+      "get": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Get all bookings",
+        "responses": {
+          "200": {
+            "description": "List of bookings"
+          }
+        }
+      }
+    },
+    "/booking/detail": {
+      "get": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Get booking detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bookingID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking details"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/booking/create": {
+      "post": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Create new booking",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customerID": {
+                    "type": "string"
+                  },
+                  "stylistID": {
+                    "type": "string"
+                  },
+                  "serviceIDs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "bookingDate": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created"
+          }
+        }
+      }
+    },
+    "/booking/history": {
+      "get": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Get customer booking history",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking history"
+          }
+        }
+      }
+    },
+    "/booking/change-status": {
+      "patch": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Change booking status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bookingID": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated"
+          }
+        }
+      }
+    },
+    "/booking/delete": {
+      "delete": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Delete booking",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bookingID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking deleted"
+          }
+        }
+      }
+    },
+    "/customer/getAll": {
+      "get": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Get all customers",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of customers"
+          }
+        }
+      }
+    },
+    "/customer/detail": {
+      "get": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Get customer detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "customerID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer details"
+          }
+        }
+      }
+    },
+    "/customer/update": {
+      "patch": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Update customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated"
+          }
+        }
+      }
+    },
+    "/customer/delete": {
+      "delete": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Delete customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "customerID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer deleted"
+          }
+        }
+      }
+    },
+    "/feedback/getAll": {
+      "get": {
+        "tags": [
+          "Feedback"
+        ],
+        "summary": "Get all feedback",
+        "responses": {
+          "200": {
+            "description": "List of feedback"
+          }
+        }
+      }
+    },
+    "/feedback/detail": {
+      "get": {
+        "tags": [
+          "Feedback"
+        ],
+        "summary": "Get feedback detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "feedbackID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feedback details"
+          }
+        }
+      }
+    },
+    "/feedback/create": {
+      "post": {
+        "tags": [
+          "Feedback"
+        ],
+        "summary": "Create feedback",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bookingID": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "number"
+                  },
+                  "comment": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feedback created"
+          }
+        }
+      }
+    },
+    "/feedback/update": {
+      "patch": {
+        "tags": [
+          "Feedback"
+        ],
+        "summary": "Update feedback",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "feedbackID": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "number"
+                  },
+                  "comment": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback updated"
+          }
+        }
+      }
+    },
+    "/feedback/delete": {
+      "delete": {
+        "tags": [
+          "Feedback"
+        ],
+        "summary": "Delete feedback",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "feedbackID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feedback deleted"
+          }
+        }
+      }
+    },
+    "/guest/getAll": {
+      "get": {
+        "tags": [
+          "Guest"
+        ],
+        "summary": "Get all guests",
+        "responses": {
+          "200": {
+            "description": "List of guests"
+          }
+        }
+      }
+    },
+    "/guest/detail": {
+      "get": {
+        "tags": [
+          "Guest"
+        ],
+        "summary": "Get guest detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "guestID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Guest details"
+          }
+        }
+      }
+    },
+    "/guest/create": {
+      "post": {
+        "tags": [
+          "Guest"
+        ],
+        "summary": "Create guest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Guest created"
+          }
+        }
+      }
+    },
+    "/guest/delete": {
+      "delete": {
+        "tags": [
+          "Guest"
+        ],
+        "summary": "Delete guest",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "guestID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Guest deleted"
+          }
+        }
+      }
+    },
+    "/manager/detail": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Get manager detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manager details"
+          }
+        }
+      }
+    },
+    "/manager/update": {
+      "patch": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update manager",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Manager updated"
+          }
+        }
+      }
+    },
+    "/news/getAll": {
+      "get": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Get all news",
+        "responses": {
+          "200": {
+            "description": "List of news"
+          }
+        }
+      }
+    },
+    "/news/getDetail": {
+      "get": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Get news detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "newsID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News details"
+          }
+        }
+      }
+    },
+    "/news/create": {
+      "post": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Create news",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "News created"
+          }
+        }
+      }
+    },
+    "/news/update": {
+      "patch": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Update news",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newsID": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "News updated"
+          }
+        }
+      }
+    },
+    "/news/delete": {
+      "patch": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Soft delete news",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "newsID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News deleted"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Permanently delete news",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "newsID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News deleted permanently"
+          }
+        }
+      }
+    },
+    "/payment/getAll": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Get all payments",
+        "responses": {
+          "200": {
+            "description": "List of payments"
+          }
+        }
+      }
+    },
+    "/payment/getDetail": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Get payment detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "paymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details"
+          }
+        }
+      }
+    },
+    "/payment/create": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Create payment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bookingID": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "paymentMethod": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created"
+          }
+        }
+      }
+    },
+    "/payment/generateQR": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Generate VietQR payment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Amount": {
+                    "type": "number"
+                  },
+                  "Description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "QR code generated"
+          }
+        }
+      }
+    },
+    "/payment/update": {
+      "patch": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Update payment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "paymentID": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment updated"
+          }
+        }
+      }
+    },
+    "/payment/softDel": {
+      "delete": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Soft delete payment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "paymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment deleted"
+          }
+        }
+      }
+    },
+    "/salary/getAll": {
+      "get": {
+        "tags": [
+          "Salary"
+        ],
+        "summary": "Get all daily salaries",
+        "responses": {
+          "200": {
+            "description": "List of daily salaries"
+          }
+        }
+      }
+    },
+    "/salary/dailySalary": {
+      "post": {
+        "tags": [
+          "Salary"
+        ],
+        "summary": "Get daily salary",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily salary details"
+          }
+        }
+      }
+    },
+    "/salary/monthlySalary": {
+      "get": {
+        "tags": [
+          "Salary"
+        ],
+        "summary": "Get monthly salary",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly salary details"
+          }
+        }
+      }
+    },
+    "/salary/generalMonthlySalary": {
+      "get": {
+        "tags": [
+          "Salary"
+        ],
+        "summary": "Get general monthly salary",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "General monthly salary"
+          }
+        }
+      }
+    },
+    "/salary/update": {
+      "patch": {
+        "tags": [
+          "Salary"
+        ],
+        "summary": "Update salary",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "salaryID": {
+                    "type": "string"
+                  },
+                  "baseSalary": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Salary updated"
+          }
+        }
+      }
+    },
+    "/service/getAll": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Get all services",
+        "responses": {
+          "200": {
+            "description": "List of services"
+          }
+        }
+      }
+    },
+    "/service/detail": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Get service detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "serviceID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service details"
+          }
+        }
+      }
+    },
+    "/service/create": {
+      "post": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Create new service",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceName": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "duration": {
+                    "type": "number"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Service created"
+          }
+        }
+      }
+    },
+    "/service/update": {
+      "patch": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Update service",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceID": {
+                    "type": "string"
+                  },
+                  "serviceName": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "duration": {
+                    "type": "number"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Service updated"
+          }
+        }
+      }
+    },
+    "/service/delete": {
+      "delete": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Delete service",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "serviceID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service deleted"
+          }
+        }
+      }
+    },
+    "/staff/getAll": {
+      "get": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Get all staff",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of staff"
+          }
+        }
+      }
+    },
+    "/staff/detail": {
+      "get": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Get staff detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "staffID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Staff details"
+          }
+        }
+      }
+    },
+    "/staff/update": {
+      "patch": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Update staff",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "staffID": {
+                    "type": "string"
+                  },
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Staff updated"
+          }
+        }
+      }
+    },
+    "/staff/softDel": {
+      "delete": {
+        "tags": [
+          "Staff"
+        ],
+        "summary": "Soft delete staff",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "staffID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Staff deleted"
+          }
+        }
+      }
+    },
+    "/stylist/getAll": {
+      "get": {
+        "tags": [
+          "Stylist"
+        ],
+        "summary": "Get all stylists",
+        "responses": {
+          "200": {
+            "description": "List of stylists"
+          }
+        }
+      }
+    },
+    "/stylist/detail": {
+      "get": {
+        "tags": [
+          "Stylist"
+        ],
+        "summary": "Get stylist detail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "stylistID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stylist details"
+          }
+        }
+      }
+    },
+    "/stylist/update": {
+      "patch": {
+        "tags": [
+          "Stylist"
+        ],
+        "summary": "Update stylist",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stylistID": {
+                    "type": "string"
+                  },
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stylist updated"
+          }
+        }
+      }
+    },
+    "/stylist/softDel": {
+      "delete": {
+        "tags": [
+          "Stylist"
+        ],
+        "summary": "Soft delete stylist",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "stylistID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stylist deleted"
+          }
+        }
+      }
+    },
+    "/user/getAll": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get all users",
+        "responses": {
+          "200": {
+            "description": "List of users"
+          }
+        }
+      }
+    },
+    "/user/contact": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Contact form submission",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contact form submitted"
+          }
+        }
+      }
+    },
+    "/user/getCurrent": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get current user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user details"
+          }
+        }
+      }
+    },
+    "/workshift/getAll": {
+      "get": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Get all workshifts",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of workshifts"
+          }
+        }
+      }
+    },
+    "/workshift/detail": {
+      "get": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Get workshift detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "workshiftID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workshift details"
+          }
+        }
+      }
+    },
+    "/workshift/create": {
+      "post": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Create workshift",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "shiftDate": {
+                    "type": "string"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Workshift created"
+          }
+        }
+      }
+    },
+    "/workshift/addStylist": {
+      "post": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Add stylist to workshift",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workshiftID": {
+                    "type": "string"
+                  },
+                  "stylistID": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stylist added"
+          }
+        }
+      }
+    },
+    "/workshift/getWorkshift": {
+      "get": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Get all workshifts with details",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of workshifts with stylists"
+          }
+        }
+      }
+    },
+    "/workshift/getWorkshiftDetail": {
+      "get": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Get workshift details",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workshift details"
+          }
+        }
+      }
+    },
+    "/workshift/softDel": {
+      "delete": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Soft delete workshift",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "workshiftID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workshift deleted"
+          }
+        }
+      }
+    },
+    "/workshift/update": {
+      "patch": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Update workshift",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workshiftID": {
+                    "type": "string"
+                  },
+                  "shiftDate": {
+                    "type": "string"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workshift updated"
+          }
+        }
+      }
+    },
+    "/workshift/updateStatus": {
+      "patch": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Update stylist workshift status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stylistWorkshiftID": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated"
+          }
+        }
+      }
+    },
+    "/workshift/removeStylist": {
+      "delete": {
+        "tags": [
+          "Workshift"
+        ],
+        "summary": "Remove stylist from workshift",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "stylistWorkshiftID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stylist removed"
+          }
+        }
+      }
+    }
+  },
+  "responses": {},
+  "parameters": {},
+  "tags": []
+}
