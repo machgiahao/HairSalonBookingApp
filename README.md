@@ -1,6 +1,18 @@
 # HairSalonBookingApp
 
-REST API backend for hair salon booking application.
+REST API backend for a hair salon booking application. This system provides a comprehensive platform for managing customer appointments, staff scheduling, services, payments, and salon operations.
+
+## Features
+
+- User authentication and authorization (JWT)
+- Booking management with multiple status tracking
+- Staff and stylist management
+- Service catalog management
+- Work shift scheduling
+- Payment processing
+- Feedback and reviews
+- News and promotions
+- Salary management for staff
 
 ## Tech Stack
 
